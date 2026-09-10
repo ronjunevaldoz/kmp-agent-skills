@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.0] — 2026-09-10
+
+### Added
+
+- feat(skills): make .agents the canonical project skill runtime
+
+---
+
 ## [v2.60.0] — 2026-08-31
 
 ### Added

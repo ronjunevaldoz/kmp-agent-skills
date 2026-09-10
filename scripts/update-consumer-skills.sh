@@ -186,6 +186,9 @@ prune_stale_skills() {
 
     [[ -d "$SKILLS_SOURCE/skills/$stale_name" ]] && continue   # still shipped upstream
     [[ -d "skills/$stale_name" ]] && continue                  # project-owned custom skill
+    # The bundled collection uses the kmp-* namespace. Preserve consumer-owned
+    # skills stored directly in the target (for example, Awaken's awake-* skills).
+    [[ "$stale_name" == kmp-* ]] || continue
 
     if $DRY_RUN; then
       echo "  [dry-run] would remove stale skill: $target/$stale_name"

@@ -110,6 +110,34 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
             self.assertTrue((project / ".claude" / "skills" / "my-app-skill" / "SKILL.md").is_file())
 
+    def test_pruning_preserves_consumer_owned_skill_in_agents_target(self) -> None:
+        # Consumer projects may keep app-specific skills directly in .agents/skills.
+        # They are not present under ./skills in this source checkout and must not be
+        # mistaken for stale bundled kmp-agent-skills content.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            source, project = tmp_root / "source", tmp_root / "project"
+            source.mkdir()
+            project.mkdir()
+            self._minimal_source(source)
+            self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
+            self._write(
+                project,
+                ".agents/skills/awake-custom/SKILL.md",
+                "---\nname: awake-custom\ndescription: Consumer-owned.\n---\n",
+            )
+            self._write(
+                project,
+                ".agents/skills/kmp-removed-upstream/SKILL.md",
+                "---\nname: kmp-removed-upstream\ndescription: Gone.\n---\n",
+            )
+
+            result = self._run_update(source, project)
+
+            self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+            self.assertTrue((project / ".agents" / "skills" / "awake-custom" / "SKILL.md").is_file())
+            self.assertFalse((project / ".agents" / "skills" / "kmp-removed-upstream").exists())
+
     def test_flags_an_installed_command_whose_source_changed(self) -> None:
         # Reporting a changed command as plain "[installed]" is how a consumer silently
         # keeps running a stale copy of a command that was fixed upstream.

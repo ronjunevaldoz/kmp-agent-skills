@@ -78,11 +78,49 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                 "---\nname: kmp-removed-upstream\ndescription: Gone.\n---\n",
             )
 
+            result = self._run_update(source, project, "--prune-stale")
+
+            self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+            self.assertFalse((project / ".agents" / "skills" / "kmp-removed-upstream").exists())
+            self.assertTrue((project / ".agents" / "skills" / "shared-skill" / "SKILL.md").is_file())
+
+    def test_preserves_stale_bundled_skill_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            source, project = tmp_root / "source", tmp_root / "project"
+            source.mkdir()
+            project.mkdir()
+            self._minimal_source(source)
+            self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
+            self._write(
+                project,
+                ".agents/skills/kmp-removed-upstream/SKILL.md",
+                "---\nname: kmp-removed-upstream\ndescription: Preserve me.\n---\n",
+            )
+
             result = self._run_update(source, project)
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
-            self.assertFalse((project / ".claude" / "skills" / "kmp-removed-upstream").exists())
-            self.assertTrue((project / ".agents" / "skills" / "shared-skill" / "SKILL.md").is_file())
+            self.assertTrue((project / ".agents" / "skills" / "kmp-removed-upstream" / "SKILL.md").is_file())
+
+    def test_prune_stale_requires_explicit_opt_in(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            source, project = tmp_root / "source", tmp_root / "project"
+            source.mkdir()
+            project.mkdir()
+            self._minimal_source(source)
+            self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
+            self._write(
+                project,
+                ".agents/skills/kmp-removed-upstream/SKILL.md",
+                "---\nname: kmp-removed-upstream\ndescription: Gone.\n---\n",
+            )
+
+            result = self._run_update(source, project, "--prune-stale")
+
+            self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+            self.assertFalse((project / ".agents" / "skills" / "kmp-removed-upstream").exists())
 
     def test_pruning_never_removes_a_project_owned_custom_skill(self) -> None:
         # A project-owned skill lives only in ./skills and is absent from the source, so
@@ -132,7 +170,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                 "---\nname: kmp-removed-upstream\ndescription: Gone.\n---\n",
             )
 
-            result = self._run_update(source, project)
+            result = self._run_update(source, project, "--prune-stale")
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
             self.assertTrue((project / ".agents" / "skills" / "awake-custom" / "SKILL.md").is_file())

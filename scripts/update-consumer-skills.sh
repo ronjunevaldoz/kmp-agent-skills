@@ -18,6 +18,7 @@
 #   --agent-dir PATH     Destination skills directory (auto-detected if omitted)
 #   --commands-dir PATH  Destination for slash commands (default: .agents/commands)
 #   --install-commands   List available commands and prompt to install each one
+#   --prune-stale        Remove stale bundled kmp-* skill directories (opt-in)
 #   --dry-run            Show what would change without writing anything
 
 set -euo pipefail
@@ -26,6 +27,7 @@ SKILLS_SOURCE=""
 AGENT_DIR=""
 COMMANDS_DIR=""
 INSTALL_COMMANDS=false
+PRUNE_STALE=false
 SETUP_AGENTS=false
 DRY_RUN=false
 
@@ -35,6 +37,7 @@ while [[ $# -gt 0 ]]; do
     --agent-dir)        AGENT_DIR="$2"; shift 2 ;;
     --commands-dir)     COMMANDS_DIR="$2"; shift 2 ;;
     --install-commands) INSTALL_COMMANDS=true; shift ;;
+    --prune-stale)      PRUNE_STALE=true; shift ;;
     --setup-agents)     SETUP_AGENTS=true; shift ;;
     --dry-run)          DRY_RUN=true; shift ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -135,14 +138,10 @@ echo ""
 
 # ── Deploy skills (auto — passive reference docs) ─────────────────────────────
 
-# `cp -r` only ever adds and overwrites — it never removes a skill directory that no
-# longer exists upstream. A skill renamed or deleted in a release therefore lingers in
-# the consumer's deployed copy forever (the exact situation `migrate-kmm-to-kmp.sh` was
-# written to clean up by hand after the kmm-*/kmp-* rename). Prune those here instead,
-# scoped tightly: only a directory that exists in the target, is absent from the source,
-# and is NOT one of the project's own `./skills/<name>` custom skills. The deployed
-# directory is a mirror by contract (`block-edit-vendored-skills.sh` refuses edits to
-# it), so removing a stale mirror there loses nothing that isn't reproducible.
+# `cp -r` only adds and overwrites. By default, preserve every existing target skill:
+# consumer projects may keep skills directly under .agents/skills, and an updater must
+# not make a destructive assumption about their ownership. Stale bundled skills can be
+# removed deliberately with --prune-stale after reviewing the dry-run output.
 # Resolve a skill's deploy target to the real directory to write into. A destination
 # that's a symlink — for example a per-skill link into another deployment, a real
 # layout found deployed in production, one symlink per skill rather than the whole
@@ -209,7 +208,7 @@ if $DRY_RUN; then
   CHANGED=$(git -C "$SKILLS_SOURCE" diff "HEAD@{1}..HEAD" --name-only -- skills/ 2>/dev/null | wc -l | tr -d ' ' || echo 0)
   [[ -n "$CHANGED" ]] || CHANGED=0
   echo "  [dry-run] would copy $CHANGED changed skill file(s) → $AGENT_DIR/"
-  prune_stale_skills "$AGENT_DIR"
+  $PRUNE_STALE && prune_stale_skills "$AGENT_DIR"
 else
   for skill_src in "$SKILLS_SOURCE"/skills/*/; do
     skill_name="$(basename "$skill_src")"
@@ -218,7 +217,11 @@ else
     rm -rf "$resolved_target"
     cp -r "$skill_src" "$resolved_target"
   done
-  prune_stale_skills "$AGENT_DIR"
+  if $PRUNE_STALE; then
+    prune_stale_skills "$AGENT_DIR"
+  else
+    echo "  ℹ️   Preserved existing skills (use --prune-stale to remove stale kmp-* skills)"
+  fi
   # Version marker — read by scripts/check-installed-skills-version.sh, which
   # commands/kmp-setup-hooks.md wires as the Option E SessionStart hook for exactly
   # this deploy path. Without it that hook reports "no version marker" on every

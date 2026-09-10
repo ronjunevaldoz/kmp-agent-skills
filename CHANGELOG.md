@@ -2,6 +2,19 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.1] — 2026-09-10
+
+### Added
+
+- feat(routing): prioritize project-owned skill namespaces
+
+### Fixed
+
+- fix(skills): make stale cleanup opt in
+- fix(skills): preserve consumer-owned agent skills during sync
+
+---
+
 ## [v3.0.0] — 2026-09-10
 
 ### Added

@@ -30,7 +30,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                 "bash",
                 str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                 "--source", str(source),
-                "--agent-dir", ".claude/skills",
+                "--agent-dir", ".agents/skills",
                 *extra,
             ],
             cwd=project,
@@ -51,17 +51,14 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             project.mkdir()
             self._minimal_source(source, version="9.9.9")
             self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
-            (project / ".claude" / "skills").mkdir(parents=True)
+            (project / ".agents" / "skills").mkdir(parents=True)
 
             result = self._run_update(source, project)
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
-            for marker in (
-                project / ".claude" / "skills" / ".kmp-agent-skills-version",
-                project / ".agents" / "skills" / ".kmp-agent-skills-version",
-            ):
-                self.assertTrue(marker.is_file(), f"missing marker: {marker}")
-                self.assertEqual(marker.read_text(encoding="utf-8").strip(), "9.9.9")
+            marker = project / ".agents" / "skills" / ".kmp-agent-skills-version"
+            self.assertTrue(marker.is_file(), f"missing marker: {marker}")
+            self.assertEqual(marker.read_text(encoding="utf-8").strip(), "9.9.9")
 
     def test_prunes_a_skill_that_no_longer_exists_upstream(self) -> None:
         # `cp -r` only adds and overwrites — a skill renamed or removed upstream used to
@@ -77,7 +74,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             # A previously-deployed bundled skill that upstream has since dropped.
             self._write(
                 project,
-                ".claude/skills/kmp-removed-upstream/SKILL.md",
+                ".agents/skills/kmp-removed-upstream/SKILL.md",
                 "---\nname: kmp-removed-upstream\ndescription: Gone.\n---\n",
             )
 
@@ -85,7 +82,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
             self.assertFalse((project / ".claude" / "skills" / "kmp-removed-upstream").exists())
-            self.assertTrue((project / ".claude" / "skills" / "shared-skill" / "SKILL.md").is_file())
+            self.assertTrue((project / ".agents" / "skills" / "shared-skill" / "SKILL.md").is_file())
 
     def test_pruning_never_removes_a_project_owned_custom_skill(self) -> None:
         # A project-owned skill lives only in ./skills and is absent from the source, so
@@ -126,8 +123,8 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             self._write(source, "commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
             self._write(source, "commands/kmp-brand-new.md", "# /kmp-brand-new\n\nBody.\n")
             self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
-            self._write(project, ".claude/commands/kmp-drifted.md", "# /kmp-drifted\n\nOLD body.\n")
-            self._write(project, ".claude/commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
+            self._write(project, ".agents/commands/kmp-drifted.md", "# /kmp-drifted\n\nOLD body.\n")
+            self._write(project, ".agents/commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
 
             result = self._run_update(source, project, "--install-commands", "--dry-run")
 
@@ -167,7 +164,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             self._minimal_source(source)
             self._write(source, "commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
             self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
-            self._write(project, ".claude/commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
+            self._write(project, ".agents/commands/kmp-current.md", "# /kmp-current\n\nSame body.\n")
 
             result = self._run_update(source, project)
 
@@ -259,8 +256,6 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                     str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                     "--source",
                     str(source),
-                    "--agent-dir",
-                    ".claude/skills",
                     "--setup-agents",
                 ],
                 cwd=project,
@@ -269,11 +264,10 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
-            self.assertTrue((project / ".claude" / "skills" / "shared-skill" / "SKILL.md").is_file())
-            self.assertTrue((project / ".claude" / "skills" / "demo-skill" / "SKILL.md").is_file())
-            self.assertTrue((project / ".claude" / "AGENTS.md").is_file())
-            self.assertTrue((project / ".claude" / "settings.json").is_file())
-            self.assertTrue((project / "CLAUDE.md").is_file())
+            self.assertTrue((project / ".agents" / "skills" / "shared-skill" / "SKILL.md").is_file())
+            self.assertTrue((project / ".agents" / "skills" / "demo-skill" / "SKILL.md").is_file())
+            self.assertTrue((project / "AGENTS.md").is_file())
+            self.assertFalse((project / "CLAUDE.md").exists())
             self.assertTrue((project / "docs" / "reference" / "ai-collaboration.md").is_file())
             self.assertTrue((project / "docs" / "reference" / "agent-catalog.md").is_file())
             self.assertTrue((project / "agents" / "README.md").is_file())
@@ -288,7 +282,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             # Project-owned custom skills mirror too, not just the bundled ones.
             self.assertTrue((project / ".agents" / "skills" / "demo-skill" / "SKILL.md").is_file())
             self.assertTrue((project / ".agents" / "pipeline-context.json").is_file())
-            agents_md = (project / ".claude" / "AGENTS.md").read_text(encoding="utf-8")
+            agents_md = (project / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("kmp-code-quality", agents_md)
             self.assertIn("kmp-unit-testing", agents_md)
             self.assertIn("kmp-android-cli", agents_md)

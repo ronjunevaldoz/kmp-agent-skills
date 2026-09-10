@@ -3,12 +3,12 @@
 # into local assistant skill bundles on this machine.
 #
 # This updates user-level installs only:
-#   ~/.claude/skills
+#   ~/.claude/skills  — Claude Code's global skill bundle
 #   ~/.codex/skills
 #   ~/.gemini/skills
 #   ~/.agents/skills  — the cross-client convention (agentskills.io's own
 #                       client-implementation guide: "Some implementations also
-#                       scan .claude/skills/ ... other [clients] scan .agents/skills/
+#                       scan their native skill directories and/or .agents/skills/
 #                       ... means skills installed by other compliant clients are
 #                       automatically visible to yours, and vice versa"). Syncing
 #                       here makes these skills visible to any agentskills.io-compliant

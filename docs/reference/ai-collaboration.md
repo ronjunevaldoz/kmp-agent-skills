@@ -2,7 +2,7 @@
 
 Canonical cross-agent policy for downstream repos using `kmp-agent-skills`.
 
-This doc exists to stop policy drift across `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-local skills, and one-off notes in `docs/`.
+This doc exists to stop policy drift across `AGENTS.md`, repo-local skills, and one-off notes in `docs/`.
 
 ## Source Of Truth
 
@@ -16,11 +16,9 @@ Use these boundaries:
   canonical policy
 - `commands/*` — repo-local slash-command sources
 - `hooks/*` — repo-local hook sources
-- `.agents/skills/` — deployed skills, the cross-client target (bundled
-  `kmp-agent-skills` + a mirror of any custom skill) — any agentskills.io-compliant
-  client reads from here, not just Claude Code
-- `.claude/*` — deployed Claude-specific runtime copy (mirrors `.agents/skills/`,
-  plus Claude-only `AGENTS.md`/`commands/`/`settings.json`)
+- `.agents/skills/` — the only automatic project skill target (bundled
+  `kmp-agent-skills` + any custom skill), discovered by agentskills.io-compliant clients
+- `.agents/commands/` — provider-neutral command sources/deployments
 
 Quick rule:
 
@@ -45,17 +43,11 @@ Do not let `skills/*` grow into duplicated architecture docs.
 ├── hooks/
 ├── skills/            # source, custom skills only
 │   └── <skill-name>/SKILL.md
-├── AGENTS.md        # optional Codex/OpenAI-facing bootstrap
-├── CLAUDE.md        # optional Claude-facing bootstrap
-├── GEMINI.md        # optional Gemini-facing bootstrap
+├── AGENTS.md        # universal project bootstrap
 ├── .agents/
 │   ├── skills/                  # deployed, cross-client target
+│   └── commands/                # provider-neutral command sources
 │   └── pipeline-context.json    # planner agent context
-├── .claude/
-│   ├── AGENTS.md
-│   ├── commands/
-│   ├── skills/                  # deployed, mirrors .agents/skills/
-│   └── settings.json
 ├── .codex/
 │   ├── agents/      # *.toml — subagents; Codex has no custom-commands mechanism
 │   └── skills/       # global only (~/.codex/skills) as of this writing, not project-local
@@ -67,17 +59,18 @@ Do not let `skills/*` grow into duplicated architecture docs.
 Codex/Gemini support a different, non-symmetric subset of commands/agents/skills, in
 TOML rather than Markdown — see `docs/reference/provider-capability-matrix.md` for the
 real, verified matrix and the translation rules before deploying to either.
+Claude-specific files such as `CLAUDE.md` may be supported through an optional adapter,
+but they are not part of this repository's canonical or automatic project layout.
 
-## What To Commit Vs Gitignore Under `.claude/` And `.agents/`
+## What To Commit Vs Gitignore Under `.agents/`
 
-Gitignore only `.claude/skills/` and `.agents/skills/` (reproducible mirrors); commit
-`.claude/AGENTS.md`, `.claude/settings.json`, `.claude/commands/` (project-specific, and
-for `AGENTS.md`, live system-prompt content). Rationale and `.gitignore` snippet:
+Gitignore `.agents/skills/` when it is a reproducible deployment; commit provider-neutral
+source files under `agents/`, `commands/`, and `skills/`. Rationale and `.gitignore` snippet:
 `skills/kmp-expert/references/agents-md-templates.md`.
 
 ## Thin Entrypoints
 
-`AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` should stay thin — bootstrap flags, a short
+`AGENTS.md` should stay thin — a short
 "read these docs first" list, and a few startup-critical guardrails. They should never
 become the only place architecture or repo policy lives.
 
@@ -107,19 +100,6 @@ Good `skills/*` content:
 - repository-specific review expectations
 
 ## Starter Templates
-
-Minimal `CLAUDE.md`:
-
-```md
-### Claude Code Project Profile
-
-### Load skills context on initialization
---system-prompt-file=".claude/AGENTS.md"
-
-### Read first
-- docs/reference/ai-collaboration.md
-- docs/reference/agent-catalog.md
-```
 
 Minimal `AGENTS.md`:
 

@@ -4336,9 +4336,7 @@ class AgentSetupGitignoredTests(unittest.TestCase):
             self.assertTrue(
                 any("commands/ exists but is gitignored" in f for f in findings)
             )
-            self.assertTrue(
-                any("settings.json exists but is gitignored" in f for f in findings)
-            )
+            self.assertFalse(any("settings.json exists but is gitignored" in f for f in findings))
 
     def test_ignores_when_only_skills_mirror_is_gitignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

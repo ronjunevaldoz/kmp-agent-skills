@@ -332,69 +332,41 @@ def _detect_agent_setup(root: Path) -> list[str]:
         return []
 
     findings: list[str] = []
-    claude = root / ".claude"
-
-    if not (root / "CLAUDE.md").exists():
-        findings.append("agent-setup [HIGH]: CLAUDE.md missing — skills context never loads (run /kmp-setup-agents)")
-
-    if not (claude / "AGENTS.md").exists():
-        findings.append("agent-setup [HIGH]: .claude/AGENTS.md missing — no skill routing table (run /kmp-setup-agents)")
-    elif _git_ignored(root, ".claude/AGENTS.md"):
-        findings.append(
-            "agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — CLAUDE.md "
-            "loads it as the literal system prompt every session, so a fresh clone, "
-            "teammate, or CI runner gets none at all until someone reruns "
-            "/kmp-setup-agents; commit it (see \"What To Commit Vs Gitignore\" in "
-            "docs/reference/ai-collaboration.md)"
-        )
-
-    commands_dir = claude / "commands"
-    if not commands_dir.exists() or not any(commands_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .claude/commands/ missing — consumer commands not installed")
-    elif _git_ignored(root, ".claude/commands"):
-        findings.append(
-            "agent-setup [MEDIUM]: .claude/commands/ exists but is gitignored — "
-            "installed consumer commands never reach a fresh clone or teammate"
-        )
-
-    settings_json = claude / "settings.json"
-    if settings_json.exists() and _git_ignored(root, ".claude/settings.json"):
-        findings.append(
-            "agent-setup [MEDIUM]: .claude/settings.json exists but is gitignored — "
-            "the Bash allowlist and hook wiring never reach a fresh clone or teammate"
-        )
-
-    skills_dir = claude / "skills"
-    if not skills_dir.exists() or not any(skills_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .claude/skills/ missing or empty — skills not deployed")
-
-    has_claude_setup = (root / "CLAUDE.md").exists() or claude.exists()
-
     agents_skills_dir = root / ".agents" / "skills"
-    if has_claude_setup:
-        if not agents_skills_dir.exists() or not any(agents_skills_dir.iterdir()):
-            findings.append(
-                "agent-setup [MEDIUM]: .agents/skills/ missing or empty — the "
-                "agentskills.io cross-client target isn't deployed; other clients "
-                "(Cursor, Amp, Goose, ...) working in this project see no skills "
-                "(run /kmp-setup-agents or update-consumer-skills.sh)"
-            )
-        elif skills_dir.exists() and any(skills_dir.iterdir()):
-            claude_names = {p.name for p in skills_dir.iterdir() if p.is_dir()}
+    legacy_claude_dir = root / ".claude"
+    legacy_setup = (root / "CLAUDE.md").exists() or legacy_claude_dir.exists()
+    if not (root / "AGENTS.md").exists() and not legacy_setup:
+        findings.append("agent-setup [HIGH]: AGENTS.md missing — no universal agent routing table (run /kmp-setup-agents)")
+    if legacy_setup and (not agents_skills_dir.exists() or not any(agents_skills_dir.iterdir())):
+        findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — migrate the legacy Claude deployment")
+    if legacy_claude_dir.exists() and (legacy_claude_dir / "AGENTS.md").exists() and _git_ignored(root, ".claude/AGENTS.md"):
+        findings.append("agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — migrate to committed AGENTS.md")
+
+    commands_dir = root / ".agents" / "commands"
+    if not commands_dir.exists() and legacy_claude_dir.exists():
+        commands_dir = legacy_claude_dir / "commands"
+    if not commands_dir.exists() or not any(commands_dir.iterdir()):
+        findings.append("agent-setup [MEDIUM]: .agents/commands/ missing — consumer commands not installed")
+    elif commands_dir == legacy_claude_dir / "commands" and _git_ignored(root, ".claude/commands"):
+        findings.append("agent-setup [MEDIUM]: legacy .claude/commands/ exists but is gitignored — migrate commands to .agents/commands/")
+
+    deployed_skills_dir = agents_skills_dir
+    if not deployed_skills_dir.exists() and legacy_claude_dir.exists():
+        deployed_skills_dir = legacy_claude_dir / "skills"
+    if not deployed_skills_dir.exists() or not any(deployed_skills_dir.iterdir()):
+        findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — skills not deployed")
+    elif legacy_claude_dir.exists() and agents_skills_dir.exists():
+        legacy_skills_dir = legacy_claude_dir / "skills"
+        if legacy_skills_dir.exists():
+            legacy_names = {p.name for p in legacy_skills_dir.iterdir() if p.is_dir()}
             agents_names = {p.name for p in agents_skills_dir.iterdir() if p.is_dir()}
-            if claude_names != agents_names:
-                only_claude = sorted(claude_names - agents_names)
-                only_agents = sorted(agents_names - claude_names)
-                detail = []
-                if only_claude:
-                    detail.append(f"only in .claude/skills/: {only_claude}")
-                if only_agents:
-                    detail.append(f"only in .agents/skills/: {only_agents}")
+            if legacy_names != agents_names:
                 findings.append(
-                    "agent-setup [MEDIUM]: .claude/skills/ and .agents/skills/ have "
-                    "drifted — " + "; ".join(detail) + " (re-run the deploy step so "
-                    "both copies match)"
+                    "agent-setup [MEDIUM]: legacy .claude/skills/ and .agents/skills/ have drifted; "
+                    "remove the legacy Claude deployment and use .agents/skills/"
                 )
+
+    has_agent_setup = (root / "AGENTS.md").exists() or (root / ".agents").exists() or legacy_setup
 
     project_skills_dir = root / "skills"
     if project_skills_dir.is_dir():
@@ -407,7 +379,7 @@ def _detect_agent_setup(root: Path) -> list[str]:
                 "agent-setup [HIGH]: bundled-looking skill name(s) under project-root "
                 f"skills/ — {bundled_named}; project-root skills/ is for project-owned "
                 "CUSTOM skills only, bundled kmp-agent-skills content belongs in "
-                ".agents/skills/ and .claude/skills/, never copied into the source tree"
+                ".agents/skills/, never copied into the source tree"
             )
     source_layout = {
         "agents/": root / "agents",
@@ -419,17 +391,22 @@ def _detect_agent_setup(root: Path) -> list[str]:
         "docs/reference/agent-catalog.md": root / "docs" / "reference" / "agent-catalog.md",
     }
     missing_source_layout = [label for label, path in source_layout.items() if not path.exists()]
-    if has_claude_setup and missing_source_layout:
+    if has_agent_setup and missing_source_layout:
         findings.append(
             "agent-setup [MEDIUM]: project-owned agent scaffold incomplete — missing "
             + ", ".join(missing_source_layout)
-            + "; keep project-specific agent sources at the repo root and `.claude/` as the deployed runtime"
+            + "; keep project-specific agent sources at the repo root and `.agents/` as the deployed runtime"
         )
 
     # Multi-surface project: AGENTS.md exists but only mentions one surface
-    agents_md = claude / "AGENTS.md"
+    agents_md = root / "AGENTS.md"
     if agents_md.exists():
         text = agents_md.read_text(encoding="utf-8", errors="ignore")
+    elif legacy_setup and (legacy_claude_dir / "AGENTS.md").exists():
+        text = (legacy_claude_dir / "AGENTS.md").read_text(encoding="utf-8", errors="ignore")
+    else:
+        text = ""
+    if text:
         settings = root / "settings.gradle.kts"
         if settings.exists():
             s = settings.read_text(encoding="utf-8", errors="ignore")
@@ -4012,7 +3989,7 @@ def _detect_project_skill_standards(root: Path) -> list[str]:
         subdirectory for progressive disclosure (skill-creator's own stated guideline)
 
     Scoped to the project's own top-level skills/ directory only — not this collection's
-    deployed .claude/skills/ copies, and not this repo's own skills/ when auditing itself.
+    deployed .agents/skills/ copies, and not this repo's own skills/ when auditing itself.
     """
     findings: list[str] = []
     skills_dir = root / "skills"
@@ -4075,7 +4052,7 @@ def _detect_project_skill_standards(root: Path) -> list[str]:
 
 def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
     """Flag project-owned skills under ./skills/ that were never deployed or drifted
-    from their deployed `.claude/skills/` copies.
+    from their deployed `.agents/skills/` copies.
 
     Project-owned custom skills are authored at the repo root and then copied into the
     assistant runtime directory. If the deployed copy is missing or stale, Claude loads
@@ -4083,7 +4060,11 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
     """
     findings: list[str] = []
     skills_dir = root / "skills"
-    deployed_skills_dir = root / ".claude" / "skills"
+    deployed_skills_dir = root / ".agents" / "skills"
+    if not deployed_skills_dir.exists() and (root / ".claude" / "skills").exists():
+        # Backward-compatible audit of legacy Claude-only projects. New deployments
+        # always use .agents/skills.
+        deployed_skills_dir = root / ".claude" / "skills"
     if not skills_dir.is_dir():
         return findings
 
@@ -4100,7 +4081,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
         if not deployed_skill_md.is_file():
             findings.append(
                 f"project skill not deployed [MEDIUM]: {rel} — deploy it to "
-                f".claude/skills/{skill_dir.name}/ so Claude loads the project-owned copy"
+                f".agents/skills/{skill_dir.name}/ so agents load the project-owned copy"
             )
             continue
 
@@ -4116,7 +4097,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
         if set(source_files) != set(deployed_files):
             findings.append(
                 f"project skill deployment drift [MEDIUM]: {rel} — deployed file set in "
-                f".claude/skills/{skill_dir.name}/ does not match the project-owned source"
+                f".agents/skills/{skill_dir.name}/ does not match the project-owned source"
             )
             continue
 
@@ -4124,7 +4105,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
             if deployed_files.get(rel_file) != source_text:
                 findings.append(
                     f"project skill deployment drift [MEDIUM]: {rel}/{rel_file} — "
-                    f"deployed copy under .claude/skills/{skill_dir.name}/ is stale"
+                    f"deployed copy under .agents/skills/{skill_dir.name}/ is stale"
                 )
                 break
 

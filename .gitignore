@@ -17,3 +17,6 @@ __pycache__/
 
 # Local env
 local.properties
+
+# Reproducible Agent Skills deployment
+.agents/skills/

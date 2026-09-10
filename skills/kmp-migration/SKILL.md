@@ -70,7 +70,7 @@ Run the audit before writing any code:
 
 ```bash
 # Project architecture audit
-python3 .claude/skills/kmp-audit/scripts/audit_project.py . --roadmap
+python3 .agents/skills/kmp-audit/scripts/audit_project.py . --roadmap
 
 # If audit_project.py is not installed, run the skills version scanner
 python3 /path/to/kmp-agent-skills/skills/kmp-audit/scripts/audit_project.py . --roadmap

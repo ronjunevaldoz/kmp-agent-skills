@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap-consumer-skills.sh — auto-populates a MISSING .claude/skills/ deploy in a
+# bootstrap-consumer-skills.sh — auto-populates a MISSING .agents/skills/ deploy in a
 # consumer project, for a project that gitignores the deployed skills payload and
 # relies on this hook to fill it in fresh on first session (new clone, new teammate,
 # CI runner).
@@ -12,19 +12,19 @@
 # Never installs commands/ (matches update-consumer-skills.sh's own default — commands
 # execute shell operations and require explicit human review, not an automated hook).
 #
-# Wire into .claude/settings.json's SessionStart hooks (see kmp-setup-hooks.md Option I).
+# Wire into the host assistant's session-start hook (see kmp-setup-hooks.md Option I).
 # Non-blocking by design — a SessionStart hook must never fail the session, so this
 # always exits 0 regardless of what happened.
 #
 # Usage:
 #   bash scripts/bootstrap-consumer-skills.sh [target-dir]
-#   target-dir defaults to .claude/skills (project-scoped — this is for a project's
+#   target-dir defaults to .agents/skills (project-scoped — this is for a project's
 #   own gitignored deploy, unlike check-installed-skills-version.sh which defaults to
-#   the global ~/.claude/skills).
+#   the global ~/.agents/skills).
 
 set -uo pipefail
 
-TARGET="${1:-.claude/skills}"
+TARGET="${1:-.agents/skills}"
 REPO="ronjunevaldoz/kmp-agent-skills"
 
 # Already populated — nothing to bootstrap.

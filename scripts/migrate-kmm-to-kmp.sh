@@ -69,7 +69,7 @@ for agent_dir in "${AGENT_DIRS[@]}"; do
 done
 
 # Old command files: commands/kmm-*.md -> commands/kmp-*.md
-for commands_dir in ".claude/commands" ".cursor/commands"; do
+for commands_dir in ".agents/commands" ".claude/commands" ".cursor/commands"; do
   [[ -d "$commands_dir" ]] || continue
   for stale in "$commands_dir"/kmm-*.md; do
     [[ -f "$stale" ]] || continue
@@ -97,8 +97,8 @@ else
   echo "Next: re-run update-consumer-skills.sh to make sure kmp-compose-* and any"
   echo "new skills are actually deployed (this script only removes stale copies,"
   echo "it does not install anything):"
-  echo "  bash .claude/skills/scripts/update-consumer-skills.sh"
+  echo "  bash .agents/skills/scripts/update-consumer-skills.sh"
   echo ""
   echo "If you installed slash commands, reinstall them under the new kmp-* names:"
-  echo "  bash .claude/skills/scripts/update-consumer-skills.sh --install-commands"
+  echo "  bash .agents/skills/scripts/update-consumer-skills.sh --install-commands"
 fi

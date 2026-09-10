@@ -230,10 +230,10 @@ the user and the other skills what to do next.
 ### 8) Agent & consumer setup
 - **`CLAUDE.md` missing** → HIGH — no `--system-prompt-file` configured; skills context never loads
 - **`.claude/AGENTS.md` missing** → HIGH — agent has no skill routing, feature table, or module map; run `/kmp-setup-agents`
-- **`.claude/commands/` missing or empty** → MEDIUM — consumer commands (`/kmp-run-audit`, `/kmp-implement-feature`, `/kmp-verify`) not installed
-- **`.claude/skills/` missing or empty** → MEDIUM — skills not deployed; trigger keywords won't activate skill content
+- **`.agents/commands/` missing or empty** → MEDIUM — consumer commands (`/kmp-run-audit`, `/kmp-implement-feature`, `/kmp-verify`) not installed
+- **`.agents/skills/` missing or empty** → MEDIUM — skills not deployed; trigger keywords won't activate skill content
 - **Project-owned Claude scaffold incomplete** → MEDIUM — if a project already has `CLAUDE.md`/`.claude/`, it should also keep `agents/`, `rules/`, `hooks/`, `commands/`, `skills/`, `docs/reference/ai-collaboration.md`, and `docs/reference/agent-catalog.md` in the repo root so project-specific agent work is versioned outside runtime-only files
-- **Project-owned custom skill not deployed or stale** → MEDIUM — every `skills/<name>/SKILL.md` must be copied into `.claude/skills/<name>/` after edits; missing or drifted deployed copies mean Claude loads outdated behavior. `_detect_project_skill_standards` only checks mechanical validity (frontmatter, line cap) — run `/kmp-refine-skill <name>` for the qualitative pass (description phrasing, gotchas quality, scoping) once the mechanical check is clean
+- **Project-owned custom skill not deployed or stale** → MEDIUM — every `skills/<name>/SKILL.md` must be copied into `.agents/skills/<name>/` after edits; missing or drifted deployed copies mean agents load outdated behavior. `_detect_project_skill_standards` only checks mechanical validity (frontmatter, line cap) — run `/kmp-refine-skill <name>` for the qualitative pass (description phrasing, gotchas quality, scoping) once the mechanical check is clean
 - **Project agent file missing frontmatter, `name`, or `description`** → HIGH — `agents/<name>.md` needs a `---` frontmatter block with both fields to be usable
 - **Project agent's `model:` is a tier name, not a real id** → HIGH — `flagship-coding`/`balanced-coding`/`fast-utility`/`precision-review` are provider-neutral catalog labels, not resolvable model ids; look up the real id in `docs/reference/agent-catalog.md`'s Mapping Rule table
 - **Codex subagent TOML missing `name`/`description`/`developer_instructions`** → HIGH — all three are required by Codex CLI's own real subagent format

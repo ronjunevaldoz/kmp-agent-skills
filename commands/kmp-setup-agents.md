@@ -1,23 +1,23 @@
 # /kmp-setup-agents $ARGUMENTS
 
-**KMP Agent Skills** — initialize `.claude/` in an existing KMP project so the team
+**KMP Agent Skills** — initialize `.agents/` in an existing KMP project so the team
 gets agent-driven workflows without running the full scaffold.
 
 `$ARGUMENTS` is optional: a path to the project root (defaults to `.`).
 
 Use this when:
 - The project already exists and you're adding `kmp-agent-skills` for the first time
-- You want to reset or regenerate the `.claude/` setup after major architecture changes
+- You want to reset or regenerate the `.agents/` setup after major architecture changes
 - A teammate needs to onboard to the agent workflow
 
 Do NOT use this for brand-new projects — `/kmp-new-project` handles agent setup as part of scaffold.
 
-This command deploys **this collection's own** skills/commands into `.claude/`, and
+This command deploys **this collection's own** skills/commands into `.agents/`, and
 scaffolds the project-owned source locations Claude teams should keep in Git: `agents/`,
 `rules/`, `hooks/`, `commands/`, `skills/`, `docs/reference/ai-collaboration.md`, and a
-thin `CLAUDE.md`. For a project's own custom command, agent, skill, or hook, author it in
-those project-owned locations first, then deploy a copy into `.claude/` — never author a
-project-specific artifact directly into `.claude/` as its only copy.
+root `AGENTS.md`. For a project's own custom command, agent, skill, or hook, author it in
+those project-owned locations first, then deploy a copy into `.agents/` — never author a
+project-specific artifact directly into `.agents/` as its only copy.
 
 ---
 
@@ -116,18 +116,17 @@ Print the detected skill set — always-included skills first, then signal-detec
 
 ---
 
-## Step 3 — Check for existing `.claude/` setup
+## Step 3 — Check for existing `.agents/` setup
 
 Look for:
-- `.claude/AGENTS.md` — already initialized?
-- `.claude/commands/kmp-*.md` — commands already installed?
-- `.claude/skills/` — skills already deployed?
-- `.claude/settings.json` — permissions already set?
+- `AGENTS.md` — already initialized?
+- `.agents/commands/kmp-*.md` — commands already installed?
+- `.agents/skills/` — skills already deployed?
 
 If any exist, print their current state and ask:
 ```
-.claude/AGENTS.md already exists. Overwrite or skip? [overwrite/skip]
-.claude/commands/ has N kmp-*.md files. Update or skip? [update/skip]
+AGENTS.md already exists. Overwrite or skip? [overwrite/skip]
+.agents/commands/ has N kmp-*.md files. Update or skip? [update/skip]
 ```
 
 Proceed based on the answer. Default is `skip` if the user presses Enter.
@@ -146,12 +145,12 @@ already did once: the LIBRARY variant lost five skill-routing rows before the tw
 consolidated). Read that file, pick the variant matching the detected project type, and
 fill every `<placeholder>` from the module graph and skill set detected in Step 2.
 
-Consumer projects read it at `.claude/skills/kmp-expert/references/agents-md-templates.md`;
+Consumer projects read it at `.agents/skills/kmp-expert/references/agents-md-templates.md`;
 in this repo it's `skills/kmp-expert/references/agents-md-templates.md`.
 
 ## Step 5 — Scaffold project-owned source locations (MANDATORY — do not skip)
 
-This step is not optional and not secondary to Step 4. `.claude/` is a **deployed
+This step is not optional and not secondary to Step 4. `.agents/` is a **deployed
 runtime copy** — these root-level paths are the actual git-tracked source of truth this
 whole scaffold exists to protect. A setup that only produces `.claude/` and stops has not
 finished, even if `.claude/AGENTS.md` looks complete on its own.
@@ -169,7 +168,7 @@ docs/reference/agent-catalog.md
 KNOWN_ISSUES.md
 ```
 
-Each README should say what belongs there and that `.claude/` is the deployed runtime
+Each README should say what belongs there and that `.agents/` is the deployed runtime
 copy, not the only source of truth. `skills/README.md` should include a minimal
 `skills/<name>/SKILL.md` starter template so the first project-owned custom skill has a
 correct frontmatter shape from day one.
@@ -183,13 +182,13 @@ the header and empty `## Open` / `## Resolved` sections — same shape as this r
 speculative ones. Owned going forward by `kmp-project-docs-maintainer`.
 
 `docs/reference/ai-collaboration.md` should explain:
-- `CLAUDE.md` is a thin bootstrap that points to `.claude/AGENTS.md`
+- `AGENTS.md` is the universal bootstrap and points to the canonical docs
 - project-specific artifacts live in `agents/`, `rules/`, `hooks/`, `commands/`, `skills/`
 - `docs/reference/ai-collaboration.md` is the canonical explanation of that layout
 - `rules/` is optional for assistant-specific overlays and must not duplicate the canonical policy doc
 - `docs/*` owns stable project design; `skills/*` owns repo-local execution guidance
-- `.claude/settings.json` owns runtime permissions and hook wiring
-- any edit to a project-owned skill must be re-deployed into **both** `.agents/skills/` (the cross-client target) and `.claude/skills/` (Claude's own mirror) — `update-consumer-skills.sh` handles both automatically, one command, not two manual copies
+- provider-specific runtime settings own permissions and hook wiring
+- any edit to a project-owned skill must be re-deployed into `.agents/skills/` — `update-consumer-skills.sh` handles this automatically
 
 `docs/reference/agent-catalog.md` should explain:
 - provider-neutral model tiers such as `flagship-coding`, `balanced-coding`, `fast-utility`, `precision-review`
@@ -229,7 +228,7 @@ Locate the `kmp-agent-skills` clone. Check in order:
 2. `~/dev/kmp-agent-skills`
 3. Ask the user for the path
 
-Copy the consumer command set to `.claude/commands/`:
+Copy the consumer command set to `.agents/commands/`:
 
 ```
 Consumer commands (safe to install):
@@ -263,7 +262,7 @@ on the consumer project: `kmp-new-skill.md`, `kmp-modify-skill.md`, `kmp-maintai
 `kmp-submit-issue.md`, `kmp-summarize-issues.md`, `kmp-sync-local-skills.md`.
 Both lists must cover every file in `commands/`.
 
-For each file: if it already exists in `.claude/commands/` and the content differs,
+For each file: if it already exists in `.agents/commands/` and the content differs,
 show a one-line diff summary and ask `[update/skip]` before overwriting.
 
 ---
@@ -316,15 +315,15 @@ relying on it, this isn't a guaranteed verbatim port.**
 
 ## Step 7 — Deploy skills
 
-If `.claude/skills/` does not exist, create it and copy all skills from the
+If `.agents/skills/` does not exist, create it and copy all skills from the
 `kmp-agent-skills/skills/` directory.
 
-If `.claude/skills/` already exists, run the equivalent of `update-consumer-skills.sh`
+If `.agents/skills/` already exists, run the equivalent of `update-consumer-skills.sh`
 to sync changed skills without prompting for each file (skills are passive docs).
 That sync includes both the shared `kmp-agent-skills` bundle and any project-owned
 custom skills under `skills/<name>/`.
 
-**Also deploy to `.agents/skills/`** — the project-level half of agentskills.io's
+Deploy to `.agents/skills/` — the project-level agentskills.io
 cross-client convention (verified in `docs/reference/agentskills-io-standards.md`;
 the global sync script covers the user-level half at `~/.agents/skills`). Mirror the
 same copy into `.agents/skills/` so any agentskills.io-compliant client working in this
@@ -397,7 +396,7 @@ common read-only and build operations:
       "Bash(git status)",
       "Bash(git diff*)",
       "Bash(git log*)",
-      "Bash(python3 .claude/skills/kmp-audit/scripts/*)",
+      "Bash(python3 .agents/skills/kmp-audit/scripts/*)",
       "Bash(find . -name *.kt*)",
       "Bash(grep *)"
     ]
@@ -414,8 +413,8 @@ If it already exists, print the current permissions and skip — do not overwrit
 **Before printing this summary, re-verify each line — do not print `✅` from the
 template blindly.** Run the same check Step 5's gate already ran
 (`ls agents/README.md rules/README.md hooks/README.md commands/README.md
-skills/README.md`) plus `.claude/AGENTS.md`, `.claude/commands/`, `.claude/skills/`,
-`.agents/skills/`, `.agents/pipeline-context.json`, `.claude/settings.json`,
+skills/README.md`) plus `AGENTS.md`, `.agents/commands/`, `.agents/skills/`,
+`.agents/pipeline-context.json`,
 `.gitignore`. Print `✅`
 only for a path that actually exists on disk right now; print `❌ missing` for anything
 that doesn't, and go back and create it before telling the user setup is complete. Never
@@ -427,18 +426,15 @@ AGENT SETUP COMPLETE
 ─────────────────────
 Project:   <name> (<root>)
 Features:  <N> detected (<list>)
-Skills:    <N> deployed → .agents/skills/ (cross-client) + .claude/skills/ (mirror)
+Skills:    <N> deployed → .agents/skills/
 
 Generated:
   ✅ agents/ rules/ hooks/ commands/ skills/   — project-owned source scaffold
   ✅ docs/reference/ai-collaboration.md        — canonical cross-agent policy
-  ✅ CLAUDE.md                                 — thin bootstrap into `.claude/AGENTS.md`
-  ✅ .claude/AGENTS.md                         — skill routing tailored to this project
-  ✅ .claude/commands/                         — <N> consumer commands installed
-  ✅ .agents/skills/                           — <N> skills deployed (cross-client, primary)
-  ✅ .claude/skills/                           — same <N> skills, Claude Code's own mirror
+  ✅ AGENTS.md                                  — universal skill routing tailored to this project
+  ✅ .agents/commands/                          — <N> consumer commands installed
+  ✅ .agents/skills/                            — <N> skills deployed (cross-client)
   ✅ .agents/pipeline-context.json             — project context seeded for the planner agent
-  ✅ .claude/settings.json                     — Bash allowlist + hook wiring home
   ✅ .gitignore                                — scoped to ignore skill mirrors, track AGENTS.md
   ✅ .codex/agents/                            — <N> subagents translated to TOML (only if Codex was deployed)
   ✅ .gemini/commands/                         — <N> commands translated to TOML (only if Gemini was deployed)

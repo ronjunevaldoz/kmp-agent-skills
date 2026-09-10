@@ -39,11 +39,11 @@ git diff --name-only HEAD | grep -E '^(scripts/|skills/.*/scripts/).*\.py$' || t
 
 If any scripts changed → ensure the matching `tests/test_<script-name>.py` is staged in the same commit (tests are one file per script under `tests/`). The pre-commit hook blocks otherwise.
 
-Update `.claude/pipeline-context.json` with patterns learned during this feature,
+Update `.agents/pipeline-context.json` with patterns learned during this feature,
 then commit it so the next session inherits the context:
 
 ```bash
-git add .claude/pipeline-context.json
+git add .agents/pipeline-context.json
 git commit -m "chore(pipeline): update context after $ARGUMENTS"
 ```
 

@@ -81,7 +81,7 @@ If `--output` is not specified:
 ## Step 3 — Run the generator
 
 ```bash
-python3 ~/.claude/skills/kmp-compose-design-system/scripts/generate_palette.py \
+python3 ~/.agents/skills/kmp-compose-design-system/scripts/generate_palette.py \
   --brand <name>=<#HEX> \
   [--brand <name>=<#HEX> ...] \
   --group-id <group.id> \

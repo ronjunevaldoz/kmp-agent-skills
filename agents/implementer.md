@@ -35,7 +35,7 @@ If nothing matches → kRPC is not in use. For a Kotlin-to-Kotlin backend, ask w
 is the right choice before defaulting to HTTP. For third-party or non-Kotlin backends,
 proceed with the network-layer skill.
 
-After confirming kRPC is in use, set `krpc_established: true` in `.claude/pipeline-context.json`
+After confirming kRPC is in use, set `krpc_established: true` in `.agents/pipeline-context.json`
 so subsequent sessions skip the grep and know to enforce the transport constraint immediately:
 ```json
 "krpc_established": true
@@ -52,7 +52,7 @@ If files match → load `skills/kmp-compose-adaptive-layout/SKILL.md` and replic
 the exact existing pattern. Never introduce a second adaptive approach in the same project.
 
 If nothing matches → check the plan; if adaptive layout is in scope, establish the pattern
-and set `adaptive_layout_established: true` in `.claude/pipeline-context.json`.
+and set `adaptive_layout_established: true` in `.agents/pipeline-context.json`.
 
 ## Layer rules — non-negotiable
 
@@ -149,5 +149,5 @@ This is not optional. The pre-commit hook (`hooks/pre-commit-audit.sh`) blocks t
 ## Output
 
 For every file, show full path and complete content. No stubs, no `// TODO`, no `...`.
-After completing all layers and tests, update `.claude/pipeline-context.json` with any
+After completing all layers and tests, update `.agents/pipeline-context.json` with any
 new patterns discovered.

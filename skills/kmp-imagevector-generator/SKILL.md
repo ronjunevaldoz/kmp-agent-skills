@@ -126,11 +126,11 @@ filling the centerline.
 1. Save the source to `assets/raw/` (raster) or anywhere (`.svg`).
 2. Run the script:
    ```bash
-   python3 ~/.claude/skills/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py \
+   python3 ~/.agents/skills/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py \
      logo.svg --name BrandLogo --group-id com.example.app \
      --output composeApp/src/commonMain/kotlin/com/example/app/core/designsystem/icons
    ```
-   If the script is not at `~/.claude/skills/` (Codex CLI, Gemini CLI, or a repo-relative
+   If the script is not at `~/.agents/skills/` (Codex CLI, Gemini CLI, or a repo-relative
    install), use the path relative to wherever this skill was installed:
    ```bash
    python3 skills/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py \

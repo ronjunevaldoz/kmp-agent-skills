@@ -70,7 +70,7 @@ ACCEPTANCE CRITERIA:
 ## Phase 2 — Plan
 
 Follow the Plan section of [Feature Delivery Pipeline](references/feature-delivery-pipeline.md).
-Read `.claude/pipeline-context.json`, map every acceptance criterion to a layer and Koin binding,
+Read `.agents/pipeline-context.json`, map every acceptance criterion to a layer and Koin binding,
 and include the criteria in the plan as met, pending, or unclear.
 
 ---
@@ -149,7 +149,7 @@ Prefixes: `feat` / `fix` / `refactor` / `test` / `chore` per Conventional Commit
 
 ## Phase 8 — Update and commit pipeline context
 
-Write the updated values to `.claude/pipeline-context.json`:
+Write the updated values to `.agents/pipeline-context.json`:
 
 ```json
 {
@@ -167,7 +167,7 @@ Write the updated values to `.claude/pipeline-context.json`:
 Then commit it so the next session inherits the learned patterns:
 
 ```bash
-git add .claude/pipeline-context.json
+git add .agents/pipeline-context.json
 git commit -m "chore(pipeline): update context after <feature-name>"
 ```
 

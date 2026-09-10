@@ -12,7 +12,7 @@ SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync-local-assistant-skills.sh"
 
 
 class SyncLocalAssistantSkillsTests(unittest.TestCase):
-    """Dry-run only — never touches real ~/.claude, ~/.codex, ~/.gemini, ~/.agents."""
+    """Dry-run only — never touches real global assistant skill directories."""
 
     def _fake_source(self, tmp: str) -> Path:
         source = Path(tmp) / "kmp-agent-skills"
@@ -20,7 +20,7 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
         (source / "skills.json").write_text(json.dumps({"version": "0.0.0-test"}), encoding="utf-8")
         return source
 
-    def test_dry_run_lists_all_four_targets(self) -> None:
+    def test_dry_run_lists_supported_targets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             source = self._fake_source(tmp)
             result = subprocess.run(

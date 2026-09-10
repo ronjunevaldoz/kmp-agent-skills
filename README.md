@@ -24,14 +24,14 @@ for what was checked and how.
 
 Run `/kmp-new-project` with a natural language description. The agent asks for your group ID, project
 name, and what the app does — then scaffolds a full multi-module KMP project with clean architecture,
-a design system, and a ready-to-use `.claude/` agent setup.
+a design system, and a ready-to-use `.agents/` agent setup.
 
 ```
 /kmp-new-project "A shopping app with auth, product listing, and orders"
 ```
 
 The 9-step pipeline handles everything: module graph → clean-arch layers → Koin/Ktor/SQLDelight
-wiring → design system → feature scaffolds → `.claude/AGENTS.md` tailored to your modules.
+wiring → design system → feature scaffolds → `AGENTS.md` tailored to your modules.
 
 ### Set up agents in an existing project
 
@@ -43,7 +43,7 @@ and feature modules it finds.
 /kmp-setup-agents
 ```
 
-Writes: `.claude/AGENTS.md` (tailored skill routing), `CLAUDE.md` (CLI flags), all consumer
+Writes: `AGENTS.md` (tailored skill routing), all consumer
 commands (`kmp-*.md`), deployed skills, and a `settings.json` Bash allowlist.
 
 ### Cross-agent repo policy
@@ -232,14 +232,14 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 
 ## Commands
 
-All commands are `kmp-` prefixed so they don't collide with your own `.claude/commands/`.
+All commands are `kmp-` prefixed so they don't collide with your own command namespace.
 
 ### Consumer commands — install these in your project
 
 | Command | What it does |
 |---|---|
 | `/kmp-new-project <description>` | Scaffold a full KMP project from a description |
-| `/kmp-setup-agents [path]` | Initialize `.claude/` agent setup in an existing project |
+| `/kmp-setup-agents [path]` | Initialize `.agents/` agent setup in an existing project |
 | `/kmp-implement-feature <name>` | Plan → Implement → Validate → Review a feature |
 | `/kmp-execute-ticket <id>` | Implement a GitHub Issue end-to-end |
 | `/kmp-run-audit [path]` | Architecture audit with per-finding remediation + auto skill-gap reporting |
@@ -256,7 +256,7 @@ All commands are `kmp-` prefixed so they don't collide with your own `.claude/co
 | `/kmp-record-design-baselines [path]` | Record Roborazzi golden PNGs |
 | `/kmp-audit-screenshots [path]` | Vision audit of screenshot goldens |
 | `/kmp-audit-design-visual [path]` | Cross-screen visual consistency check |
-| `/kmp-update-skills` | Pull latest skills and re-deploy to `.claude/skills/` |
+| `/kmp-update-skills` | Pull latest skills and re-deploy to `.agents/skills/` |
 | `/kmp-check-updates` | Check for a newer version of kmp-agent-skills |
 | `/kmp-report-skill-issue` | File a structured skill bug report |
 | `/kmp-refine-skill <name>` | Refine a project-owned skill against agentskills.io's real qualitative best practices (description phrasing, gotchas, scoping) |

@@ -58,7 +58,7 @@ Before writing the direction:
    screens as the source of truth and refresh `docs/reference/design-handoff.md` from
    the implementation.
 5. Check whether the project already has token, preview, or accessibility conventions.
-6. Read `.claude/pipeline-context.json` for recurring design issues or proven patterns.
+6. Read `.agents/pipeline-context.json` for recurring design issues or proven patterns.
 
 ## Step 3: Write the design direction
 

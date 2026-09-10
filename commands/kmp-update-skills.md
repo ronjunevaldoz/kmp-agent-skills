@@ -6,7 +6,7 @@ Update `kmp-agent-skills` to the latest release across global assistant bundles 
 
 ## Default: Global Machine-Wide Update (Recommended)
 
-When run without arguments, updates all local AI assistant bundles on this machine (`~/.gemini/skills`, `~/.claude/skills`, `~/.codex/skills`, `~/.agents/skills`):
+When run without arguments, updates global AI assistant bundles on this machine (`~/.claude/skills`, `~/.gemini/skills`, `~/.codex/skills`, `~/.agents/skills`):
 
 ```bash
 bash scripts/sync-local-assistant-skills.sh || bash ~/.agents/skills/scripts/sync-local-assistant-skills.sh

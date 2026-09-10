@@ -18,7 +18,7 @@ Each finding becomes a concrete proposal: which skill to update, what to add, an
 ## Step 1 — Run harvest mode
 
 ```bash
-python3 ~/.claude/skills/kmp-audit/scripts/audit_project.py \
+python3 ~/.agents/skills/kmp-audit/scripts/audit_project.py \
   --harvest "${ARGUMENTS:-.}"
 ```
 
@@ -26,7 +26,7 @@ Parse the JSON output. It has two keys:
 - `findings` — architecture violations (same as `--audit`); show these as a summary only
 - `lessons` — positive patterns detected; these are the focus of this command
 
-If the script is not at `~/.claude/skills/`, try:
+If the script is not at `~/.agents/skills/`, try:
 ```bash
 python3 skills/kmp-audit/scripts/audit_project.py --harvest "${ARGUMENTS:-.}"
 ```
@@ -56,7 +56,7 @@ and stop.
 ## Step 3 — For each lesson, check the target skill
 
 For every entry in `lessons`:
-1. Read `~/.claude/skills/<skill>/SKILL.md` (or `skills/<skill>/SKILL.md` if working inside kmp-agent-skills)
+1. Read `~/.agents/skills/<skill>/SKILL.md` (or `skills/<skill>/SKILL.md` if working inside kmp-agent-skills)
 2. Search for the `pattern` and key terms from `description` in the skill text
 3. Classify:
    - **NEW** — pattern is absent from the skill entirely → propose adding it
@@ -136,7 +136,7 @@ Would you like to submit this as an improvement proposal?
 If the user says **y** or **v then y**, run:
 
 ```bash
-python3 ~/.claude/skills/kmp-audit/scripts/draft_issue.py \
+python3 ~/.agents/skills/kmp-audit/scripts/draft_issue.py \
   --title "Lesson: <pattern name> — <skill slug>" \
   --evidence "<evidence field from lesson dict>" \
   --recommendation "<proposed addition summary from Step 4>" \
@@ -162,6 +162,6 @@ DONE — <N> issues submitted, <N> skipped.
 - If running from kmp-agent-skills, the skill paths are relative (`skills/<slug>/SKILL.md`)
 - Lessons from multiple consumer runs accumulate; run harvest on Bytesweep, Graphyn,
   and lordnine-admin to build a full picture before modifying skills
-- **Harvest compares against LOCAL skill files** (`~/.claude/skills/`), not the live GitHub
+- **Harvest compares against LOCAL skill files** (`~/.agents/skills/`), not the live GitHub
   repo. Run `/kmp-update-skills` first to ensure the comparison reflects the latest released
   skills — otherwise patterns already shipped in a new version may appear as NEW

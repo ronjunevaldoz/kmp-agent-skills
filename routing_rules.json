@@ -3,10 +3,33 @@
   "version": "1.0.0",
   "generated": "2026-06-22",
   "precedence": [
+    "0. project_skill_scope (project-owned namespaces and explicit AGENTS.md rules)",
     "1. file_extension_routes (match the file under edit/review)",
     "2. path_heuristics (refine when an extension maps to multiple skills)",
     "3. intent_routes (natural-language trigger phrases)"
   ],
+  "project_skill_scope": {
+    "$comment": "Project-owned skills take precedence over generic skills. Each project must document its namespaces and technology boundaries in AGENTS.md.",
+    "precedence": [
+      "project AGENTS.md routing rules",
+      "project-owned skill namespaces declared by the project",
+      "generic kmp-* skills",
+      "global provider skills"
+    ],
+    "technology_evidence_required": {
+      "kmp-compose-*": [
+        "actual Jetpack Compose or Compose Multiplatform imports",
+        "a Compose source set or module",
+        "a verified Compose dependency in the version catalog or build file"
+      ],
+      "kmp-shadcn-*": [
+        "actual Shadcn* symbols",
+        "ShadcnTheme or an equivalent verified shadcn-compose API",
+        "the shadcn-compose dependency in the build configuration"
+      ]
+    },
+    "negative_scope": "Do not activate generic Compose or shadcn skills for a project-owned UI/runtime framework merely because its names resemble Compose or shadcn."
+  },
   "file_extension_routes": [
     {
       "ext": [".cpp", ".cc", ".cxx", ".h", ".hpp", ".hxx"],

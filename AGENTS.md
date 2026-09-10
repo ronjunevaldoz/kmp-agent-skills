@@ -34,6 +34,13 @@ Full routing matrix is in `routing_rules.json`. Hard boundaries (quoted from `ha
 - **Opaque native pointer held as Kotlin `Long` MUST have a matching `dispose()`/`close()` → JNI `_free`.**
 - **Docs scope first:** confirm whether a docs request targets this repo or a downstream consumer project before routing it to a docs skill.
 
+Project-owned skill namespaces declared by the consumer project take precedence over
+generic skills. Route work to the consumer's own skills first when the target belongs to
+that project's framework or domain. Apply `kmp-compose-*` only when the target has actual
+Jetpack Compose or Compose Multiplatform imports, source sets, or verified dependencies.
+Apply `kmp-shadcn-*` only when the target uses verified `Shadcn*` APIs or the
+shadcn-compose dependency. Similar names are not technology evidence.
+
 ---
 
 ### Versioning & Release — Hard Rules

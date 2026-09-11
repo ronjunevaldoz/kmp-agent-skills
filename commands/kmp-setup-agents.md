@@ -253,6 +253,7 @@ Consumer commands (safe to install):
   kmp-migrate-to-shadcn.md      — migrate design system to shadcn-compose
   kmp-refine-skill.md           — refine a project-owned skill against agentskills.io best practices
   kmp-heal-docs.md              — self-heal project documentation sitemap (docs/README.md)
+  kmp-new-task.md               — scaffold a new structured task note under docs/tasks/<parent>/
   kmp-doctor.md                 — project doctor (heals docs, hooks, permissions, lockfile)
 ```
 

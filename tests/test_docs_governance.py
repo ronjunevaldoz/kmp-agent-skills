@@ -313,5 +313,30 @@ class HealDocsTests(unittest.TestCase):
             self.assertIn("`auth`", tasks_md)
 
 
+new_task = load_module(
+    "new_task",
+    REPO_ROOT / "skills" / "kmp-project-docs-maintainer" / "scripts" / "new_task.py",
+)
+
+
+class NewTaskTests(unittest.TestCase):
+    def test_scaffolds_task_with_proper_sequence_and_format(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # Create first task
+            t1 = new_task.create_task(root, "auth", "session-refresh")
+            self.assertEqual(t1.name, "01-session-refresh-todo.md")
+            self.assertTrue(t1.exists())
+            content1 = t1.read_text(encoding="utf-8")
+            self.assertIn("**Status:** todo", content1)
+            self.assertIn("**Date:**", content1)
+            self.assertIn("- [ ] `:model`", content1)
+            self.assertIn("- [ ] `:ui`", content1)
+
+            # Create second task in same parent
+            t2 = new_task.create_task(root, "auth", "biometric-login")
+            self.assertEqual(t2.name, "02-biometric-login-todo.md")
+
+
 if __name__ == "__main__":
     unittest.main()

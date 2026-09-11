@@ -53,7 +53,7 @@ if [ -n "$raw_todos" ]; then
   echo "  Tip: Link to an issue or park in docs/audits/ to prevent tech debt drift."
 fi
 
-# 6. Self-Healing Docs Sitemap (if docs/ was modified)
+# 6. Self-Healing Docs Sitemap & Tasks Index (if docs/ was modified)
 if git diff --cached --name-only | grep -q "^docs/.*\.md$"; then
   heal_script=""
   if [ -f "$repo_root/.agents/skills/kmp-project-docs-maintainer/scripts/heal_docs.py" ]; then
@@ -67,6 +67,25 @@ if git diff --cached --name-only | grep -q "^docs/.*\.md$"; then
     python3 "$heal_script" --project "$repo_root" >/dev/null 2>&1 || true
     if [ -f "$repo_root/docs/README.md" ]; then
       git add "$repo_root/docs/README.md"
+    fi
+    if [ -f "$repo_root/docs/tasks.md" ]; then
+      git add "$repo_root/docs/tasks.md"
+    fi
+  fi
+fi
+
+# 6b. Docs Hygiene Enforcement (checks for scattered tasks, rogue dirs, misplaced assets)
+if git diff --cached --name-only | grep -q "^docs/"; then
+  audit_script=""
+  if [ -f "$repo_root/.agents/skills/kmp-audit/scripts/audit_skills_repo.py" ]; then
+    audit_script="$repo_root/.agents/skills/kmp-audit/scripts/audit_skills_repo.py"
+  elif [ -f "$repo_root/skills/kmp-audit/scripts/audit_skills_repo.py" ]; then
+    audit_script="$repo_root/skills/kmp-audit/scripts/audit_skills_repo.py"
+  fi
+  if [ -n "$audit_script" ] && [ -d "$repo_root/docs" ]; then
+    if ! python3 "$audit_script" "$repo_root" --docs-hygiene-only; then
+      echo "pre-commit hook: docs hygiene violation detected! Run 'python3 $audit_script $repo_root --docs-hygiene-only' for details." >&2
+      exit 1
     fi
   fi
 fi

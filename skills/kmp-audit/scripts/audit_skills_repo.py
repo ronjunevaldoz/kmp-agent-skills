@@ -120,7 +120,7 @@ _KEBAB_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}-)?[a-z][a-z0-9-]*$")
 # per parent folder, not enforced as globally unique here (authoring convention, not
 # a mechanical invariant worth flagging gaps/reuse for).
 _TASK_FILE_RE = re.compile(r"^\d{2}-[a-z][a-z0-9]*(?:-[a-z0-9]+)*-(todo|doing|blocked|done)$")
-_TASK_DATE_RE = re.compile(r"\*\*Date:\*\*\s*\d{4}-\d{2}-\d{2}")
+_TASK_DATE_RE = re.compile(r"\*\*Date:\*\*\s*(\d{4}-\d{2}-\d{2})")
 
 # docs/decisions/<NNNN>-<slug>.md — Architecture Decision Records. Verified against
 # the real, widely-adopted Nygard ADR pattern: one decision per file, 4-digit
@@ -247,6 +247,8 @@ def _check_changelog_unreleased_backlog(root: Path, findings: list[str]) -> None
 DOCS_MAX_LINES = 150
 LESSON_STALE_DAYS = 30
 LESSON_BACKLOG_LIMIT = 20
+TASK_DOING_STALE_DAYS = 14
+TASK_BLOCKED_STALE_DAYS = 14
 
 # Canonical top-level directories permitted under docs/
 _CANONICAL_DOCS_SUBDIRS = {
@@ -406,13 +408,40 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                         f"docs hygiene: {md.relative_to(root)} is marked done "
                         f"— move to {parent_dir.relative_to(root)}/archive/"
                     )
-                if not _TASK_DATE_RE.search(
-                    md.read_text(encoding="utf-8", errors="ignore")
-                ):
+                content = md.read_text(encoding="utf-8", errors="ignore")
+                date_match = _TASK_DATE_RE.search(content)
+                if not date_match:
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is missing a "
                         "**Date:** YYYY-MM-DD line in its content"
                     )
+                else:
+                    try:
+                        task_date = datetime.date.fromisoformat(date_match.group(1))
+                        age = (today - task_date).days
+                        status = m.group(1)
+                        if status == "doing" and age > TASK_DOING_STALE_DAYS:
+                            findings.append(
+                                f"docs hygiene: {md.relative_to(root)} has been in 'doing' state for {age} days "
+                                f"(limit {TASK_DOING_STALE_DAYS} days) — update progress, demote to blocked/todo, or complete"
+                            )
+                        elif status == "blocked" and age > TASK_BLOCKED_STALE_DAYS:
+                            findings.append(
+                                f"docs hygiene: {md.relative_to(root)} has been in 'blocked' state for {age} days "
+                                f"(limit {TASK_BLOCKED_STALE_DAYS} days) — resolve blocker or archive"
+                            )
+                    except ValueError:
+                        pass
+
+                # Checkbox progress integrity
+                total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
+                checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
+                if total_boxes > 0 and checked_boxes == total_boxes and m.group(1) != "done":
+                    findings.append(
+                        f"docs hygiene: {md.relative_to(root)} has 100% completed items ({checked_boxes}/{total_boxes}) "
+                        f"— rename to -done and move to {parent_dir.relative_to(root)}/archive/"
+                    )
+
                 if md.name not in tasks_index_text:
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is not indexed in "

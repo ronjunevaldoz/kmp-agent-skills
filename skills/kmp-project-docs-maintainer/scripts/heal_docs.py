@@ -137,7 +137,83 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
         
     readme_path.write_text(sitemap_content, encoding="utf-8")
     print(f"\n✅ Self-Healed {readme_path.relative_to(repo_root)} successfully!")
+    
+    # 3. Synchronize docs/tasks.md with objective progress and checkbox metrics
+    sync_tasks(docs_dir, repo_root, dry_run)
     return 0
+
+def sync_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> None:
+    tasks_dir = docs_dir / "tasks"
+    if not tasks_dir.exists():
+        return
+        
+    tasks_file = docs_dir / "tasks.md"
+    active_tasks = []
+    
+    task_file_re = re.compile(r"^\d{2}-[a-z][a-z0-9]*(?:-[a-z0-9]+)*-(todo|doing|blocked|done)$")
+    task_date_re = re.compile(r"\*\*Date:\*\*\s*(\d{4}-\d{2}-\d{2})")
+
+    for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
+        if parent_dir.name == "archive":
+            continue
+        for md in sorted(parent_dir.rglob("*.md")):
+            if "archive" in md.parts:
+                continue
+            m = task_file_re.match(md.stem)
+            status = m.group(1) if m else "doing"
+            content = md.read_text(encoding="utf-8", errors="ignore")
+            
+            title = md.stem
+            title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+            if title_match:
+                title = title_match.group(1).strip()
+                
+            date_match = task_date_re.search(content)
+            task_date = date_match.group(1) if date_match else "-"
+            
+            total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
+            checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
+            if total_boxes > 0:
+                pct = int((checked_boxes / total_boxes) * 100)
+                progress = f"{pct}% ({checked_boxes}/{total_boxes})"
+            else:
+                progress = "-"
+                
+            rel_link = f"tasks/{parent_dir.name}/{md.name}"
+            active_tasks.append({
+                "name": md.name,
+                "title": title,
+                "link": f"[{title}]({rel_link})",
+                "status": status,
+                "progress": progress,
+                "parent": parent_dir.name,
+                "date": task_date,
+            })
+            
+    if not active_tasks and not tasks_file.exists():
+        return
+        
+    lines = [
+        "# Tasks",
+        "",
+        "> Single source of truth for active project tasks, progress status, and parent feature lanes.",
+        "",
+        f"**Last Synchronized**: `{datetime.date.today().isoformat()}` | **Active Tasks**: `{len(active_tasks)}`",
+        "",
+        "| Task | Status | Progress | Date | Parent |",
+        "| :--- | :--- | :--- | :--- | :--- |",
+    ]
+    for t in active_tasks:
+        lines.append(f"| {t['link']} | `{t['status']}` | {t['progress']} | {t['date']} | `{t['parent']}` |")
+        
+    lines.append("")
+    tasks_content = "\n".join(lines) + "\n"
+    if dry_run:
+        print("\n[DRY RUN] Generated docs/tasks.md preview:")
+        print("\n".join(lines[:15]))
+    else:
+        tasks_file.write_text(tasks_content, encoding="utf-8")
+        print(f"✅ Self-Healed {tasks_file.relative_to(repo_root)} successfully ({len(active_tasks)} active tasks)!")
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-Healing Documentation Engine")

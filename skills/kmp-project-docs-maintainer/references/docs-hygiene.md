@@ -345,6 +345,8 @@ active file, or a reader can't trust it as a substitute for opening each one.
 | Unprocessed lessons in `docs/lessons/` | 20 files | Harvest via `kmp-skill-harvester` |
 | Lesson file age without harvest | 30 days | Harvest or archive |
 | Task file with a `-done` filename suffix still in active `docs/tasks/<parent>/` | 0 | Move to `docs/tasks/<parent>/archive/` immediately |
+| Task file in `doing` or `blocked` state older than 14 days without update | 0 | Update progress, demote to blocked/todo, or complete and archive |
+| Task file with 100% completed checkboxes (`[x]`) not marked `-done` | 0 | Rename to `-done` and move to `docs/tasks/<parent>/archive/` |
 | Task filename not matching `<NN>-<slug>-<status>.md` (status: todo/doing/blocked/done) | 0 | Rename to match the task naming convention |
 | Task file missing a `**Date:**` line in its content | 0 | Add the date line — filenames no longer carry a date prefix |
 | Active task file not mentioned in `docs/tasks.md` | 0 | Add a Task Log row — the index must name every active task so status is readable without opening each file |

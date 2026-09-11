@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import json
 import subprocess
 import tempfile
@@ -533,9 +534,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_valid_task_file_no_findings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n\nBody.\n",
+                f"# Add auth\n\n**Date:** {today_str}\n\n- [ ] Step 1\n- [x] Step 2\n",
             )
             (root / "docs" / "tasks.md").write_text(
                 "# Tasks\n\n| Task | Status | Parent |\n|---|---|---|\n"
@@ -545,6 +547,52 @@ class TaskFileConventionTests(unittest.TestCase):
             findings: list[str] = []
             audit_repo_scripts._check_docs_hygiene(root, findings)
             self.assertFalse(any("task" in f.lower() or "01-add-auth" in f for f in findings))
+
+    def test_flags_stale_doing_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_task(
+                root, "todo-app", "01-add-auth-doing.md",
+                "# Add auth\n\n**Date:** 2026-01-01\n\n- [ ] Step 1\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-doing.md) | doing | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has been in 'doing' state for" in f for f in findings))
+
+    def test_flags_stale_blocked_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_task(
+                root, "todo-app", "01-add-auth-blocked.md",
+                "# Add auth\n\n**Date:** 2026-01-01\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-blocked.md) | blocked | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has been in 'blocked' state for" in f for f in findings))
+
+    def test_flags_100_percent_completed_task_not_marked_done(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
+            self._write_task(
+                root, "todo-app", "01-add-auth-doing.md",
+                f"# Add auth\n\n**Date:** {today_str}\n\n- [x] Step 1\n- [x] Step 2\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-doing.md) | doing | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has 100% completed items" in f and "rename to -done" in f for f in findings))
 
     def test_flags_filename_not_matching_convention(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -630,9 +678,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_flags_active_task_not_indexed_in_tasks_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n",
+                f"# Add auth\n\n**Date:** {today_str}\n",
             )
             (root / "docs" / "tasks.md").write_text("# Tasks\n\nNothing here yet.\n", encoding="utf-8")
             findings: list[str] = []
@@ -645,9 +694,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_does_not_flag_task_indexed_in_tasks_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n",
+                f"# Add auth\n\n**Date:** {today_str}\n",
             )
             (root / "docs" / "tasks.md").write_text(
                 "# Tasks\n\n| Task | Status | Parent |\n|---|---|---|\n"

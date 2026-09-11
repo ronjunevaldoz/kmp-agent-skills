@@ -27,7 +27,7 @@ if echo "$MSG" | grep -qiE "^Co-Authored-By:"; then
 fi
 
 # Conventional Commit pattern
-PATTERN="^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\([a-z0-9][a-z0-9 _-]*\))?: .{1,}"
+PATTERN="^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\([a-z0-9][a-z0-9 _-]*\))?: .{3,}"
 
 FIRST_LINE=$(echo "$MSG" | head -1)
 
@@ -45,6 +45,17 @@ if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
   echo "    docs: update architecture diagram" >&2
   echo "" >&2
   echo "  Your message: $FIRST_LINE" >&2
+  echo "" >&2
+  exit 1
+fi
+
+# Reject low-entropy / micro-commit descriptions
+if echo "$FIRST_LINE" | grep -qiE "^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\([a-z0-9][a-z0-9 _-]*\))?:\s*(wip|temp|fix|minor|update|test|tests|changes|clean|trying|debug|work|done|typo|fix typo)\.?$"; then
+  echo "" >&2
+  echo "  ❌  Commit rejected — low-entropy / micro-commit description." >&2
+  echo "" >&2
+  echo "  Provide a descriptive message stating what was changed (e.g. 'fix: handle null token in auth')." >&2
+  echo "  If fixing a small issue in an unpushed commit, amend instead: git commit --amend --no-edit" >&2
   echo "" >&2
   exit 1
 fi

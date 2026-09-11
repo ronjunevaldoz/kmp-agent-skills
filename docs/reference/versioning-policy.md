@@ -42,7 +42,15 @@ Examples: `feat(skills): add layout-system skill` · `fix: correct KSP version` 
 
 Rejected: `wip` · `fix stuff` · `update` · `agent commit`
 
+### Atomic Commits vs. Micro-Commit Bloat
+
+- **One atomic commit per completed task lane**: Group the whole feature/fix (source, documentation, and unit tests) into a single cohesive commit.
+- **No broken intermediate commits**: The repository must build cleanly and pass all tests at every commit on `main`.
+- **Amend rather than churn**: If a typo, lint error, or small omission is discovered after committing but before pushing to remote, use `git commit --amend --no-edit` or `git commit --fixup <sha>` + `git rebase -i --autosquash`.
+- **Low-entropy messages rejected**: Messages like `fix: typo`, `feat: wip`, `test: fix`, or single-word descriptions are blocked by the `commit-msg` hook.
+
 ---
+
 
 ## CHANGELOG Rules
 

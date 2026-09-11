@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2023-2026 Ron June Valdoz
+# SPDX-License-Identifier: Apache-2.0
+#
+# Pre-push hook: prevents pushing un-squashed fixup! or squash! commits to remote.
+set -euo pipefail
+
+upstream=""
+if git rev-parse --abbrev-ref @{u} >/dev/null 2>&1; then
+  upstream=$(git rev-parse --abbrev-ref @{u})
+elif git rev-parse --verify origin/main >/dev/null 2>&1; then
+  upstream="origin/main"
+fi
+
+if [[ -n "$upstream" ]]; then
+  unpushed=$(git log "$upstream..HEAD" --oneline 2>/dev/null || true)
+  if echo "$unpushed" | grep -qE " (fixup!|squash!) "; then
+    echo "" >&2
+    echo "  ❌  Push rejected — un-squashed fixup! / squash! commits detected:" >&2
+    echo "$unpushed" | grep -E " (fixup!|squash!) " | sed 's/^/    /' >&2
+    echo "" >&2
+    echo "  Autosquash them before pushing to remote:" >&2
+    echo "    git rebase -i --autosquash $upstream" >&2
+    echo "" >&2
+    exit 1
+  fi
+fi
+
+exit 0

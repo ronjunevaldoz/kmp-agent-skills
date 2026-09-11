@@ -338,5 +338,53 @@ class PreCommitAuditDocsHygieneTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout.decode() + result.stderr.decode())
 
 
+class CommitMsgHookTests(unittest.TestCase):
+    def _run_commit_msg(self, msg: str) -> subprocess.CompletedProcess:
+        with tempfile.NamedTemporaryFile("w+", encoding="utf-8", delete=False) as f:
+            f.write(msg)
+            f_path = f.name
+        try:
+            return subprocess.run(
+                ["bash", str(HOOKS_DIR / "commit-msg"), f_path],
+                capture_output=True,
+            )
+        finally:
+            Path(f_path).unlink(missing_ok=True)
+
+    def test_allows_valid_conventional_commit(self) -> None:
+        res = self._run_commit_msg("feat(auth): add biometric login\n")
+        self.assertEqual(res.returncode, 0)
+
+    def test_allows_fixup_and_squash_commits(self) -> None:
+        res1 = self._run_commit_msg("fixup! feat(auth): add biometric login\n")
+        self.assertEqual(res1.returncode, 0)
+        res2 = self._run_commit_msg("squash! feat(auth): add biometric login\n")
+        self.assertEqual(res2.returncode, 0)
+
+    def test_rejects_non_conventional_commit(self) -> None:
+        res = self._run_commit_msg("random commit message without type\n")
+        self.assertEqual(res.returncode, 1)
+        self.assertIn(b"does not follow Conventional Commit", res.stderr)
+
+    def test_rejects_low_entropy_micro_commits(self) -> None:
+        for msg in ("fix: wip\n", "feat(tasks): wip\n", "fix: typo\n", "test: fix\n", "chore: temp\n", "feat: update\n"):
+            with self.subTest(msg=msg):
+                res = self._run_commit_msg(msg)
+                self.assertEqual(res.returncode, 1)
+                self.assertIn(b"low-entropy / micro-commit", res.stderr)
+
+
+class PrePushHookTests(unittest.TestCase):
+    def test_pre_push_hook_exists_and_runs(self) -> None:
+        # Runs cleanly in current repo with no un-squashed fixups
+        res = subprocess.run(
+            ["bash", str(HOOKS_DIR / "pre-push")],
+            capture_output=True,
+            cwd=str(REPO_ROOT),
+        )
+        self.assertEqual(res.returncode, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
+

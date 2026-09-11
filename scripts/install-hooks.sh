@@ -39,6 +39,8 @@ echo ""
 install_hook "pre-commit-audit.sh"       "pre-commit"
 install_hook "validate-architecture.sh"  "post-rewrite"
 install_hook "commit-msg"               "commit-msg"
+install_hook "pre-push"                 "pre-push"
+
 
 echo ""
 echo "check-skill-freshness.sh is a manual/CI check — not installed as a git hook."

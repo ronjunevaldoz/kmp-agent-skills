@@ -11,7 +11,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-08-30'
+  last-updated: '2026-09-11'
   keywords:
     - investigation narration comment
     - state the finding not the investigation
@@ -195,6 +195,10 @@ the user and the other skills what to do next.
   `SimpleDateFormat`; keep the shared API in common code and move the implementation to
   the platform that owns it
 - Check platform target coverage against the product goal
+- Distinguish `expect`/`actual` naming conventions from platform-exclusive files:
+  - `Name.<platform>.kt` is reserved strictly for `actual` declarations matching an `expect` in `commonMain` (e.g. `FrameLoop.desktop.kt`)
+  - Platform-exclusive files (`Main.kt`, `MainActivity.kt`, target-only engines/helpers like `WebGpuEngine.kt`, and platform interface implementations) must use standard `Name.kt`
+  - Do NOT flag the coexistence of both naming styles as a divergence or split when each adheres to its proper category; flag only true inconsistencies (e.g. an `actual` missing its platform suffix while sibling actuals have it, or a platform-only file falsely suffixed with `.<platform>.kt`)
 
 ### 4b) Library project structure (gated on vanniktech-mavenPublish being applied)
 - `explicitApi()` present somewhere — without it, every internal type Kotlin defaults
@@ -406,6 +410,7 @@ Ask before converting findings to issue drafts. Keep implementation advice minim
 
 | Date | Change |
 |---|---|
+| 2026-09-11 | Added expect/actual vs platform-exclusive file naming check under Section 4 (Multiplatform code) — distinguish `Name.<platform>.kt` (reserved strictly for `actual` declarations matching an `expect`) from standard `Name.kt` (platform-exclusive files, target entry points, DI modules). Clarify that coexistence of both styles across a codebase is intentional and must not be flagged as a naming divergence. |
 | 2026-08-30 | Added `_check_changelog_unreleased_backlog` to `audit_skills_repo.py` — user asked whether docs healing scoped `CHANGELOG.md`'s growth, and it deliberately doesn't (`kmp-project-docs-maintainer`'s scope explicitly excludes release notes). Real gap found in that investigation: `git-cliff`'s `## [Unreleased]` section (`kmp-release`'s own convention) only flushes into a dated version section on an actual `--tag` release run, and nothing previously flagged a project that just never cuts one — it silently accumulates forever. Flags once `[Unreleased]` exceeds 20 bullet entries, static filename/heading scan only, no git dependency, consistent with every other check in this file. Wired into both `--docs-hygiene-only` and the full audit. 4 new tests. |
 | 2026-08-24 | Cross-referenced the new `/kmp-refine-skill` command from the "Project-owned custom skill" finding — `_detect_project_skill_standards` only checks mechanical validity (frontmatter, line cap); the new command owns the qualitative pass (description phrasing, gotchas quality, scoping) re-verified against the real, current agentskills.io best-practices docs. |
 | 2026-08-24 | Wired `audit_skills_repo.py --docs-hygiene-only` into `governance_check.py` as a 3rd real check (MEDIUM severity, doesn't fail the default HIGH threshold). Root cause found while investigating "how do we keep consumer docs from going stale like awaken did": a consumer project's local pre-commit hook is a one-time fork of this repo's own hook script — `update-consumer-skills.sh` never re-syncs `hooks/` — so the local copy silently drifts, verified live on a real project whose forked hook still referenced an issue this repo had already resolved and never ran the docs-hygiene check at all. CI has no such staleness problem — it checks out this repo fresh, pinned to `skills_ref`, every run — so that's the actual enforcement point, not the local hook. Also fixed `governance-ci-enforcement.md`'s scanner table, which claimed a `validate_module_graph.py` check that was never actually wired into the script — a real doc/script drift caught in the same pass. Smoke-tested against a real 141-file/29,650-line consumer `docs/` tree — 119 real findings, including catching `docs/decisions/D10-codegen-derisk-findings.md` predating the ADR naming convention. 3 new tests. |

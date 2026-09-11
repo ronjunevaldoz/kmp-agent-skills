@@ -1,5 +1,5 @@
 {
-  "version": "3.0.2",
+  "version": "3.0.3",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -2949,7 +2949,7 @@
       "path": "skills/kmp-project-docs-maintainer",
       "description": "Maintains downstream consumer-facing KMP project documentation only: README, GETTING_STARTED, INSTALL, RELEASING, docs/reference pages, onboarding guides, architecture notes, and architecture diagrams. Use this skill when project docs need to match the actual code, commands, config, folder layout, or app/library structure. Does NOT cover consumer release-note generation, per-skill changelogs, or skills-repo documentation.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-09-11",
       "keywords": [
         "project docs",
         "consumer docs",

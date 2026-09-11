@@ -6,14 +6,14 @@ Generated 2026-09-11 by `scripts/generate_skills_report.py` — run it after any
 
 | Skill | Lines | Last Updated | Status |
 |---|---|---|---|
-| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 500 | 2026-08-26 | ✅ |
+| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 494 | 2026-09-11 | ✅ |
 | [`kmp-in-app-purchases`](../../skills/kmp-in-app-purchases/) | 490 | 2026-06-29 | ✅ |
 | [`kmp-mvi`](../../skills/kmp-mvi/) | 486 | 2026-08-24 | ✅ |
 | [`kmp-library-publishing`](../../skills/kmp-library-publishing/) | 484 | 2026-07-31 | ✅ |
 | [`kmp-compose-slot-api`](../../skills/kmp-compose-slot-api/) | 483 | 2026-06-26 | ✅ |
 | [`kmp-clean-architecture`](../../skills/kmp-clean-architecture/) | 482 | 2026-08-11 | ✅ |
 | [`kmp-jni-pro`](../../skills/kmp-jni-pro/) | 478 | 2026-08-24 | ✅ |
-| [`kmp-audit`](../../skills/kmp-audit/) | 474 | 2026-09-11 | ✅ |
+| [`kmp-audit`](../../skills/kmp-audit/) | 475 | 2026-09-11 | ✅ |
 | [`kmp-network-layer`](../../skills/kmp-network-layer/) | 474 | 2026-07-31 | ✅ |
 | [`kmp-code-quality`](../../skills/kmp-code-quality/) | 469 | 2026-08-24 | ✅ |
 | [`kmp-shared-resources`](../../skills/kmp-shared-resources/) | 469 | 2026-07-08 | ✅ |

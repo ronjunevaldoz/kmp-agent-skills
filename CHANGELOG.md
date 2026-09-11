@@ -2,6 +2,22 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.3] — 2026-09-11
+
+### Added
+
+- feat(audit): add recursive non-doc asset auditing, canonical docs topology checks, and task archive exemptions
+
+### Fixed
+
+- fix(scaffold): resolve heal_docs path in pre-commit hook, correct install layout, and align agent setup
+
+### Docs
+
+- docs(hygiene): link assistant setup guides in INSTALL.md and prune stale test-coverage.md
+
+---
+
 ## [v3.0.2] — 2026-09-11
 
 ### Docs

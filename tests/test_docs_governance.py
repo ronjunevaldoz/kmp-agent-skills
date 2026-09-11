@@ -375,6 +375,35 @@ class HealDocsTests(unittest.TestCase):
             updated_caller = caller.read_text(encoding="utf-8")
             self.assertIn("reference/my-cool-guide.md", updated_caller)
 
+    def test_check_consumer_skills_and_agents_warnings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            docs.mkdir(parents=True)
+
+            # Create bad skill (micro-scoped, name mismatch)
+            bad_skill_dir = root / "skills" / "fix-login-error"
+            bad_skill_dir.mkdir(parents=True)
+            (bad_skill_dir / "SKILL.md").write_text(
+                "---\nname: other-name\ndescription: A fix.\n---\n\nBody.\n",
+                encoding="utf-8",
+            )
+
+            # Create bad agent (redundant suffix, action-named)
+            agents_dir = root / "agents"
+            agents_dir.mkdir(parents=True)
+            (agents_dir / "deploy-app-agent.md").write_text(
+                "---\nname: deploy-app\ndescription: Deploys.\n---\n\nBody.\n",
+                encoding="utf-8",
+            )
+
+            warnings = heal_docs.check_consumer_skills_and_agents(root)
+            self.assertTrue(any("directory name" in w for w in warnings))
+            self.assertTrue(any("micro-scoped" in w for w in warnings))
+            self.assertTrue(any("redundant suffix" in w for w in warnings))
+            self.assertTrue(any("action-named" in w for w in warnings))
+
+
 
 new_task = load_module(
     "new_task",

@@ -2510,6 +2510,39 @@ class ProjectSkillStandardsTests(unittest.TestCase):
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any(f.startswith("project skill") for f in findings))
 
+    def test_flags_skill_name_dir_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: other-name\ndescription: Does a thing.\n---\n\nBody.\n"
+            self._write(root, "skills/my-skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill name directory mismatch" in f for f in findings))
+
+    def test_flags_skill_name_invalid_format(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: My_Skill\ndescription: Does a thing.\n---\n\nBody.\n"
+            self._write(root, "skills/My_Skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill name invalid format" in f for f in findings))
+
+    def test_flags_skill_micro_scoped_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: fix-login-error\ndescription: Fixes login.\n---\n\nBody.\n"
+            self._write(root, "skills/fix-login-error/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill micro-scoped / too specific" in f for f in findings))
+
+    def test_flags_skill_description_exceeds_1024_chars(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            long_desc = "a" * 1050
+            skill_text = f"---\nname: my-skill\ndescription: {long_desc}\n---\n\nBody.\n"
+            self._write(root, "skills/my-skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill description exceeds 1024 chars" in f for f in findings))
+
     def test_no_skills_dir_returns_no_findings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -3733,6 +3766,38 @@ class AgentFileStandardsTests(unittest.TestCase):
             self._write(root, ".claude/agents/reviewer.md", content)
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any(f.startswith("project agent") for f in findings))
+
+    def test_flags_agent_redundant_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: reviewer-agent\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/reviewer-agent.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent redundant suffix" in f for f in findings))
+
+    def test_flags_agent_action_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: fix-bugs\ndescription: Fixes bugs.\n---\n\nBody.\n"
+            self._write(root, "agents/fix-bugs.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent action-named" in f for f in findings))
+
+    def test_flags_agent_model_prefixed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: claude-reviewer\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/claude-reviewer.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent model-prefixed" in f for f in findings))
+
+    def test_flags_agent_name_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: custom-reviewer\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/reviewer.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent name mismatch" in f for f in findings))
 
     def test_flags_codex_toml_missing_required_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

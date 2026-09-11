@@ -232,7 +232,83 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     
     # 3. Synchronize docs/tasks.md with objective progress and checkbox metrics
     sync_tasks(docs_dir, repo_root, dry_run)
+
+    # 4. Check consumer skills and agents for naming & spec hygiene
+    warnings = check_consumer_skills_and_agents(repo_root)
+    if warnings:
+        print(f"\n⚠️  Consumer Skills & Agents Warnings ({len(warnings)} issue{'s' if len(warnings) != 1 else ''}):")
+        for w in warnings:
+            print(f"    • {w}")
+
     return 0
+
+
+def check_consumer_skills_and_agents(repo_root: Path) -> list[str]:
+    """Lightweight check of consumer skills and agents for naming, spec, and fragmentation issues."""
+    warnings: list[str] = []
+
+    # 1. Project-owned skills under skills/
+    skills_dir = repo_root / "skills"
+    if skills_dir.is_dir():
+        for sdir in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
+            skill_md = sdir / "SKILL.md"
+            if not skill_md.is_file():
+                warnings.append(f"Skill '{sdir.name}' missing SKILL.md")
+                continue
+            try:
+                text = skill_md.read_text(encoding="utf-8", errors="ignore")
+                fm_match = re.search(r"\A---\r?\n(.*?)\r?\n---\r?\n", text, re.DOTALL)
+                if not fm_match:
+                    warnings.append(f"Skill '{sdir.name}' missing YAML frontmatter (---)")
+                    continue
+                fm = fm_match.group(1)
+                name_match = re.search(r"^name:\s*['\"]?([^\r\n'\"]+)['\"]?\s*$", fm, re.MULTILINE)
+                if not name_match:
+                    warnings.append(f"Skill '{sdir.name}' frontmatter missing 'name:'")
+                else:
+                    name_val = name_match.group(1).strip()
+                    if name_val != sdir.name:
+                        warnings.append(f"Skill '{sdir.name}' frontmatter name '{name_val}' != directory name")
+                    if len(name_val) > 64:
+                        warnings.append(f"Skill '{sdir.name}' name exceeds 64 chars")
+
+                # Micro-scoped / too specific check
+                micro_prefixes = ("fix-", "patch-", "bug-", "update-", "add-", "refactor-", "temp-")
+                micro_suffixes = ("-viewmodel", "-impl", "-file", "-function")
+                if any(sdir.name.startswith(p) for p in micro_prefixes) or any(sdir.name.endswith(s) for s in micro_suffixes):
+                    warnings.append(f"Skill '{sdir.name}' is micro-scoped / too specific; prefer generic domain naming")
+
+                desc_match = re.search(
+                    r"^description:\s*(?:>|\|)?\s*(.*?)(?=\n[a-z_A-Z0-9-]+:|\Z)",
+                    fm,
+                    re.MULTILINE | re.DOTALL,
+                )
+                if not desc_match or not desc_match.group(1).strip():
+                    warnings.append(f"Skill '{sdir.name}' frontmatter missing 'description:'")
+                elif len(desc_match.group(1).strip()) > 1024:
+                    warnings.append(f"Skill '{sdir.name}' description exceeds 1024 chars")
+            except Exception:
+                pass
+
+    # 2. Project-owned agents under agents/
+    agents_dir = repo_root / "agents"
+    if agents_dir.is_dir():
+        for amd in sorted(agents_dir.glob("*.md")):
+            stem = amd.stem
+            if stem.endswith(("-agent", "-bot")):
+                warnings.append(
+                    f"Agent '{amd.name}' has redundant suffix; name directly by role "
+                    f"(e.g. '{stem.removesuffix('-agent')}.md')"
+                )
+            action_prefixes = ("fix-", "run-", "deploy-", "build-", "update-", "generate-", "clean-")
+            if any(stem.startswith(p) for p in action_prefixes):
+                warnings.append(f"Agent '{amd.name}' is action-named; agents must represent roles/personas")
+            model_prefixes = ("claude-", "gpt-", "sonnet-", "opus-", "haiku-", "gemini-")
+            if any(stem.startswith(p) for p in model_prefixes):
+                warnings.append(f"Agent '{amd.name}' is model-prefixed; configure model in frontmatter instead")
+
+    return warnings
+
 
 def sync_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> None:
     tasks_dir = docs_dir / "tasks"

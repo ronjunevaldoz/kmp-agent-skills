@@ -3972,19 +3972,26 @@ def _detect_leftover_wizard_demo_code(root: Path) -> list[str]:
 
 _FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
 _FRONTMATTER_NAME_RE = re.compile(r"^name:\s*\S", re.MULTILINE)
+_FRONTMATTER_NAME_VAL_RE = re.compile(r"^name:\s*['\"]?([^\r\n'\"]+)['\"]?\s*$", re.MULTILINE)
 _FRONTMATTER_DESCRIPTION_RE = re.compile(r"^description:\s*\S", re.MULTILINE)
+_FRONTMATTER_DESC_VAL_RE = re.compile(r"^description:\s*(?:>|\|)?\s*(.*?)(?=\n[a-z_A-Z0-9-]+:|\Z)", re.MULTILINE | re.DOTALL)
 _SKILL_MD_MAX_LINES = 500
+_AGENTSKILLS_NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+_MICRO_SCOPED_SKILL_PREFIXES = ("fix-", "patch-", "bug-", "update-", "add-", "refactor-", "temp-", "change-")
+_MICRO_SCOPED_SKILL_SUFFIXES = ("-viewmodel", "-impl", "-file", "-function", "-button", "-screen")
 
 
 def _detect_project_skill_standards(root: Path) -> list[str]:
     """Flag a project-owned skill at <project root>/skills/<skill-name>/ that doesn't
     meet the real, official skill anatomy (verified against anthropic-skills:skill-creator's
-    own documented convention, not assumed):
+    own documented convention and agentskills.io specification):
 
       - skills/<name>/SKILL.md must exist (a skill folder with none is undiscoverable)
       - SKILL.md must open with YAML frontmatter (--- ... ---)
-      - frontmatter must have both name: and description: — these are the primary
-        triggering mechanism; a skill missing either can't be found or won't trigger
+      - frontmatter must have both name: and description:
+      - name: must match parent directory name, be <= 64 chars, lowercase alphanumeric + hyphens
+      - description: must stay <= 1024 chars per agentskills.io spec
+      - skill must not be micro-scoped / one-off action named (e.g. fix-*, patch-*, *-viewmodel)
       - SKILL.md body should stay under ~500 lines unless it points to a references/
         subdirectory for progressive disclosure (skill-creator's own stated guideline)
 
@@ -4025,17 +4032,49 @@ def _detect_project_skill_standards(root: Path) -> list[str]:
             continue
 
         frontmatter = fm_match.group(1)
-        if not _FRONTMATTER_NAME_RE.search(frontmatter):
+        name_match = _FRONTMATTER_NAME_VAL_RE.search(frontmatter)
+        if not name_match:
             findings.append(
                 f"project skill frontmatter missing name [HIGH]: {rel} — name is the "
                 f"skill identifier; without it the skill can't be reliably referenced"
             )
-        if not _FRONTMATTER_DESCRIPTION_RE.search(frontmatter):
+        else:
+            name_val = name_match.group(1).strip()
+            if name_val != skill_dir.name:
+                findings.append(
+                    f"project skill name directory mismatch [HIGH]: {rel} — frontmatter name "
+                    f"'{name_val}' does not match directory name '{skill_dir.name}' (spec requires match)"
+                )
+            if len(name_val) > 64 or not _AGENTSKILLS_NAME_RE.match(name_val):
+                findings.append(
+                    f"project skill name invalid format [HIGH]: {rel} — '{name_val}' "
+                    f"must be lowercase alphanumeric and hyphens only, <= 64 chars"
+                )
+
+        # Micro-scoped / "too specific" smell check
+        if any(skill_dir.name.startswith(p) for p in _MICRO_SCOPED_SKILL_PREFIXES) or any(
+            skill_dir.name.endswith(s) for s in _MICRO_SCOPED_SKILL_SUFFIXES
+        ):
+            findings.append(
+                f"project skill micro-scoped / too specific [MEDIUM]: {rel} — '{skill_dir.name}' "
+                f"appears scoped to a single action, bugfix, or file; skills should represent "
+                f"generic domain or feature capabilities (e.g. 'user-profile', 'billing', 'auth-session')"
+            )
+
+        desc_match = _FRONTMATTER_DESC_VAL_RE.search(frontmatter)
+        if not desc_match or not desc_match.group(1).strip():
             findings.append(
                 f"project skill frontmatter missing description [HIGH]: {rel} — "
                 f"description is the primary triggering mechanism; a skill without one "
                 f"won't reliably trigger for the tasks it's meant to handle"
             )
+        else:
+            desc_val = desc_match.group(1).strip()
+            if len(desc_val) > 1024:
+                findings.append(
+                    f"project skill description exceeds 1024 chars [HIGH]: {rel} — "
+                    f"length is {len(desc_val)} chars (hard spec limit is 1024)"
+                )
 
         body = text[fm_match.end():]
         body_lines = body.count("\n") + 1
@@ -4123,6 +4162,9 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
 
 _TIER_NAME_LITERALS = {"flagship-coding", "balanced-coding", "fast-utility", "precision-review"}
 _AGENT_MODEL_FIELD_RE = re.compile(r"^model:\s*['\"]?([\w.-]+)['\"]?\s*$", re.MULTILINE)
+_AGENT_REDUNDANT_SUFFIXES = ("-agent", "-bot")
+_AGENT_ACTION_PREFIXES = ("fix-", "run-", "deploy-", "build-", "update-", "generate-", "clean-")
+_AGENT_MODEL_PREFIXES = ("claude-", "gpt-", "sonnet-", "opus-", "haiku-", "gemini-")
 _TOML_KEY_RE = {
     "name": re.compile(r'^\s*name\s*=\s*["\'].+["\']', re.MULTILINE),
     "description": re.compile(r'^\s*description\s*=\s*["\'].+["\']', re.MULTILINE),
@@ -4140,8 +4182,34 @@ def _agent_md_standards_findings(text: str, rel: Path) -> list[str]:
         )
         return findings
     frontmatter = fm_match.group(1)
-    if not _FRONTMATTER_NAME_RE.search(frontmatter):
+    name_match = _FRONTMATTER_NAME_VAL_RE.search(frontmatter)
+    if not name_match:
         findings.append(f"project agent frontmatter missing name [HIGH]: {rel}")
+    else:
+        name_val = name_match.group(1).strip()
+        if name_val != rel.stem:
+            findings.append(
+                f"project agent name mismatch [HIGH]: {rel} — frontmatter name '{name_val}' "
+                f"does not match file stem '{rel.stem}'"
+            )
+
+    # Persona & naming convention checks
+    if rel.stem.endswith(_AGENT_REDUNDANT_SUFFIXES):
+        findings.append(
+            f"project agent redundant suffix [MEDIUM]: {rel} — '{rel.name}' ends with redundant '-agent'/'-bot'; "
+            f"agent files under agents/ should be named directly by persona/role (e.g. 'planner.md', 'implementer.md')"
+        )
+    if any(rel.stem.startswith(p) for p in _AGENT_ACTION_PREFIXES):
+        findings.append(
+            f"project agent action-named [MEDIUM]: {rel} — '{rel.stem}' is named after an action/verb; "
+            f"agents represent functional personas/roles (e.g. 'fixer', 'auditor'), while actions belong to slash commands"
+        )
+    if any(rel.stem.startswith(p) for p in _AGENT_MODEL_PREFIXES):
+        findings.append(
+            f"project agent model-prefixed [MEDIUM]: {rel} — '{rel.stem}' is named after a provider/model; "
+            f"model choice belongs in the 'model:' frontmatter field, not the agent's persona name"
+        )
+
     if not _FRONTMATTER_DESCRIPTION_RE.search(frontmatter):
         findings.append(f"project agent frontmatter missing description [HIGH]: {rel}")
     model_match = _AGENT_MODEL_FIELD_RE.search(frontmatter)

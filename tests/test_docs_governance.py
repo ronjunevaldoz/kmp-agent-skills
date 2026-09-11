@@ -312,6 +312,69 @@ class HealDocsTests(unittest.TestCase):
             self.assertIn("`doing`", tasks_md)
             self.assertIn("`auth`", tasks_md)
 
+    def test_auto_archives_task_with_done_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+
+            task_file = tasks_dir / "01-login-done.md"
+            task_file.write_text(
+                "# Login Flow\n\n**Status:** done\n**Date:** 2026-09-11\n\n- [x] All done\n",
+                encoding="utf-8",
+            )
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(task_file.exists())
+            archived = tasks_dir / "archive" / "01-login-done.md"
+            self.assertTrue(archived.exists())
+            self.assertIn("tasks/auth/archive/01-login-done.md", (docs / "README.md").read_text(encoding="utf-8"))
+
+    def test_auto_archives_task_with_100_percent_checkboxes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+
+            task_file = tasks_dir / "02-biometric-doing.md"
+            task_file.write_text(
+                "# Biometric Flow\n\n**Status:** doing\n**Date:** 2026-09-11\n\n- [x] Step 1\n- [x] Step 2\n",
+                encoding="utf-8",
+            )
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(task_file.exists())
+            archived = tasks_dir / "archive" / "02-biometric-done.md"
+            self.assertTrue(archived.exists())
+            content = archived.read_text(encoding="utf-8")
+            self.assertIn("**Status:** done", content)
+
+    def test_auto_renames_snake_case_and_updates_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            ref_dir = docs / "reference"
+            ref_dir.mkdir(parents=True)
+
+            guide_file = ref_dir / "my_cool_guide.md"
+            guide_file.write_text("# Cool Guide\n\nSome guide content\n", encoding="utf-8")
+
+            caller = docs / "architecture.md"
+            caller.write_text("# Arch\n\nSee [Guide](reference/my_cool_guide.md)\n", encoding="utf-8")
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(guide_file.exists())
+            new_guide = ref_dir / "my-cool-guide.md"
+            self.assertTrue(new_guide.exists())
+
+            updated_caller = caller.read_text(encoding="utf-8")
+            self.assertIn("reference/my-cool-guide.md", updated_caller)
+
 
 new_task = load_module(
     "new_task",

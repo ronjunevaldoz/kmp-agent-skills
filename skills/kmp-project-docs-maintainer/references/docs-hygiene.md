@@ -374,6 +374,9 @@ python3 skills/kmp-audit/scripts/audit_skills_repo.py . --docs-hygiene-only
 
 # Full audit including docs hygiene
 python3 skills/kmp-audit/scripts/audit_skills_repo.py .
+
+# Self-healing engine (auto-fixes safe violations, updates sitemap & task progress)
+python3 skills/kmp-project-docs-maintainer/scripts/heal_docs.py
 ```
 
 Despite the name, `--docs-hygiene-only` works standalone against **any** project's `docs/`
@@ -381,6 +384,17 @@ root, not just this skills repo — it ships inside `kmp-audit`'s own `scripts/`
 every consumer project that installs `kmp-audit` already has it locally. `audit_project.py`
 (the other script in the same directory) is a separate tool for Kotlin/Compose code smells
 and does not implement these hygiene checks — don't reach for it here.
+
+### Self-Healing (`heal_docs.py`) vs Audit Flagging (`audit_skills_repo.py`)
+
+| Concern | `heal_docs.py` Auto-Remediation | `audit_skills_repo.py` Audit Gate |
+|---|---|---|
+| **Completed Tasks** | Automatically renames to `-done.md` and archives to `docs/tasks/<parent>/archive/` | Blocks commits if `-done` or 100% completed tasks remain active |
+| **Snake_case Files** | Automatically converts to kebab-case and rewrites internal markdown links | Flags snake_case filenames in `docs/` |
+| **Task Progress Tracker** | Recomputes checkbox metrics and regenerates `docs/tasks.md` | Blocks commits if active tasks are missing from `docs/tasks.md` |
+| **Sitemap Synchronization** | Regenerates `docs/README.md` category/status navigation table | N/A (serves as agent entry point) |
+| **Rogue Dirs & Non-Docs** | *Untouched* (avoids accidental loss or repository bloat) | Blocks commits for non-canonical dirs or misplaced binary files |
+
 
 ### KDoc vs Ground-Truth Docs Boundary (Zero Redundancy Rule)
 

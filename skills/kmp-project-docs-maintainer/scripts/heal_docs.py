@@ -2,13 +2,10 @@
 """heal_docs.py — Self-Healing Documentation Engine for KMP Projects
 
 Automates:
-  1. Sitemap synchronization in docs/README.md (extracts title, category, status).
-  2. Broken link detection and self-healing.
-  3. Automatic archival of completed task plans into docs/tasks/archive/YYYY-MM/.
-  4. Naming convention enforcement:
-     - Architecture: docs/architecture/<subsystem>.md
-     - ADRs: docs/decisions/ADR-XXX-<slug>.md
-     - Tasks: docs/tasks/YYYY-MM-DD-<slug>-plan.md
+  1. Safe cleanup: auto-renames snake_case files to kebab-case and updates inbound links.
+  2. Safe cleanup: auto-archives completed tasks (*-done or 100% checked) to docs/tasks/<parent>/archive/.
+  3. Sitemap synchronization in docs/README.md (extracts title, category, status, and summaries).
+  4. Task index synchronization in docs/tasks.md with verified checkbox progress metrics.
 """
 
 import argparse
@@ -17,6 +14,9 @@ import os
 import re
 import sys
 from pathlib import Path
+
+_SNAKE_CASE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9]*(_[A-Za-z0-9]+)+$")
+
 
 def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
     content = file_path.read_text(encoding="utf-8")
@@ -72,6 +72,88 @@ def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
         "summary": summary
     }
 
+def auto_rename_kebab(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[tuple[Path, Path]]:
+    """Safely renames snake_case markdown files to kebab-case and updates inbound links."""
+    renamed = []
+    for md in sorted(docs_dir.rglob("*.md")):
+        if "archive" in md.parts or md.name in ("README.md", "CHANGELOG.md", "KNOWN_ISSUES.md"):
+            continue
+        if _SNAKE_CASE_RE.match(md.stem):
+            kebab = md.stem.replace("_", "-").lower()
+            target_path = md.parent / f"{kebab}.md"
+            if target_path.exists() and target_path != md:
+                continue
+            renamed.append((md, target_path))
+
+    if not renamed:
+        return []
+
+    for old_path, new_path in renamed:
+        old_name = old_path.name
+        new_name = new_path.name
+        print(f"  ✏️ Renaming: {old_path.relative_to(repo_root)} -> {new_name}")
+        if not dry_run:
+            old_path.rename(new_path)
+            for doc in docs_dir.rglob("*.md"):
+                if not doc.is_file():
+                    continue
+                try:
+                    text = doc.read_text(encoding="utf-8")
+                    if old_name in text:
+                        doc.write_text(text.replace(old_name, new_name), encoding="utf-8")
+                except Exception:
+                    pass
+    return renamed
+
+
+def auto_archive_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[str]:
+    """Auto-archives completed tasks (*-done.md or 100% checked) to docs/tasks/<parent>/archive/."""
+    tasks_dir = docs_dir / "tasks"
+    if not tasks_dir.exists():
+        return []
+
+    archived = []
+    task_status_re = re.compile(r"^(\d{2}-[a-z0-9-]+)-(todo|doing|blocked|done)$")
+
+    for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
+        if parent_dir.name == "archive":
+            continue
+        archive_dir = parent_dir / "archive"
+        for md in sorted(parent_dir.glob("*.md")):
+            if not md.is_file():
+                continue
+            content = md.read_text(encoding="utf-8", errors="ignore")
+            total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
+            checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
+            is_100_percent = total_boxes > 0 and checked_boxes == total_boxes
+            is_done_suffix = md.stem.endswith("-done")
+
+            if is_done_suffix or is_100_percent:
+                stem = md.stem
+                m = task_status_re.match(stem)
+                if m:
+                    base_prefix = m.group(1)
+                    target_name = f"{base_prefix}-done.md"
+                else:
+                    target_name = md.name if is_done_suffix else f"{stem}-done.md"
+
+                target_path = archive_dir / target_name
+                archived.append(f"{md.relative_to(repo_root)} -> {target_path.relative_to(repo_root)}")
+
+                if not dry_run:
+                    archive_dir.mkdir(parents=True, exist_ok=True)
+                    updated_content = re.sub(
+                        r"(\*\*Status:\*\*\s*)(todo|doing|blocked)",
+                        r"\1done",
+                        content,
+                    )
+                    target_path.write_text(updated_content, encoding="utf-8")
+                    if md != target_path:
+                        md.unlink()
+                    print(f"  📦 Archived: {md.name} -> tasks/{parent_dir.name}/archive/{target_name}")
+    return archived
+
+
 def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     docs_dir = repo_root / "docs"
     if not docs_dir.exists():
@@ -81,12 +163,22 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     print(f"\n🩺 Self-Healing Documentation Scan: {repo_root.name}")
     print(f"{'='*60}")
     
-    # 1. Scan all markdown files in docs/ (ignoring README.md itself)
+    # 1. Safe auto-cleanups (snake_case normalization and archiving completed tasks)
+    renamed = auto_rename_kebab(docs_dir, repo_root, dry_run)
+    if renamed:
+        print(f"  ✨ Normalized {len(renamed)} file(s) to kebab-case")
+
+    archived = auto_archive_done_tasks(docs_dir, repo_root, dry_run)
+    if archived:
+        print(f"  📦 Auto-archived {len(archived)} completed task(s)")
+
+    # 2. Scan all markdown files in docs/ (ignoring README.md itself)
     doc_entries = []
     for p in sorted(docs_dir.rglob("*.md")):
         if p.name == "README.md":
             continue
         doc_entries.append(extract_doc_info(p, repo_root))
+
         
     print(f"  Found {len(doc_entries)} documentation files across categories:")
     categories = {}

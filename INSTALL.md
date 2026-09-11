@@ -69,11 +69,13 @@ your-project/
 ├── AGENTS.md                    # Universal guide for Gemini, Claude Code, Codex, Cursor
 └── .agents/
     ├── skills/                  # Single cross-client skills target
+    │   ├── kmp-feature-scaffold/
+    │   │   └── SKILL.md
+    │   └── kmp-clean-architecture/
+    │       └── SKILL.md
     └── commands/                # Provider-neutral command sources
-        ├── kmp-feature-scaffold/
-        │   └── SKILL.md
-        └── kmp-clean-architecture/
-            └── SKILL.md
+        ├── kmp-verify.md
+        └── kmp-implement-feature.md
 ```
 
 ---

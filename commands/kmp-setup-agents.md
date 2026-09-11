@@ -315,8 +315,9 @@ relying on it, this isn't a guaranteed verbatim port.**
 
 ## Step 7 — Deploy skills
 
-If `.agents/skills/` does not exist, create it and copy all skills from the
-`kmp-agent-skills/skills/` directory.
+If `.agents/skills/` does not exist:
+- **For standard Consumer App projects**: create `.agents/skills/` and copy the curated core skills (`kmp-clean-architecture`, `kmp-feature-scaffold`, `kmp-mvi`, `kmp-audit`, `kmp-dependency-injection`, `kmp-network-layer`). Prompt the user before bulk-copying all 74 skills.
+- **For Frameworks, 3D Engines & Starter Kits**: **never bulk-copy all 74 skills**. Only commit engine/domain-specific skills in `.agents/skills/` plus core architecture (`kmp-clean-architecture`, `kmp-mvi`, `kmp-audit`); rely on the global assistant install (`~/.agents/skills`) for generic KMP rules to avoid context bloat.
 
 If `.agents/skills/` already exists, run the equivalent of `update-consumer-skills.sh`
 to sync changed skills without prompting for each file (skills are passive docs).

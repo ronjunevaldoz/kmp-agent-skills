@@ -23,6 +23,16 @@ Or using the [skills CLI](https://skills.sh):
 npx skills add -g ronjunevaldoz/kmp-agent-skills
 ```
 
+### Assistant-Specific Guides
+
+For assistant-specific workflows, configuration files, and IDE rules, see:
+
+| Assistant | Setup Guide |
+|---|---|
+| **OpenAI Codex CLI & GitHub Copilot** | [`docs/reference/install-codex-and-copilot.md`](docs/reference/install-codex-and-copilot.md) |
+| **Cursor & Windsurf** | [`docs/reference/install-cursor-and-windsurf.md`](docs/reference/install-cursor-and-windsurf.md) |
+| **Gemini CLI, Aider & Continue** | [`docs/reference/install-gemini-aider-continue.md`](docs/reference/install-gemini-aider-continue.md) |
+
 ---
 
 ## 📦 Project-Level Installation: Selective vs Bulk

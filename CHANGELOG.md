@@ -2,6 +2,17 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.4] — 2026-09-11
+
+### Added
+
+- feat(kmp-audit): audit consumer skill spec and micro-scoped smells and agent persona standards
+- feat(kmp-project-docs-maintainer): auto-archive completed tasks and normalize kebab-case in heal_docs
+- feat(tasks): add new_task scaffolding script, /kmp-new-task command, and pre-commit hygiene gates
+- feat(tasks): add task staleness auditing, checkbox progress tracking, and tasks.md self-healing
+
+---
+
 ## [v3.0.3] — 2026-09-11
 
 ### Added

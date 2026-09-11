@@ -1,5 +1,5 @@
 {
-  "version": "3.0.3",
+  "version": "3.0.4",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -3019,7 +3019,8 @@
         "check_skills_lock.py",
         "generate_skills_lock.py",
         "heal_docs.py",
-        "heal_project.py"
+        "heal_project.py",
+        "new_task.py"
       ]
     },
     {

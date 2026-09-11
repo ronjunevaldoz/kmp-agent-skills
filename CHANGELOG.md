@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.2] — 2026-09-11
+
+### Docs
+
+- docs(expect-actual): clarify expect/actual vs platform-exclusive file naming conventions
+
+---
+
 ## [v3.0.1] — 2026-09-10
 
 ### Added

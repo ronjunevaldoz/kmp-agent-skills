@@ -248,10 +248,31 @@ DOCS_MAX_LINES = 150
 LESSON_STALE_DAYS = 30
 LESSON_BACKLOG_LIMIT = 20
 
+# Canonical top-level directories permitted under docs/
+_CANONICAL_DOCS_SUBDIRS = {
+    "reference",
+    "tasks",
+    "decisions",
+    "lessons",
+    "bugs",
+    "mvp",
+    "archive",
+    "audits",
+    "assets",
+    "images",
+}
+
 # Non-doc extensions that do not belong directly inside docs/
 _NON_DOC_EXTENSIONS = {
     ".json", ".yaml", ".yml", ".xml", ".csv", ".toml",
     ".proto", ".graphql", ".sql", ".sh", ".py", ".kt",
+    ".zip", ".tar", ".gz", ".tgz", ".bz2", ".7z",
+    ".pdf", ".ipynb", ".bin", ".exe", ".dylib", ".so",
+}
+
+# Asset image extensions — only permitted inside docs/assets/ or docs/images/
+_DOC_IMAGE_EXTENSIONS = {
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico", ".bmp",
 }
 
 # Subdirectory names that are known non-doc homes inside docs/
@@ -302,6 +323,14 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
     import datetime
 
     today = datetime.date.today()
+
+    # 0. Check top-level subdirectories in docs/ against canonical topology
+    for d in sorted(docs_dir.iterdir()):
+        if d.is_dir() and d.name not in _CANONICAL_DOCS_SUBDIRS:
+            findings.append(
+                f"docs hygiene: docs/{d.name}/ is not a canonical docs subdirectory "
+                f"— move under docs/reference/, docs/tasks/, or docs/archive/"
+            )
 
     # 1. Any docs/ file (outside archive/) exceeding the line limit
     for md in docs_dir.rglob("*.md"):
@@ -359,8 +388,11 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                 "— move under a parent folder: docs/tasks/<parent>/01-slug-todo.md"
             )
         for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
+            if parent_dir.name == "archive":
+                continue
             for md in sorted(parent_dir.rglob("*.md")):
-                in_archive = "archive" in md.relative_to(parent_dir).parts
+                if "archive" in md.parts:
+                    continue
                 m = _TASK_FILE_RE.match(md.stem)
                 if not m:
                     findings.append(
@@ -369,19 +401,19 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                         "— rename to match the task naming convention"
                     )
                     continue
-                if not in_archive and m.group(1) == "done":
+                if m.group(1) == "done":
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is marked done "
                         f"— move to {parent_dir.relative_to(root)}/archive/"
                     )
-                if not in_archive and not _TASK_DATE_RE.search(
+                if not _TASK_DATE_RE.search(
                     md.read_text(encoding="utf-8", errors="ignore")
                 ):
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is missing a "
                         "**Date:** YYYY-MM-DD line in its content"
                     )
-                if not in_archive and md.name not in tasks_index_text:
+                if md.name not in tasks_index_text:
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is not indexed in "
                         "docs/tasks.md — add a Task Log row so status is readable "
@@ -406,21 +438,22 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                     "**Status:** line (Proposed/Accepted/Superseded/Deprecated)"
                 )
 
-    # 5. Non-markdown files sitting directly in docs/ (flag as non-docs)
-    for f in docs_dir.iterdir():
-        if f.is_file() and f.suffix in _NON_DOC_EXTENSIONS:
+    # 5. Non-markdown and asset files in docs/ (flag as non-docs / mislocated assets)
+    for f in sorted(docs_dir.rglob("*")):
+        if not f.is_file() or "archive" in f.parts:
+            continue
+        ext = f.suffix.lower()
+        if ext in _NON_DOC_EXTENSIONS:
             findings.append(
-                f"docs hygiene: {f.relative_to(root)} is a non-doc file in docs/ "
-                f"— move to a purpose-specific directory (api/, spec/, tests/fixtures/, etc.)"
+                f"docs hygiene: {f.relative_to(root)} is a non-doc file inside docs/ "
+                f"— move to tests/fixtures/, api/, or spec/"
             )
-        if f.is_dir() and f.name not in _KNOWN_NON_DOC_SUBDIRS:
-            # Check for non-doc files one level inside subdirs (e.g. docs/smoke/*.json)
-            for sub in f.iterdir():
-                if sub.is_file() and sub.suffix in _NON_DOC_EXTENSIONS:
-                    findings.append(
-                        f"docs hygiene: {sub.relative_to(root)} is a non-doc file inside docs/ "
-                        f"— move to tests/fixtures/, api/, or spec/"
-                    )
+        elif ext in _DOC_IMAGE_EXTENSIONS:
+            if not any(p in f.parts for p in ("assets", "images")):
+                findings.append(
+                    f"docs hygiene: {f.relative_to(root)} is an asset file outside docs/assets/ or docs/images/ "
+                    f"— move to docs/assets/ or docs/images/"
+                )
 
     # 6. Snake_case filenames in docs/ (should be kebab-case)
     for md in docs_dir.rglob("*.md"):

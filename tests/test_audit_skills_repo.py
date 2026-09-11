@@ -583,6 +583,25 @@ class TaskFileConventionTests(unittest.TestCase):
             audit_repo_scripts._check_docs_hygiene(root, findings)
             self.assertFalse(any("01-add-auth-done.md" in f for f in findings))
 
+    def test_does_not_flag_historical_tasks_in_archive_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # Direct docs/tasks/archive directory
+            self._write_task(
+                root, "archive", "2026-08-23-vendor-components.md",
+                "# Historical\n\nNo date header needed in archive.\n",
+            )
+            # Sub-archive docs/tasks/<parent>/archive directory
+            self._write_task(
+                root, "feature-x/archive", "2026-08-20-old-plan.md",
+                "# Old plan\n",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("does not match <NN>-<slug>-<status>.md" in f for f in findings))
+            self.assertFalse(any("missing a **Date:**" in f for f in findings))
+            self.assertFalse(any("not indexed in docs/tasks.md" in f for f in findings))
+
     def test_flags_missing_date_line(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -806,6 +825,87 @@ class ChangelogUnreleasedBacklogTests(unittest.TestCase):
             findings: list[str] = []
             audit_repo_scripts._check_changelog_unreleased_backlog(root, findings)
             self.assertEqual(findings, [])
+
+
+class DocsHygieneTopologyAndNonDocTests(unittest.TestCase):
+    """Verify canonical docs/ subdirectories and recursive non-doc / asset detection."""
+
+    def test_flags_non_canonical_top_level_subdirectories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            for rogue in ("plans", "handoffs", "benchmarks", "layout-system"):
+                (docs / rogue).mkdir(parents=True)
+                (docs / rogue / "note.md").write_text("# Note\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            for rogue in ("plans", "handoffs", "benchmarks", "layout-system"):
+                self.assertTrue(any(f"docs/{rogue}/ is not a canonical docs subdirectory" in f for f in findings))
+
+    def test_allows_canonical_top_level_subdirectories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            for canonical in ("reference", "tasks", "decisions", "lessons", "bugs", "mvp", "archive", "audits", "assets", "images"):
+                (docs / canonical).mkdir(parents=True)
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("is not a canonical docs subdirectory" in f for f in findings))
+
+    def test_flags_nested_non_doc_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "reference" / "fixtures").mkdir(parents=True)
+            (docs / "reference" / "fixtures" / "data.json").write_text("{}", encoding="utf-8")
+            (docs / "reference" / "sub").mkdir(parents=True)
+            (docs / "reference" / "sub" / "script.py").write_text("print(1)\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("data.json is a non-doc file inside docs/" in f for f in findings))
+            self.assertTrue(any("script.py is a non-doc file inside docs/" in f for f in findings))
+
+    def test_flags_image_assets_outside_assets_or_images(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "reference" / "previews").mkdir(parents=True)
+            (docs / "reference" / "previews" / "button.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("button.png is an asset file outside docs/assets/ or docs/images/" in f for f in findings))
+
+    def test_allows_image_assets_in_assets_or_images(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "assets" / "diagrams").mkdir(parents=True)
+            (docs / "assets" / "diagrams" / "arch.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+            (docs / "images").mkdir(parents=True)
+            (docs / "images" / "logo.svg").write_text("<svg></svg>", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("is an asset file outside" in f for f in findings))
+            self.assertFalse(any("is a non-doc file" in f for f in findings))
+
+    def test_does_not_flag_non_docs_in_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "archive" / "old-run").mkdir(parents=True)
+            (docs / "archive" / "old-run" / "dump.json").write_text("{}", encoding="utf-8")
+            (docs / "tasks" / "archive").mkdir(parents=True)
+            (docs / "tasks" / "archive" / "result.csv").write_text("a,b\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("dump.json" in f for f in findings))
+            self.assertFalse(any("result.csv" in f for f in findings))
 
 
 if __name__ == "__main__":

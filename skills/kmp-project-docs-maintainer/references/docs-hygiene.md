@@ -348,7 +348,9 @@ active file, or a reader can't trust it as a substitute for opening each one.
 | Task filename not matching `<NN>-<slug>-<status>.md` (status: todo/doing/blocked/done) | 0 | Rename to match the task naming convention |
 | Task file missing a `**Date:**` line in its content | 0 | Add the date line — filenames no longer carry a date prefix |
 | Active task file not mentioned in `docs/tasks.md` | 0 | Add a Task Log row — the index must name every active task so status is readable without opening each file |
-| Non-doc file (`.json`, `.yaml`, etc.) directly in `docs/` | 0 | Move to purpose-specific directory |
+| Non-doc file (`.json`, `.yaml`, `.py`, `.zip`, etc.) anywhere inside `docs/` | 0 | Move to purpose-specific directory (`tests/fixtures/`, `api/`, `spec/`) |
+| Asset/image file outside `docs/assets/` or `docs/images/` | 0 | Move to `docs/assets/` or `docs/images/` |
+| Non-canonical top-level directory in `docs/` (only `reference`, `tasks`, `decisions`, `lessons`, `bugs`, `mvp`, `archive`, `audits`, `assets`, `images` allowed) | 0 | Move under `docs/reference/`, `docs/tasks/`, or `docs/archive/` |
 | Snake_case filename in `docs/` | 0 | Rename to kebab-case |
 | Reference doc (`docs/` root or `docs/reference/`) with no inbound links anywhere in the repo | 0 | Review — link it from wherever introduces the topic, or delete per Delete vs Archive above if it's genuinely stale |
 | Decision record filename not matching `NNNN-slug.md` (4-digit, sequential) | 0 | Rename to match the ADR naming convention |

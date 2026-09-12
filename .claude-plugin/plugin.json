@@ -1,6 +1,6 @@
 {
   "name": "kmp-agent-skills",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "AI agent skills for Kotlin Multiplatform (KMP) development. Covers clean architecture (6-layer model), feature scaffolding, Compose UI patterns, MVI, navigation, Ktor networking, SQLDelight, DataStore, dependency injection, testing, CI, and more. Use these skills to keep KMP architecture clean, repeatable, and easy to audit.",
   "author": {
     "name": "Ron Valdoz",

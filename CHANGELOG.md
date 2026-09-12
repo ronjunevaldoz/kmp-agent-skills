@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.6] — 2026-09-12
+
+### Added
+
+- feat(skills): add cross-assistant token saving and mandate root bulk maven publishing
+
+---
+
 ## [v3.0.5] — 2026-09-11
 
 ### Added

@@ -1,5 +1,5 @@
 {
-  "version": "3.0.5",
+  "version": "3.0.6",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -3687,7 +3687,7 @@
     {
       "name": "kmp-token-saver",
       "path": "skills/kmp-token-saver",
-      "description": "Token-saving workflow for KMP agent work. Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and Headroom for tool/log/file/RAG compression when the host is already configured. Headroom stays optional until setup exists; do not block the task on it.",
+      "description": "Token-saving workflow for KMP agent work across all assistant runtimes (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Codex). Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and universal AGENTS.md guardrails for environments without Claude plugin runtimes. Headroom stays optional until setup exists; do not block the task on it.",
       "license": "Apache-2.0",
       "last_updated": "2026-07-13",
       "keywords": [

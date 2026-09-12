@@ -294,6 +294,12 @@ dependencyResolutionManagement {
     # same secrets as above
 ```
 
+### Atomic bulk publishing vs. single-module publishing
+
+In multi-module libraries, always invoke root `./gradlew publishAllPublicationsToMavenCentralRepository --no-configuration-cache`. Never run per-module publish tasks (`./gradlew :submodule:publish...`):
+- Per-module publishing creates fragmented, individual staging repositories on Sonatype Central Portal, risking desynchronized partial releases and broken BOM alignment if any module fails midway.
+- The root task aggregates all modules (`-core`, `-compose`, `-testing`, `bom`) and all cross-compiled KMP targets into a single unified bulk staging package for atomic validation and release.
+
 ### Pre-1.0 API stability policy
 
 State this explicitly in the README, not just implicitly through version numbers — a
@@ -434,6 +440,7 @@ missing fields cause Maven Central validation failures that are hard to debug.
 | Public class/fun with no KDoc under `explicitApi()` | The declaration is deliberate but undocumented — a consumer sees it in autocomplete with no explanation |
 | Shipping a breaking `.api` diff as a minor version | `apiCheck` only confirms the diff was deliberate, not that the semver bump matches its severity — classify every diff (addition = minor, signature change/removal = major) before tagging |
 | Hand-writing `settings.gradle.kts`/root `build.gradle.kts` from scratch for a new library | Clone `Kotlin/multiplatform-library-template` first (Step 1) — the real official starting point, same discipline as `kmp-wizard` for an app |
+| Publishing individual modules separately instead of bulk root publish | Never run `./gradlew :submodule:publish...`. Run root `./gradlew publishAllPublicationsToMavenCentralRepository` so all modules (`-core`, `-compose`, `bom`) and target platforms deploy atomically as a single bulk package |
 
 ---
 
@@ -468,6 +475,7 @@ matching heading above, not all of them.
 
 | Date | Change |
 |---|---|
+| 2026-09-12 | Mandated root `./gradlew publishAllPublicationsToMavenCentralRepository` for multi-module publishing to ensure all modules (`-core`, `-compose`, `bom`) and target architectures deploy as a single atomic bulk package on Maven Central rather than fractured per-module staging repositories. 1 new anti-pattern. |
 | 2026-08-04 | Added a "`core`/`helper`/`sugar` — higher stakes here than in an app" section to Step 11 (Ongoing maintenance) — cross-references `kmp-code-quality`'s new core/helper/sugar/sample-local/deprecated categorization and maps it to this skill's own mechanisms: `core`/`sugar` are both binary-compat surface tracked by `apiCheck`/`apiDump`, `helper` is compiler-enforced via `explicitApi()`, `sample-local` is the existing `sample/` module guidance, `deprecated` is the existing cycle below it. |
 | 2026-08-04 | Split SKILL.md (972 lines) into 4 `references/*.md` files (Step 1 Library project structure, Step 3 build.gradle.kts, Step 5 Binary compat validator, Step 11 Ongoing maintenance), leaving pointer stubs plus a new References section. SKILL.md drops to 482 lines, clearing the agentskills.io 500-line recommendation. No content removed, only relocated. Part of the same backlog cleanup as `kmp-compose-design-system`/`-extended`/`kmp-mvi`/`kmp-feature-scaffold`/`kmp-code-quality` (KI-008). |
 | 2026-08-01 | Fixed a self-contradiction found the same day: this skill's own pre-1.0 policy section says `1.0.0` is a deliberate stability promise cut after real usage, but its `gradle.properties` example (and the official `multiplatform-library-template` we clone in Step 1) both defaulted to `1.0.0` for a brand-new library. Changed the example to `0.1.0-SNAPSHOT` and added an explicit instruction to override the template's hardcoded `1.0.0`. Same fix applied to `kmp-release`'s version example and `/kmp-new-project`'s Library F-01. |

@@ -74,6 +74,8 @@ These are workspace-level behaviors not defined in any skill file:
 
 - **Skill naming:** every suggested or proposed new skill name must start with `kmp-` (e.g. `kmp-coroutine-error-handling`). Never suggest a bare topic name without the prefix. Applies to harvest reports, gap analysis, and all conversational suggestions.
 - **No filler:** skip conversational preambles and conclusions; deliver engineering actions immediately
+- **Token saver / terse response density:** prioritize high-density technical output across all agent runtimes (Antigravity, Gemini CLI, Cursor, Windsurf, Claude Code, Codex). Emit compact targeted diffs and bulleted technical facts; omit discursive explanations, narrative recaps, and decorative markdown unless explicitly requested.
+- **Smallest correct solution (anti-overengineering):** prefer the minimal correct change using stdlib and existing patterns before introducing new helpers, wrappers, abstractions, or configuration layers.
 - **Atomic diffs:** never rewrite an entire file for a minor change — targeted edits only
 - **Atomic commits (zero micro-commit bloat):** do not commit interim, non-compiling, or untested work. Iterate in the working tree, verify with test suite and audit commands, and make one atomic Conventional Commit per completed task lane. If minor adjustments or typos are found before pushing, use `git commit --amend --no-edit` or interactive autosquash rather than accumulating trailing `fix: typo` / `fix: test` micro-commits.
 - **Radical honesty:** if a pointer chain or memory lifecycle is untraceable within the context window, label it `[UNVERIFIABLE POINTER DEALLOCATION]`; do not simulate compliance

@@ -20,3 +20,6 @@ local.properties
 
 # Reproducible Agent Skills deployment
 .agents/skills/
+
+# Agent local caches
+.claude/

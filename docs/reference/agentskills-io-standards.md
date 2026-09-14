@@ -112,5 +112,5 @@ uses it as its qualitative checklist for consumer project-owned skills.
 
 - `kmp-audit`'s `_detect_project_skill_standards` already enforces a
   version of this 500-line rule (with a `references/` escape hatch) on *consumer
-  projects'* own project-owned skills — this doc is this repo holding its own 74 skills
+  projects'* own project-owned skills — this doc is this repo holding its own 75 skills
   to the same real standard, not inventing a new one.

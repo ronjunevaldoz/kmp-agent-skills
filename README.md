@@ -11,7 +11,7 @@ Created and maintained by [Ron Valdoz](https://github.com/ronjunevaldoz).
 AI agent skills for **Kotlin Multiplatform (KMP)** development — clean module boundaries,
 version catalogs, build-logic convention plugins, and explicit review loops before code is generated.
 
-Built on the open [Agent Skills](https://agentskills.io) format. All 74 skills verified
+Built on the open [Agent Skills](https://agentskills.io) format. All 75 skills verified
 against the real [`skills-ref`](https://github.com/agentskills/agentskills) reference
 validator — see [`docs/reference/agentskills-io-standards.md`](docs/reference/agentskills-io-standards.md)
 for what was checked and how.
@@ -124,13 +124,13 @@ python3 scripts/release.py auto --dry-run # preview first
 
 ## Skills
 
-74 skills covering the full KMP stack. Load the smallest set that answers the request.
+75 skills covering the full KMP stack. Load the smallest set that answers the request.
 Health at a glance (size, freshness, known issues) without reading every `SKILL.md`:
 [`docs/reference/skills-report.md`](docs/reference/skills-report.md).
 
 | Category | Count | Covers |
 |---|---|---|
-| Foundation | 8 | Module structure, clean architecture, DI, CI, Android CLI |
+| Foundation | 9 | Module structure, clean architecture, DI, CI, GitHub issue governance, Android CLI |
 | Infrastructure | 15 | Auth, networking, resilience, MCP, database, publishing, JNI, codegen |
 | Patterns | 22 | MVI, navigation, offline-first, notifications, IAP, security, and more |
 | UI System | 13 | Design system, state hoisting, animation, adaptive layout |
@@ -148,6 +148,7 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 - [`coroutines-flow-patterns`](skills/kmp-coroutines-flow-patterns/) — structured concurrency, Flow/StateFlow/SharedFlow selection, exception transparency, testing
 - [`flavor-environment`](skills/kmp-flavor-environment/) — BuildKonfig, secrets, env setup
 - [`ci-github-actions`](skills/kmp-ci-github-actions/) — CI matrix and release workflow
+- [`github-issue-governance`](skills/kmp-github-issue-governance/) — issue/sub-issue lifecycle, epic vs task decisions, anti-spam comment policy, shell-safe payload transport
 - [`android-cli`](skills/kmp-android-cli/) — Google's `android` CLI: emulator, build/deploy, SDK installs, agent bootstrap
 
 ### Infrastructure
@@ -280,7 +281,7 @@ All commands are `kmp-` prefixed so they don't collide with your own command nam
 ## Installation
 
 ### 🚀 Recommended: Global Machine-Wide Install (Zero Git Bloat)
-Install once to make all 74 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
+Install once to make all 75 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
 
 ```bash
 # Sync latest released skills globally (~/.claude, ~/.gemini, ~/.codex, ~/.agents)

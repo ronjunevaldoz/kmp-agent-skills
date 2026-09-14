@@ -2,6 +2,20 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.7] — 2026-09-14
+
+### Added
+
+- feat(scripts): sync user-level slash commands in sync-local-assistant-skills.sh
+- feat(audit): flag misplaced GitHub automation scripts and redundant claude mirrors
+- feat(skills): add kmp-github-issue-governance skill and payload validation
+
+### Docs
+
+- docs: index kmp-github-issue-governance and update count to 75 skills
+
+---
+
 ## [v3.0.6] — 2026-09-12
 
 ### Added

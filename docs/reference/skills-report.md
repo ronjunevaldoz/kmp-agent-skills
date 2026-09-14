@@ -1,8 +1,8 @@
 # Skills Report
 
-Generated 2026-09-12 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
+Generated 2026-09-14 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
 
-**74 skills** — 74 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
+**75 skills** — 75 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
 
 | Skill | Lines | Last Updated | Status |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Generated 2026-09-12 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-api-mimicry`](../../skills/kmp-api-mimicry/) | 436 | 2026-08-23 | ✅ |
 | [`kmp-paging`](../../skills/kmp-paging/) | 432 | 2026-06-21 | ✅ |
 | [`kmp-roborazzi`](../../skills/kmp-roborazzi/) | 431 | 2026-07-10 | ✅ |
-| [`kmp-expert`](../../skills/kmp-expert/) | 427 | 2026-08-24 | ✅ |
+| [`kmp-expert`](../../skills/kmp-expert/) | 428 | 2026-08-24 | ✅ |
 | [`kmp-shadcn-compose`](../../skills/kmp-shadcn-compose/) | 426 | 2026-07-31 | ✅ |
 | [`kmp-expect-actual`](../../skills/kmp-expect-actual/) | 425 | 2026-09-11 | ✅ |
 | [`kmp-feature-scaffold`](../../skills/kmp-feature-scaffold/) | 421 | 2026-07-31 | ✅ |
@@ -78,6 +78,7 @@ Generated 2026-09-12 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-compose-graphics-modifiers`](../../skills/kmp-compose-graphics-modifiers/) | 266 | 2026-06-13 | ✅ |
 | [`kmp-compose-web-performance`](../../skills/kmp-compose-web-performance/) | 249 | 2026-08-31 | ✅ |
 | [`kmp-ktor-auth-service`](../../skills/kmp-ktor-auth-service/) | 242 | 2026-06-13 | ✅ |
+| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 233 | 2026-09-14 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
 | [`kmp-token-saver`](../../skills/kmp-token-saver/) | 207 | 2026-07-13 | ✅ |
 

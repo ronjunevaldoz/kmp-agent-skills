@@ -70,14 +70,16 @@
     { "path_glob": "**/feature/*/api/**.kt",       "skill": "kmp-clean-architecture",  "note": "Interfaces, nav contracts" },
     { "path_glob": "**/core/designsystem/**.kt",   "skill": "kmp-compose-design-system",       "note": "Tokens + components" },
     { "path_glob": "**/*androidMain*/**.kt",       "skill": "kmp-expect-actual",       "note": "Platform actual; if it loads a .so via System.loadLibrary, also kmp-jni-pro" },
-    { "path_glob": "**/*iosMain*/**.kt",           "skill": "kmp-expect-actual",       "note": "iOS actual / cinterop — NOT kmp-jni-pro (JNI is JVM-only)" }
+    { "path_glob": "**/*iosMain*/**.kt",           "skill": "kmp-expect-actual",       "note": "iOS actual / cinterop — NOT kmp-jni-pro (JNI is JVM-only)" },
+    { "path_glob": "**/.github/ISSUE_TEMPLATE/**.yml", "skill": "kmp-github-issue-governance", "note": "Issue template schemas, epics, and sub-issues" }
   ],
   "intent_routes": {
     "$comment": "Condensed. Full trigger lists live in each skill's SKILL.md. Listed here only where intent disambiguates a shared extension.",
     "kmp-jni-pro": ["JNI", "JNIEnv", "Java_*", "GetStringUTFChars", "wrapper.cpp", "vendor C++", "3rd-party C++ immutable", "C-shim", "symbol conflict", "native memory leak", "NDK", "call C++ from Kotlin/JVM"],
     "kmp-expect-actual": ["expect/actual", "platform-specific code", "iOS implementation", "CPointer", "cinterop", ".def file", "Kotlin/Native memory"],
     "kmp-expert": ["where do I start KMP", "which skill", "skill order", "KMP architecture decision", "review my KMP project"],
-    "kmp-audit": ["audit repo", "review architecture", "project health", "what is wrong with this project"]
+    "kmp-audit": ["audit repo", "review architecture", "project health", "what is wrong with this project"],
+    "kmp-github-issue-governance": ["github issue", "sub-issue", "create epic", "ticket spam", "gh issue", "comment flooding", "issue template", "gh sub-issue"]
   },
   "hard_boundaries": [
     "JNI (JVM, JNIEnv, Java_*) is kmp-jni-pro. Kotlin/Native cinterop (CPointer, .def) is expect-actual. They are different mechanisms — never conflate.",

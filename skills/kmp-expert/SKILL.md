@@ -169,7 +169,7 @@ versions when the local repo can be checked directly.
 
 ---
 
-## The 74 Skills and What They Own
+## The 75 Skills and What They Own
 
 ### Layer 0 — Architecture Contract
 | Skill | Owns |
@@ -185,6 +185,7 @@ versions when the local repo can be checked directly.
 | `kmp-coroutines-flow-patterns` | Structured concurrency, scope hierarchy, parallel decomposition, `Flow`/`StateFlow`/`SharedFlow`/`Channel` selection, exception transparency, cancellation-safe cleanup, `Mutex`, `runTest`/Turbine testing |
 | `kmp-flavor-environment` | Dev/staging/prod config, BuildKonfig, secrets, `AppConfig` facade |
 | `kmp-ci-github-actions` | GitHub Actions, test matrix, XCFramework release workflow YAML |
+| `kmp-github-issue-governance` | GitHub issue/sub-issue lifecycle, Epic vs Task decisions, anti-spam comment policy, in-place updates, shell-safe payload transport |
 | `kmp-android-cli` | Google's `android` CLI — agent-first project scaffolding, emulator/device management, build + deploy, SDK installs; `android init`/`android skills add` agent bootstrap |
 | `kmp-release` | Versioning (`gradle.properties`), Maven Central (vanniktech), GPG signing, git-cliff changelog, GitHub Release, secrets management, local publish script |
 | `kmp-audit` | Existing project health checks, boundary review, architecture drift, readiness gaps; `--roadmap` for adoption plan |

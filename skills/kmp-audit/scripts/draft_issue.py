@@ -45,8 +45,13 @@ def build_gh_command(
     body: str,
     repo: str,
     labels: list[str],
+    body_file: str | None = None,
 ) -> list[str]:
-    cmd = ["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body]
+    cmd = ["gh", "issue", "create", "--repo", repo, "--title", title]
+    if body_file:
+        cmd.extend(["--body-file", body_file])
+    else:
+        cmd.extend(["--body", body])
     for label in labels:
         cmd += ["--label", label]
     return cmd
@@ -59,13 +64,24 @@ def submit_issue(
     labels: list[str],
     dry_run: bool,
 ) -> int:
-    cmd = build_gh_command(title, body, repo, labels)
-    if dry_run:
-        print("DRY RUN — would execute:")
-        print(" ".join(shlex.quote(c) for c in cmd))
-        return 0
-    result = subprocess.run(cmd, capture_output=False)
-    return result.returncode
+    import os
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as f:
+        f.write(body)
+        temp_path = f.name
+
+    try:
+        cmd = build_gh_command(title, body, repo, labels, body_file=temp_path)
+        if dry_run:
+            print("DRY RUN — would execute:")
+            print(" ".join(shlex.quote(c) for c in cmd))
+            return 0
+        result = subprocess.run(cmd, capture_output=False)
+        return result.returncode
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 
 def main() -> int:

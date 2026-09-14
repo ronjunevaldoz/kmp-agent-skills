@@ -1809,6 +1809,40 @@
       "scripts": []
     },
     {
+      "name": "kmp-github-issue-governance",
+      "path": "skills/kmp-github-issue-governance",
+      "description": "Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP repositories. Use when decomposing work into epics and sub-issues, preventing ticket spam or comment flooding, drafting bug reports and technical tasks, or transporting markdown payloads safely through the GitHub CLI without escaping corruption.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-14",
+      "keywords": [
+        "github issue",
+        "sub-issue",
+        "epic",
+        "ticket spam",
+        "comment flooding",
+        "gh cli",
+        "issue template",
+        "markdown corruption",
+        "in-place updates"
+      ],
+      "triggers": [
+        "github issue",
+        "sub-issue",
+        "epic",
+        "ticket spam",
+        "issue template",
+        "gh issue",
+        "comment flooding",
+        "markdown corruption",
+        "gh sub-issue",
+        "in-place update"
+      ],
+      "scripts": [
+        "gh_sub_issue.py",
+        "validate_issue_payload.py"
+      ]
+    },
+    {
       "name": "kmp-image-loading",
       "path": "skills/kmp-image-loading",
       "description": "Image loading for Kotlin Multiplatform using Coil 3 \u2014 AsyncImage, cache policy, placeholder and error states, circular/rounded clipping, local resource images, Koin wiring of ImageLoader, and memory/disk cache tuning. Coil 3 is KMP-ready for Android, iOS, Desktop, and WASM targets.",

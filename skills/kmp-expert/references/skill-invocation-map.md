@@ -35,6 +35,7 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "MCP", "Model Context Protocol", "kotlin-sdk", "MCP server", "MCP client", "MCP tool", "expose tool to Claude" | `kmp-mcp-sdk` |
 | "local database", "SQLite", "SQLDelight", "offline storage" | `kmp-sqldelight-setup` |
 | "CI", "GitHub Actions", "run KMP tests" | `kmp-ci-github-actions` |
+| "github issue", "sub-issue", "epic", "ticket spam", "gh issue", "comment flooding", "issue template", "gh sub-issue", "in-place update", "markdown corruption" | `kmp-github-issue-governance` |
 | "android cli", "android-cli", "android init", "android skills add", "create AVD from terminal", "android run apk", "agent-first android", "android studio quail", "render compose preview cli", "build and run android app", "deploy to emulator", "run KMP android target" | `kmp-android-cli` |
 | "publish to Maven Central", "Maven publish", "release library", "release project", "cut release", "ship version", "versioning", "semantic versioning", "bump version", "vanniktech", "Sonatype", "git-cliff", "changelog", "GitHub Release", "release pipeline", "GPG signing" | `kmp-release` |
 | "dev/staging/prod", "BuildKonfig", "environment config" | `kmp-flavor-environment` |

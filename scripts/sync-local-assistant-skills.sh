@@ -2,34 +2,28 @@
 # sync-local-assistant-skills.sh — sync the latest kmp-agent-skills release
 # into local assistant skill bundles on this machine.
 #
-# This updates user-level installs only:
-#   ~/.claude/skills  — Claude Code's global skill bundle
+# This updates user-level installs:
+#   ~/.claude/skills, ~/.claude/commands
 #   ~/.codex/skills
 #   ~/.gemini/skills
-#   ~/.agents/skills  — the cross-client convention (agentskills.io's own
-#                       client-implementation guide: "Some implementations also
-#                       scan their native skill directories and/or .agents/skills/
-#                       ... means skills installed by other compliant clients are
-#                       automatically visible to yours, and vice versa"). Syncing
-#                       here makes these skills visible to any agentskills.io-compliant
-#                       client without a client-specific sync step per tool — Cursor,
-#                       Amp, Goose, OpenCode, Letta, Roo Code, Kiro, and others.
-#
-# Commands are not copied. They stay project-local and require explicit review.
+#   ~/.agents/skills, ~/.agents/commands — the cross-client convention
 #
 # Options:
-#   --source PATH   Path to kmp-agent-skills clone (auto-detected if omitted)
-#   --dry-run       Show what would change without writing anything
+#   --source PATH      Path to kmp-agent-skills clone (auto-detected if omitted)
+#   --skip-commands    Skip synchronizing user-level slash commands (~/.agents/commands, ~/.claude/commands)
+#   --dry-run          Show what would change without writing anything
 
 set -euo pipefail
 
 SKILLS_SOURCE=""
+SYNC_COMMANDS=true
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --source) SKILLS_SOURCE="$2"; shift 2 ;;
-    --dry-run) DRY_RUN=true; shift ;;
+    --source)        SKILLS_SOURCE="$2"; shift 2 ;;
+    --skip-commands) SYNC_COMMANDS=false; shift ;;
+    --dry-run)       DRY_RUN=true; shift ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
@@ -120,6 +114,31 @@ for target in "${TARGETS[@]}"; do
 
   echo "  ✅  Synced"
 done
+
+if $SYNC_COMMANDS && [[ -d "$SKILLS_SOURCE/commands" ]]; then
+  COMMAND_TARGETS=(
+    "$HOME/.agents/commands"
+    "$HOME/.claude/commands"
+  )
+  echo ""
+  for cmd_target in "${COMMAND_TARGETS[@]}"; do
+    mkdir -p "$cmd_target"
+    client_name="$(basename "$(dirname "$cmd_target")")"
+    echo "Syncing $client_name user-level slash commands..."
+
+    if $DRY_RUN; then
+      echo "  [dry-run] would sync consumer commands -> $cmd_target/"
+      continue
+    fi
+
+    # Sync consumer commands (do not overwrite custom non-kmp commands)
+    for cmd_file in "$SKILLS_SOURCE/commands"/kmp-*.md; do
+      [[ -f "$cmd_file" ]] || continue
+      cp "$cmd_file" "$cmd_target/"
+    done
+    echo "  ✅  Synced $(ls "$SKILLS_SOURCE/commands"/kmp-*.md | wc -l | tr -d ' ') commands"
+  done
+fi
 
 echo ""
 echo "All local assistant skill bundles now match v$SOURCE_VERSION."

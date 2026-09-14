@@ -4301,7 +4301,7 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             findings = audit_scripts._detect_agent_setup(root)
             self.assertTrue(any(".agents/skills/ missing or empty" in f for f in findings))
 
-    def test_ignores_when_agents_skills_matches(self) -> None:
+    def test_warns_redundant_when_claude_skills_mirror_matches_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._base_claude_setup(root)
@@ -4311,6 +4311,7 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             findings = audit_scripts._detect_agent_setup(root)
             self.assertFalse(any(".agents/skills/" in f and "missing" in f for f in findings))
             self.assertFalse(any("drifted" in f for f in findings))
+            self.assertTrue(any("redundant repo-local .claude/skills/ mirror" in f for f in findings))
 
     def test_flags_drift_between_claude_and_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -5283,6 +5284,46 @@ class InvestigationNarrationCommentTests(unittest.TestCase):
             )
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any("investigation narration comment" in f for f in findings))
+
+
+class MisplacedGithubAutomationTests(unittest.TestCase):
+    def test_flags_misplaced_gh_scripts_in_tools(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tools_dir = root / "tools"
+            tools_dir.mkdir(parents=True)
+            (tools_dir / "gh-sub-issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (tools_dir / "gh_sub_issue.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "create_issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (tools_dir / "pr_validator.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 4)
+            self.assertTrue(all("misplaced GitHub automation script" in f for f in findings))
+
+    def test_ignores_standard_verification_and_analysis_tools(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tools_dir = root / "tools"
+            tools_dir.mkdir(parents=True)
+            (tools_dir / "loc_survey.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "verify_agent_skills_sync.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "test_verify_detekt_baselines.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "check_template_consumer.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 0)
+
+    def test_ignores_scripts_in_github_scripts_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gh_scripts = root / ".github" / "scripts"
+            gh_scripts.mkdir(parents=True)
+            (gh_scripts / "gh-sub-issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (gh_scripts / "gh_sub_issue.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 0)
 
 
 if __name__ == "__main__":

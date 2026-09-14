@@ -357,13 +357,18 @@ def _detect_agent_setup(root: Path) -> list[str]:
         findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — skills not deployed")
     elif legacy_claude_dir.exists() and agents_skills_dir.exists():
         legacy_skills_dir = legacy_claude_dir / "skills"
-        if legacy_skills_dir.exists():
+        if legacy_skills_dir.exists() and any(legacy_skills_dir.iterdir()):
             legacy_names = {p.name for p in legacy_skills_dir.iterdir() if p.is_dir()}
             agents_names = {p.name for p in agents_skills_dir.iterdir() if p.is_dir()}
             if legacy_names != agents_names:
                 findings.append(
                     "agent-setup [MEDIUM]: legacy .claude/skills/ and .agents/skills/ have drifted; "
                     "remove the legacy Claude deployment and use .agents/skills/"
+                )
+            else:
+                findings.append(
+                    "agent-setup [LOW]: redundant repo-local .claude/skills/ mirror detected; "
+                    "modern assistants load skills from .agents/skills/ — remove .claude/skills/ to avoid dual-maintenance"
                 )
 
     has_agent_setup = (root / "AGENTS.md").exists() or (root / ".agents").exists() or legacy_setup
@@ -420,6 +425,38 @@ def _detect_agent_setup(root: Path) -> list[str]:
                         "agent-setup [MEDIUM]: AGENTS.md covers only one surface of a multi-surface project "
                         "— add routing for the missing surface"
                     )
+
+    return findings
+
+
+def _detect_misplaced_github_automation(root: Path) -> list[str]:
+    """Flag ad-hoc GitHub issue/PR automation scripts residing in tools/ instead of
+    .github/scripts/ or using the official kmp-github-issue-governance skill.
+    """
+    tools_dir = root / "tools"
+    if not tools_dir.is_dir():
+        return []
+
+    findings: list[str] = []
+    github_script_patterns = [
+        re.compile(r"^gh[-_].*\.(sh|py|bash|zsh)$", re.IGNORECASE),
+        re.compile(r".*[-_]?(issue|sub-issue|sub_issue|pr)[-_]?.*\.(sh|py|bash|zsh)$", re.IGNORECASE),
+    ]
+
+    for p in sorted(tools_dir.iterdir()):
+        if not p.is_file():
+            continue
+        # Don't flag repository integrity / verification tools like test_verify_ui_doc_refs.py
+        name = p.name.lower()
+        if "verify" in name or "test_" in name or name.startswith("check_template"):
+            continue
+        if any(pat.match(p.name) for pat in github_script_patterns):
+            rel = p.relative_to(root).as_posix()
+            findings.append(
+                f"hygiene [MEDIUM]: misplaced GitHub automation script '{rel}' — "
+                f"GitHub issue/PR scripts belong in .github/scripts/ or should use "
+                f"kmp-github-issue-governance instead of cluttering tools/"
+            )
 
     return findings
 
@@ -5274,6 +5311,7 @@ def audit_project(root: Path) -> list[str]:
 
     # ── Agent & consumer setup ─────────────────────────────────────────────────
     findings.extend(_detect_agent_setup(root))
+    findings.extend(_detect_misplaced_github_automation(root))
 
     # ── Project-owned agent file standards + deployment drift ──────────────────
     findings.extend(_detect_agent_file_standards(root))

@@ -152,7 +152,49 @@ Full details and GraphQL recipes: [references/shell-safe-gh-cli.md](references/s
 
 ---
 
-## 4. Automation Tools
+## 4. Visual & Verification Evidence Standards (PRs & Issues)
+
+Visual changes, rendering bugs, and multi-platform behavioral fixes require objective evidence attached to the issue or PR.
+
+### PR Visual Comparison: Before vs After Table (Recommended)
+For any UI, theme, shader, or layout adjustment, place a side-by-side comparison table directly under the PR summary. Use fixed HTML width attributes (`width="380"`) so images do not distort table columns or overflow GitHub's review container:
+
+```markdown
+## Visual Changes
+
+| Before | After |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/xxxx-before" width="380" alt="Before" /> | <img src="https://github.com/user-attachments/assets/yyyy-after" width="380" alt="After" /> |
+```
+
+### Multi-Platform & Diagnostic Captures: Collapsible `<details>` Block
+When providing proof across multiple platforms (e.g. Desktop Vulkan, Wasm WebGPU, iOS Metal) or lengthy execution logs, wrap evidence in a `<details>` block to prevent vertical clutter:
+
+```markdown
+<details>
+<summary><b>📸 Visual Verification (Desktop & WebGPU)</b></summary>
+
+### Desktop Vulkan
+<img src="https://github.com/user-attachments/assets/xxxx-desktop" width="700" alt="Desktop Vulkan" />
+
+### WebGPU / Wasm
+<img src="https://github.com/user-attachments/assets/yyyy-webgpu" width="700" alt="WebGPU" />
+
+</details>
+```
+
+### Media Inclusion Rules
+1. **Drag-and-Drop / CDN URLs (`user-attachments`)**:
+   - In GitHub Web UI: Paste or drag images (`.png`, `.jpg`, `.webp`) or animated clips (`.gif`, `.mp4` < 10MB) into the markdown editor. GitHub generates persistent `https://github.com/user-attachments/assets/<uuid>` URLs.
+2. **Repository-Relative or Raw URLs**:
+   - For assets stored within repo documentation or design baselines, reference raw repository URLs:
+     `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/docs/evidence/screenshot.png`
+3. **CLI Transport with Images**:
+   - When using `gh pr create` or `gh issue create`, ensure image markdown tags (`![Alt](url)`) or HTML tags (`<img src="url" />`) reside inside your temporary `--body-file` to prevent shell stripping of quotes or brackets.
+
+---
+
+## 5. Automation Tools
 
 This skill bundles two scripts in `scripts/`:
 
@@ -230,4 +272,5 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-09-15 | Added Visual & Verification Evidence Standards: Before vs After tables, collapsible `<details>` blocks for multi-platform captures, and shell-safe media inclusion rules. |
 | 2026-09-14 | Initial release — codified Epic vs Sub-Issue decision tree, comment throttling rules, shell-safe CLI transport via `--body-file`, pre-flight payload validation (`validate_issue_payload.py`), and native GraphQL sub-issue integration (`gh_sub_issue.py`). |

@@ -2,6 +2,18 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.8] — 2026-09-15
+
+### Added
+
+- feat(issue-gov): add visual and verification evidence standards
+
+### Chore
+
+- chore(agents): add .claude/ to .gitignore
+
+---
+
 ## [v3.0.7] — 2026-09-14
 
 ### Added

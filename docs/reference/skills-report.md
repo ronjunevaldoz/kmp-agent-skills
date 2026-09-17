@@ -1,8 +1,8 @@
 # Skills Report
 
-Generated 2026-09-15 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
+Generated 2026-09-18 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
 
-**75 skills** — 75 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
+**77 skills** — 77 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
 
 | Skill | Lines | Last Updated | Status |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Generated 2026-09-15 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-api-mimicry`](../../skills/kmp-api-mimicry/) | 436 | 2026-08-23 | ✅ |
 | [`kmp-paging`](../../skills/kmp-paging/) | 432 | 2026-06-21 | ✅ |
 | [`kmp-roborazzi`](../../skills/kmp-roborazzi/) | 431 | 2026-07-10 | ✅ |
-| [`kmp-expert`](../../skills/kmp-expert/) | 428 | 2026-08-24 | ✅ |
+| [`kmp-expert`](../../skills/kmp-expert/) | 430 | 2026-08-24 | ✅ |
 | [`kmp-shadcn-compose`](../../skills/kmp-shadcn-compose/) | 426 | 2026-07-31 | ✅ |
 | [`kmp-expect-actual`](../../skills/kmp-expect-actual/) | 425 | 2026-09-11 | ✅ |
 | [`kmp-feature-scaffold`](../../skills/kmp-feature-scaffold/) | 421 | 2026-07-31 | ✅ |
@@ -43,7 +43,7 @@ Generated 2026-09-15 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-legal-docs`](../../skills/kmp-legal-docs/) | 393 | 2026-06-21 | ✅ |
 | [`kmp-compose-animation`](../../skills/kmp-compose-animation/) | 389 | 2026-06-21 | ✅ |
 | [`kmp-layout-system`](../../skills/kmp-layout-system/) | 387 | 2026-08-10 | ✅ |
-| [`kmp-migration`](../../skills/kmp-migration/) | 386 | 2026-07-19 | ✅ |
+| [`kmp-migration`](../../skills/kmp-migration/) | 387 | 2026-07-19 | ✅ |
 | [`kmp-permissions`](../../skills/kmp-permissions/) | 386 | 2026-06-21 | ✅ |
 | [`kmp-workmanager`](../../skills/kmp-workmanager/) | 382 | 2026-06-21 | ✅ |
 | [`kmp-biometric-auth`](../../skills/kmp-biometric-auth/) | 373 | 2026-06-21 | ✅ |
@@ -69,16 +69,18 @@ Generated 2026-09-15 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-benchmark`](../../skills/kmp-benchmark/) | 301 | 2026-07-10 | ✅ |
 | [`kmp-analytics`](../../skills/kmp-analytics/) | 297 | 2026-06-21 | ✅ |
 | [`kmp-logging`](../../skills/kmp-logging/) | 297 | 2026-06-24 | ✅ |
+| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 293 | 2026-09-14 | ✅ |
 | [`kmp-mcp-sdk`](../../skills/kmp-mcp-sdk/) | 293 | 2026-08-23 | ✅ |
 | [`kmp-kotlin-rpc`](../../skills/kmp-kotlin-rpc/) | 285 | 2026-07-31 | ✅ |
 | [`kmp-imagevector-generator`](../../skills/kmp-imagevector-generator/) | 277 | 2026-07-08 | ✅ |
 | [`kmp-compose-preview-driven-development`](../../skills/kmp-compose-preview-driven-development/) | 276 | 2026-07-08 | ✅ |
-| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 276 | 2026-09-14 | ✅ |
 | [`kmp-proguard-r8`](../../skills/kmp-proguard-r8/) | 273 | 2026-08-31 | ✅ |
 | [`kmp-refactor`](../../skills/kmp-refactor/) | 268 | 2026-08-02 | ✅ |
 | [`kmp-compose-graphics-modifiers`](../../skills/kmp-compose-graphics-modifiers/) | 266 | 2026-06-13 | ✅ |
 | [`kmp-compose-web-performance`](../../skills/kmp-compose-web-performance/) | 249 | 2026-08-31 | ✅ |
 | [`kmp-ktor-auth-service`](../../skills/kmp-ktor-auth-service/) | 242 | 2026-06-13 | ✅ |
+| [`kmp-openrewrite`](../../skills/kmp-openrewrite/) | 224 | 2026-09-15 | ✅ |
+| [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 220 | 2026-09-18 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
 | [`kmp-token-saver`](../../skills/kmp-token-saver/) | 207 | 2026-07-13 | ✅ |
 

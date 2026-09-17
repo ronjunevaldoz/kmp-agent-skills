@@ -2,6 +2,19 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.9] — 2026-09-18
+
+### Added
+
+- feat(skills): add kmp-delivery-lifecycle and kmp-openrewrite skills
+
+### Docs
+
+- docs: add testing and output style to new skills
+- docs: add freshness rules and changelog to new skills
+
+---
+
 ## [v3.0.8] — 2026-09-15
 
 ### Added

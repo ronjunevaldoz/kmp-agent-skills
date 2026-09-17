@@ -1,5 +1,5 @@
 {
-  "version": "3.0.8",
+  "version": "3.0.9",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -1393,6 +1393,41 @@
         "custom URL scheme",
         "in-app linking",
         "KMP deep link"
+      ],
+      "scripts": []
+    },
+    {
+      "name": "kmp-delivery-lifecycle",
+      "path": "skills/kmp-delivery-lifecycle",
+      "description": "Enforce Definition of Ready (DoR), Definition of Done (DoD), and quality verification gates for Kotlin Multiplatform engineering. Use before picking up a task or feature to verify prerequisites, during implementation to validate UI and performance constraints, and before opening or merging Pull Requests to guarantee release-quality standards.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-18",
+      "keywords": [
+        "definition of ready",
+        "definition of done",
+        "DoR",
+        "DoD",
+        "delivery lifecycle",
+        "acceptance criteria",
+        "quality gate",
+        "performance validation",
+        "ui validation",
+        "pr readiness",
+        "verification checklist"
+      ],
+      "triggers": [
+        "definition of ready",
+        "definition of done",
+        "DoR",
+        "DoD",
+        "quality gate",
+        "delivery lifecycle",
+        "acceptance criteria",
+        "pr readiness",
+        "readiness checklist",
+        "done checklist",
+        "ui validation",
+        "performance gate"
       ],
       "scripts": []
     },
@@ -2803,6 +2838,39 @@
         "cache-then-network",
         "SyncManager",
         "SyncState"
+      ],
+      "scripts": []
+    },
+    {
+      "name": "kmp-openrewrite",
+      "path": "skills/kmp-openrewrite",
+      "description": "Automated, compiler-accurate AST refactoring and migration engine for Kotlin Multiplatform and Gradle projects using OpenRewrite. Use when performing repo-wide dependency upgrades, version catalog (libs.versions.toml) updates, Gradle deprecation remediation, or automated framework migrations (e.g. Ktor 2 to 3, Coroutines, or Java to Kotlin brownfield upgrades) across dozens of multiplatform modules in a single step.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-15",
+      "keywords": [
+        "openrewrite",
+        "rewrite",
+        "ast refactoring",
+        "automated migration",
+        "gradle rewrite",
+        "version catalog migration",
+        "dependency bump",
+        "ktor migration",
+        "lossless semantic tree",
+        "multi-module refactor"
+      ],
+      "triggers": [
+        "openrewrite",
+        "rewrite",
+        "rewriteRun",
+        "rewriteDryRun",
+        "ast refactoring",
+        "automated migration",
+        "gradle rewrite",
+        "migrate build.gradle.kts",
+        "libs.versions.toml upgrade",
+        "ktor 3 migration",
+        "bulk dependency update"
       ],
       "scripts": []
     },

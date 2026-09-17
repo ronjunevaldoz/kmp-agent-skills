@@ -78,6 +78,23 @@ Always classify the unit of work before filing a GitHub issue:
 
 Full matrix: [references/epic-vs-subissue-matrix.md](references/epic-vs-subissue-matrix.md).
 
+### Milestone & Version Target Binding (Mandatory)
+
+Never create or merge tickets without an explicit release destination:
+1. **Every Epic and Sub-Issue MUST have a Milestone**:
+   - Assign the issue to the target release cycle:
+     ```bash
+     gh issue create --title "..." --body-file /tmp/payload.md --milestone "v0.3.0"
+     ```
+   - If a milestone is undecided, assign it to a designated triage milestone (e.g. `Backlog` or `Next`), never left blank.
+2. **Pull Requests MUST inherit the Issue Milestone**:
+   - When opening a PR, attach the corresponding milestone immediately:
+     ```bash
+     gh pr create --title "..." --body-file /tmp/pr-payload.md --milestone "v0.3.0"
+     ```
+3. **Commit SemVer Parity**:
+   - The conventional commit prefix must reflect the targeted milestone version change (`fix:` for patch releases, `feat:` for minor features, `BREAKING CHANGE:` for major releases).
+
 ---
 
 ## 2. Anti-Spam & Comment Governance

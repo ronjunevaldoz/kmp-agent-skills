@@ -56,11 +56,12 @@ Keep the app shipping at every step — a half-migrated screen in production is 
 a broken build is not.
 
 Adoption order:
-1. **Run the audit** — understand current state before touching code
-2. **Adopt the architecture contract** — agree on layer rules, add Detekt gates
-3. **Add MVI to one screen** — prove the pattern works, set the example
-4. **Migrate the highest-traffic feature** — high leverage, high visibility
-5. **Spread one layer at a time** — complete the pattern across screens before adding new layers
+1. **Run the audit** — understand current state before touching code (`kmp-audit`)
+2. **Automate build & dependency upgrades** — modernize Gradle catalogs with OpenRewrite (`kmp-openrewrite`)
+3. **Adopt the architecture contract** — agree on layer rules, add Detekt gates
+4. **Add MVI to one screen** — prove the pattern works, set the example
+5. **Migrate the highest-traffic feature** — high leverage, high visibility
+6. **Spread one layer at a time** — complete the pattern across screens before adding new layers
 
 ---
 

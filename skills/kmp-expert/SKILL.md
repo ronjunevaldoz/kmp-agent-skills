@@ -169,7 +169,7 @@ versions when the local repo can be checked directly.
 
 ---
 
-## The 75 Skills and What They Own
+## The 77 Skills and What They Own
 
 ### Layer 0 — Architecture Contract
 | Skill | Owns |
@@ -186,11 +186,13 @@ versions when the local repo can be checked directly.
 | `kmp-flavor-environment` | Dev/staging/prod config, BuildKonfig, secrets, `AppConfig` facade |
 | `kmp-ci-github-actions` | GitHub Actions, test matrix, XCFramework release workflow YAML |
 | `kmp-github-issue-governance` | GitHub issue/sub-issue lifecycle, Epic vs Task decisions, anti-spam comment policy, in-place updates, shell-safe payload transport |
+| `kmp-delivery-lifecycle` | Definition of Ready (DoR), Definition of Done (DoD), UI verification evidence, conditional performance gates, PR readiness checklists |
 | `kmp-android-cli` | Google's `android` CLI — agent-first project scaffolding, emulator/device management, build + deploy, SDK installs; `android init`/`android skills add` agent bootstrap |
 | `kmp-release` | Versioning (`gradle.properties`), Maven Central (vanniktech), GPG signing, git-cliff changelog, GitHub Release, secrets management, local publish script |
 | `kmp-audit` | Existing project health checks, boundary review, architecture drift, readiness gaps; `--roadmap` for adoption plan |
 | `kmp-migration` | Incremental adoption guide: assess current state, prioritized skill adoption order, MVVM→MVI, monolith→multi-module, Hilt→Koin migration paths |
 | `kmp-refactor` | Rename/move/copy/delete: textual sweep (docs/skills/commands) vs IDE-native refactor (Kotlin symbols), module-move checklist against the 6-layer contract, safe-delete dangling-reference check |
+| `kmp-openrewrite` | OpenRewrite AST refactoring: automated dependency upgrades, libs.versions.toml catalog migrations, Gradle deprecation fixes, Ktor 2→3 framework migration |
 | `kmp-project-docs-maintainer` | Consumer-facing README, onboarding, and docs/reference sync for downstream KMP projects |
 | `kmp-layout-system` | SVG wireframe docs for screens — draft and document app layout before or after implementation; lives in `docs/layout-system/` |
 | `kmp-lessons` | Structured lesson files capturing pattern mismatches and fixes; feeds the skill-harvester |

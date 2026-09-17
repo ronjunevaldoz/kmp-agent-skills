@@ -36,6 +36,7 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "local database", "SQLite", "SQLDelight", "offline storage" | `kmp-sqldelight-setup` |
 | "CI", "GitHub Actions", "run KMP tests" | `kmp-ci-github-actions` |
 | "github issue", "sub-issue", "epic", "ticket spam", "gh issue", "comment flooding", "issue template", "gh sub-issue", "in-place update", "markdown corruption" | `kmp-github-issue-governance` |
+| "definition of ready", "definition of done", "DoR", "DoD", "quality gate", "delivery lifecycle", "acceptance criteria", "pr readiness", "readiness checklist", "done checklist", "ui validation", "performance gate" | `kmp-delivery-lifecycle` |
 | "android cli", "android-cli", "android init", "android skills add", "create AVD from terminal", "android run apk", "agent-first android", "android studio quail", "render compose preview cli", "build and run android app", "deploy to emulator", "run KMP android target" | `kmp-android-cli` |
 | "publish to Maven Central", "Maven publish", "release library", "release project", "cut release", "ship version", "versioning", "semantic versioning", "bump version", "vanniktech", "Sonatype", "git-cliff", "changelog", "GitHub Release", "release pipeline", "GPG signing" | `kmp-release` |
 | "dev/staging/prod", "BuildKonfig", "environment config" | `kmp-flavor-environment` |
@@ -93,4 +94,5 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "certificate pinning", "SSL pinning", "root detection", "jailbreak detection", "freeRASP", "RASP", "secure storage", "encrypted storage", "KSafe", "OWASP Mobile Top 10", "binary stripping", "reverse engineering" | `kmp-security` |
 | "in-app purchases", "IAP", "subscriptions", "Play Billing", "StoreKit", "StoreKit 2", "paywall", "premium feature", "purchase flow", "restore purchases", "entitlement", "billing", "unlock premium", "one-time purchase", "auto-renewing subscription" | `kmp-in-app-purchases` |
 | "Desktop target", "Compose Desktop", "CMP Desktop", "window management", "system tray", "file picker", "native menu bar", "keyboard shortcut Desktop", "drag and drop Desktop", "packaging Desktop", "distributable", "macOS app", "Windows app", "Linux app", "rememberWindowState", "jpackage", "dmg", "msi" | `kmp-desktop-app` |
+| "openrewrite", "rewrite", "rewriteRun", "rewriteDryRun", "ast refactoring", "automated migration", "gradle rewrite", "migrate build.gradle.kts", "libs.versions.toml upgrade", "ktor 3 migration", "bulk dependency update" | `kmp-openrewrite` |
 

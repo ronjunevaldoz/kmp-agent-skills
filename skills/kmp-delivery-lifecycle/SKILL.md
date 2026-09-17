@@ -172,6 +172,34 @@ Include this markdown block in PR descriptions to prove verification:
 
 ---
 
+## Common Anti-Patterns
+
+| Mistake | Fix |
+|---|---|
+| Picking up an unclarified ticket with no acceptance criteria | Halt and document the Given/When/Then criteria before writing code (DoR Gate). |
+| Marking a task done when only the JVM target tests pass | Execute `./gradlew check` across all declared targets (Desktop, Wasm, iOS, Android). |
+| Leaving an issue or PR unassigned to a Milestone | Bind to the active milestone using `gh issue edit --milestone` or `gh pr edit --milestone`. |
+| Merging visual changes without side-by-side evidence | Attach a Before vs After table with fixed widths (`width="380"`) or `<details>` block. |
+| Over-abstracting performance gates for pure data/model changes | Only enforce allocation & render gates when touching `:ui`, shaders, or collections. |
+
+---
+
+## Testing
+
+Validate adherence to delivery gates across repositories:
+- `@Test` pre-commit and CI verification workflows to ensure PR templates require DoR/DoD blocks.
+- `runTest` on GitHub Actions status checks to enforce zero failing gates before merge.
+
+---
+
+## Output Style
+
+1. State the ticket's DoR assessment (Ready vs Blocked) clearly at the top.
+2. List any missing platform targets or acceptance criteria before beginning code.
+3. Emit a concise, checkable verification block in the final response and PR description.
+
+---
+
 ## Related Skills
 
 - `kmp-github-issue-governance` — issue decomposition, anti-spam comment policy, PR visual evidence

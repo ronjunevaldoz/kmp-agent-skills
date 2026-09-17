@@ -189,6 +189,23 @@ When an AI agent is asked to perform a bulk migration across many modules:
 
 ---
 
+## Testing
+
+Validate OpenRewrite recipe transformations using Gradle verification tasks:
+- `@Test` recipe YAML definitions against a mock Gradle project using `RewriteTest` harness.
+- Run `runTest` on execution scripts to verify `rewriteDryRun` generates clean `.patch` outputs.
+- Use `FakeGradleProject` fixture when testing AST modifications in isolation.
+
+---
+
+## Output Style
+
+1. Always show the diff preview from `rewriteDryRun` before executing `rewriteRun`.
+2. Summarize affected modules and modified dependencies in a compact table.
+3. Emit exact shell commands with `-Drewrite.configLocation` and `-Drewrite.activeRecipes`.
+
+---
+
 ## Related Skills
 
 - `kmp-migration` — incremental architecture adoption and brownfield strategy

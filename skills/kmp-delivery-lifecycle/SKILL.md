@@ -180,3 +180,13 @@ Include this markdown block in PR descriptions to prove verification:
 - `kmp-compose-design-system` — semantic tokens, themes, and UI components
 - `kmp-benchmark` — microbenchmarking with `kotlinx-benchmark`
 - `kmp-compose-web-performance` — Wasm bundle size, DevTools, and first-paint metrics
+
+**Freshness rule:** recheck GitHub CLI and PR template capabilities before amending DoR/DoD checklists, as milestone and sub-issue API structures evolve.
+
+---
+
+## Changelog
+
+| Date | Change |
+|---|---|
+| 2026-09-18 | Initial release — codified Definition of Ready (DoR), Definition of Done (DoD), milestone/version binding, conditional UI validation, and performance gates. |

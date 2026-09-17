@@ -195,3 +195,13 @@ When an AI agent is asked to perform a bulk migration across many modules:
 - `kmp-refactor` — semantic and textual symbol rename/move guidance
 - `kmp-feature-scaffold` — module boundaries and convention plugin layout
 - `kmp-audit` — project health audit and smell detection
+
+**Freshness rule:** recheck OpenRewrite Gradle plugin (`org.openrewrite.rewrite`) releases and Kotlin AST recipe compatibility before executing large refactors.
+
+---
+
+## Changelog
+
+| Date | Change |
+|---|---|
+| 2026-09-18 | Initial release — codified OpenRewrite Gradle plugin setup, declarative YAML recipes, dry-run gate, and automated Ktor 2 to 3 migration. |

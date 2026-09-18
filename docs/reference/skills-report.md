@@ -71,12 +71,12 @@ Generated 2026-09-18 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-logging`](../../skills/kmp-logging/) | 297 | 2026-06-24 | ✅ |
 | [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 293 | 2026-09-14 | ✅ |
 | [`kmp-mcp-sdk`](../../skills/kmp-mcp-sdk/) | 293 | 2026-08-23 | ✅ |
+| [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 285 | 2026-09-18 | ✅ |
 | [`kmp-kotlin-rpc`](../../skills/kmp-kotlin-rpc/) | 285 | 2026-07-31 | ✅ |
 | [`kmp-imagevector-generator`](../../skills/kmp-imagevector-generator/) | 277 | 2026-07-08 | ✅ |
 | [`kmp-compose-preview-driven-development`](../../skills/kmp-compose-preview-driven-development/) | 276 | 2026-07-08 | ✅ |
 | [`kmp-proguard-r8`](../../skills/kmp-proguard-r8/) | 273 | 2026-08-31 | ✅ |
 | [`kmp-refactor`](../../skills/kmp-refactor/) | 268 | 2026-08-02 | ✅ |
-| [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 267 | 2026-09-18 | ✅ |
 | [`kmp-compose-graphics-modifiers`](../../skills/kmp-compose-graphics-modifiers/) | 266 | 2026-06-13 | ✅ |
 | [`kmp-compose-web-performance`](../../skills/kmp-compose-web-performance/) | 249 | 2026-08-31 | ✅ |
 | [`kmp-ktor-auth-service`](../../skills/kmp-ktor-auth-service/) | 242 | 2026-06-13 | ✅ |

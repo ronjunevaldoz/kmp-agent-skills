@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.11] — 2026-09-18
+
+### Added
+
+- feat(delivery): mandate issue-id prefixed branch naming
+
+---
+
 ## [v3.0.10] — 2026-09-18
 
 ### Added

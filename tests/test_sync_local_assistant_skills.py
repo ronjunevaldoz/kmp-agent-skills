@@ -28,7 +28,7 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
                 capture_output=True, text=True,
             )
         self.assertEqual(result.returncode, 0, result.stderr)
-        for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills"):
+        for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills", ".gemini/config/plugins/kmp-agent-skills/skills"):
             self.assertIn(target, result.stdout, f"missing target: {target}")
 
     def test_dry_run_does_not_create_agents_dir(self) -> None:

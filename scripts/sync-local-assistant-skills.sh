@@ -5,7 +5,8 @@
 # This updates user-level installs:
 #   ~/.claude/skills, ~/.claude/commands
 #   ~/.codex/skills
-#   ~/.gemini/skills
+#   ~/.gemini/skills, ~/.gemini/commands
+#   ~/.gemini/config/plugins/kmp-agent-skills (Antigravity plugin)
 #   ~/.agents/skills, ~/.agents/commands — the cross-client convention
 #
 # Options:
@@ -73,6 +74,7 @@ TARGETS=(
   "$HOME/.codex/skills"
   "$HOME/.gemini/skills"
   "$HOME/.agents/skills"
+  "$HOME/.gemini/config/plugins/kmp-agent-skills/skills"
 )
 
 echo ""
@@ -89,7 +91,9 @@ echo ""
 
 for target in "${TARGETS[@]}"; do
   mkdir -p "$target"
-  echo "Syncing $(basename "$(dirname "$target")") skills..."
+  client_name="$(basename "$(dirname "$target")")"
+  [[ "$client_name" == "plugins" ]] && client_name="antigravity"
+  echo "Syncing $client_name skills..."
 
   if $DRY_RUN; then
     echo "  [dry-run] would mirror $SKILLS_SOURCE/skills/ -> $target/"
@@ -112,6 +116,31 @@ for target in "${TARGETS[@]}"; do
   # excluded from it above, so --delete never removes it.
   echo "$SOURCE_VERSION" > "$target/.kmp-agent-skills-version"
 
+  # If target is Antigravity plugin, update plugin manifest and version file
+  if [[ "$target" == *"/config/plugins/kmp-agent-skills/skills"* ]]; then
+    plugin_dir="$(dirname "$target")"
+    cat << EOF > "$plugin_dir/plugin.json"
+{
+  "name": "kmp-agent-skills",
+  "version": "$SOURCE_VERSION",
+  "description": "Comprehensive Kotlin Multiplatform & Android agent skills suite",
+  "author": {
+    "name": "Ron June Valdoz"
+  },
+  "license": "MIT",
+  "keywords": [
+    "kmp",
+    "kotlin",
+    "multiplatform",
+    "android",
+    "compose",
+    "architecture"
+  ]
+}
+EOF
+    echo "{\"version\": \"$SOURCE_VERSION\"}" > "$plugin_dir/installed_version.json"
+  fi
+
   echo "  ✅  Synced"
 done
 
@@ -119,6 +148,7 @@ if $SYNC_COMMANDS && [[ -d "$SKILLS_SOURCE/commands" ]]; then
   COMMAND_TARGETS=(
     "$HOME/.agents/commands"
     "$HOME/.claude/commands"
+    "$HOME/.gemini/commands"
   )
   echo ""
   for cmd_target in "${COMMAND_TARGETS[@]}"; do

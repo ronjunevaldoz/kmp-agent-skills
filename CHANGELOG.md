@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.13] — 2026-09-18
+
+### Added
+
+- feat(sync): add Antigravity plugin and workspace discovery support
+
+---
+
 ## [v3.0.12] — 2026-09-18
 
 ### Added

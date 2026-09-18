@@ -148,6 +148,52 @@ Before submitting a Pull Request for review or marking a ticket complete:
 
 ---
 
+## 5. Parallel Execution: Multi-Tasking with Git Worktrees
+
+When working on multiple issues, sub-issues, or PR reviews simultaneously on a single device, **use `git worktree` instead of stash-and-switch branch churn**. Worktrees share the `.git` database but provide isolated working directories and build outputs.
+
+### KMP Worktree Setup Recipe
+
+Always allocate worktrees outside the primary git root (or under a gitignored directory like `.worktrees/`) to prevent recursive audit loops and tooling confusion:
+
+```bash
+# 1. Create a worktree for a specific task branch
+git worktree add ../my-project-worktrees/task-102-camera-hud feat/camera-hud
+
+# 2. MANDATORY for KMP: Copy local.properties
+# (local.properties is gitignored; Android SDK and NDK paths are required to compile)
+cp local.properties ../my-project-worktrees/task-102-camera-hud/local.properties
+
+# 3. Enter and work in total isolation
+cd ../my-project-worktrees/task-102-camera-hud
+./gradlew check
+```
+
+### Worktree Cleanup (Zero Disk Waste)
+
+After the Pull Request is merged into `main`:
+
+```bash
+# 1. Return to primary repository root
+cd /path/to/primary/repo
+
+# 2. Prune and delete the worktree directory
+git worktree remove ../my-project-worktrees/task-102-camera-hud
+
+# 3. Delete the local feature branch once merged
+git branch -d feat/camera-hud
+```
+
+### Operational Worktree Rules
+1. **Never commit inside `.worktrees/` inside the repo without adding it to `.gitignore`**:
+   Orphaned worktrees checked into the working tree duplicate audit violations and waste disk space.
+2. **Always copy `local.properties` immediately**:
+   A worktree without `local.properties` will fail on the first Android or NDK compilation step with `SDK location not found`.
+3. **Prune stale worktrees periodically**:
+   Run `git worktree prune` to clean up dangling references.
+
+---
+
 ## Output Template: PR Delivery Gate Checklist
 
 Include this markdown block in PR descriptions to prove verification:
@@ -217,4 +263,5 @@ Validate adherence to delivery gates across repositories:
 
 | Date | Change |
 |---|---|
+| 2026-09-18 | Added Section 5 Git Worktree Parallel Execution runbook (KMP local.properties copying, isolated build dirs, cleanup pruning). |
 | 2026-09-18 | Initial release — codified Definition of Ready (DoR), Definition of Done (DoD), milestone/version binding, conditional UI validation, and performance gates. |

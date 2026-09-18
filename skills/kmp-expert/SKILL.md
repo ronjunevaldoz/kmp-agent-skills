@@ -169,14 +169,15 @@ versions when the local repo can be checked directly.
 
 ---
 
-## The 77 Skills and What They Own
+## The 78 Skills and What They Own
 
 ### Layer 0 — Architecture Contract
 | Skill | Owns |
 |---|---|
 | `kmp-clean-architecture` | 6-layer dependency contract, `:model` vs `:api` split, `internal` visibility rules, Detekt architecture enforcement |
 | `kmp-feature-scaffold` | Project structure, 6-layer module graph, AGP 9, build-logic, version catalog, Koin 4 |
-| `kmp-presenter-module` | Pure-Kotlin ViewModel, MVI `UiState`/`UiIntent` contracts, no Compose dep, Koin wiring, Screen/Content split |
+| `kmp-mvi` | State/Intent/Effect contract, MviViewModel, Channel effects, screen/content split, atomic state |
+| `kmp-presenter-module` | :presenter convention plugin, pure Kotlin ViewModels, no Compose import, Koin wiring |
 
 ### Layer 1 — Project Foundation
 | Skill | Owns |
@@ -189,6 +190,7 @@ versions when the local repo can be checked directly.
 | `kmp-delivery-lifecycle` | Definition of Ready (DoR), Definition of Done (DoD), UI verification evidence, conditional performance gates, PR readiness checklists |
 | `kmp-android-cli` | Google's `android` CLI — agent-first project scaffolding, emulator/device management, build + deploy, SDK installs; `android init`/`android skills add` agent bootstrap |
 | `kmp-release` | Versioning (`gradle.properties`), Maven Central (vanniktech), GPG signing, git-cliff changelog, GitHub Release, secrets management, local publish script |
+| `kmp-update` | Upstream skill synchronization, drift remediation, lockfile regeneration, and global/consumer assistant bundle updates |
 | `kmp-audit` | Existing project health checks, boundary review, architecture drift, readiness gaps; `--roadmap` for adoption plan |
 | `kmp-migration` | Incremental adoption guide: assess current state, prioritized skill adoption order, MVVM→MVI, monolith→multi-module, Hilt→Koin migration paths |
 | `kmp-refactor` | Rename/move/copy/delete: textual sweep (docs/skills/commands) vs IDE-native refactor (Kotlin symbols), module-move checklist against the 6-layer contract, safe-delete dangling-reference check |

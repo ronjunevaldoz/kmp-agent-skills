@@ -11,7 +11,7 @@ Created and maintained by [Ron Valdoz](https://github.com/ronjunevaldoz).
 AI agent skills for **Kotlin Multiplatform (KMP)** development — clean module boundaries,
 version catalogs, build-logic convention plugins, and explicit review loops before code is generated.
 
-Built on the open [Agent Skills](https://agentskills.io) format. All 77 skills verified
+Built on the open [Agent Skills](https://agentskills.io) format. All 78 skills verified
 against the real [`skills-ref`](https://github.com/agentskills/agentskills) reference
 validator — see [`docs/reference/agentskills-io-standards.md`](docs/reference/agentskills-io-standards.md)
 for what was checked and how.
@@ -124,7 +124,7 @@ python3 scripts/release.py auto --dry-run # preview first
 
 ## Skills
 
-77 skills covering the full KMP stack. Load the smallest set that answers the request.
+78 skills covering the full KMP stack. Load the smallest set that answers the request.
 Health at a glance (size, freshness, known issues) without reading every `SKILL.md`:
 [`docs/reference/skills-report.md`](docs/reference/skills-report.md).
 
@@ -283,7 +283,7 @@ All commands are `kmp-` prefixed so they don't collide with your own command nam
 ## Installation
 
 ### 🚀 Recommended: Global Machine-Wide Install (Zero Git Bloat)
-Install once to make all 77 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
+Install once to make all 78 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
 
 ```bash
 # Sync latest released skills globally (~/.claude, ~/.gemini, ~/.codex, ~/.agents)

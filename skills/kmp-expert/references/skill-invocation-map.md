@@ -40,6 +40,7 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "open a PR", "gh pr create", "PR with UI change", "PR screenshots", "before/after screenshots", "visual evidence" | `kmp-delivery-lifecycle` (Phase 3A.3 gate) then `kmp-roborazzi` (`scripts/pr_visual_evidence.py`) |
 | "android cli", "android-cli", "android init", "android skills add", "create AVD from terminal", "android run apk", "agent-first android", "android studio quail", "render compose preview cli", "build and run android app", "deploy to emulator", "run KMP android target" | `kmp-android-cli` |
 | "publish to Maven Central", "Maven publish", "release library", "release project", "cut release", "ship version", "versioning", "semantic versioning", "bump version", "vanniktech", "Sonatype", "git-cliff", "changelog", "GitHub Release", "release pipeline", "GPG signing" | `kmp-release` |
+| "update skills", "check for skill updates", "sync skills", "skills drift", "upgrade kmp-agent-skills", "kmp-update" | `kmp-update` |
 | "dev/staging/prod", "BuildKonfig", "environment config" | `kmp-flavor-environment` |
 | "XCFramework", "Swift Package Manager", "SPM", "iOS binary" | `kmp-xcframework-spm` |
 | "ImageVector", "vector icon", "vectorize", "SVG to Compose", "PNG to vector", "trace image", "icon from image", "logo vector", "raster to vector", "vtracer", "potrace", "convert image to icon", "compile icon", "app icon vector", "no PNG icons", "icon pipeline", "extract logo", "extract icon" | `kmp-imagevector-generator` |

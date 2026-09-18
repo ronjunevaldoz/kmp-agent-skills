@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.10] — 2026-09-18
+
+### Added
+
+- feat(delivery): add git worktree parallel execution runbook
+
+---
+
 ## [v3.0.9] — 2026-09-18
 
 ### Added

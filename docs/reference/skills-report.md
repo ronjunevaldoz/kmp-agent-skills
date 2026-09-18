@@ -76,11 +76,11 @@ Generated 2026-09-18 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-compose-preview-driven-development`](../../skills/kmp-compose-preview-driven-development/) | 276 | 2026-07-08 | ✅ |
 | [`kmp-proguard-r8`](../../skills/kmp-proguard-r8/) | 273 | 2026-08-31 | ✅ |
 | [`kmp-refactor`](../../skills/kmp-refactor/) | 268 | 2026-08-02 | ✅ |
+| [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 267 | 2026-09-18 | ✅ |
 | [`kmp-compose-graphics-modifiers`](../../skills/kmp-compose-graphics-modifiers/) | 266 | 2026-06-13 | ✅ |
 | [`kmp-compose-web-performance`](../../skills/kmp-compose-web-performance/) | 249 | 2026-08-31 | ✅ |
 | [`kmp-ktor-auth-service`](../../skills/kmp-ktor-auth-service/) | 242 | 2026-06-13 | ✅ |
 | [`kmp-openrewrite`](../../skills/kmp-openrewrite/) | 224 | 2026-09-15 | ✅ |
-| [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 220 | 2026-09-18 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
 | [`kmp-token-saver`](../../skills/kmp-token-saver/) | 207 | 2026-07-13 | ✅ |
 

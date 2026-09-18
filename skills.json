@@ -3930,6 +3930,40 @@
       "scripts": []
     },
     {
+      "name": "kmp-update",
+      "path": "skills/kmp-update",
+      "description": "Update kmp-agent-skills to the latest upstream release across machine-wide assistant bundles or consumer projects. Check for version drift, sync installed skills (~/.gemini/config/plugins/kmp-agent-skills, ~/.gemini/skills, ~/.agents/skills, ~/.claude/skills, ~/.codex/skills), update consumer .agents/skills, regenerate skills lockfiles, and run post-update verification audits.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-18",
+      "keywords": [
+        "update skills",
+        "check updates",
+        "sync skills",
+        "kmp-update",
+        "kmp-update-skills",
+        "kmp-check-updates",
+        "upgrade skills",
+        "skills drift",
+        "sync-local-assistant-skills",
+        "update-consumer-skills"
+      ],
+      "triggers": [
+        "update skills",
+        "check updates",
+        "sync skills",
+        "kmp-update",
+        "kmp-update-skills",
+        "kmp-check-updates",
+        "upgrade skills",
+        "skills drift",
+        "sync-local-assistant-skills",
+        "update-consumer-skills",
+        "refresh skills",
+        "latest skills release"
+      ],
+      "scripts": []
+    },
+    {
       "name": "kmp-workmanager",
       "path": "skills/kmp-workmanager",
       "description": "Background task scheduling for Kotlin Multiplatform \u2014 WorkManager (Android) and BGTaskScheduler / BGProcessingTask (iOS) behind an expect/actual BackgroundScheduler. Covers one-time work, periodic work, retry with backoff, input/output data, and chained work on Android. iOS uses BGAppRefreshTask for short frequent tasks and BGProcessingTask for long network or maintenance jobs.",

@@ -2,7 +2,7 @@
 
 Generated 2026-10-09 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
 
-**77 skills** — 77 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
+**78 skills** — 78 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
 
 | Skill | Lines | Last Updated | Status |
 |---|---|---|---|
@@ -83,6 +83,7 @@ Generated 2026-10-09 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-openrewrite`](../../skills/kmp-openrewrite/) | 224 | 2026-09-15 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
 | [`kmp-token-saver`](../../skills/kmp-token-saver/) | 207 | 2026-07-13 | ✅ |
+| [`kmp-update`](../../skills/kmp-update/) | 179 | 2026-09-18 | ✅ |
 
 **Status legend:** ✅ no issues · 🟡 known, tracked debt (doesn't block a release — see KI-008) · 🔴 blocking (would fail `scan_skill_issues.py`, a new regression, not tracked debt)
 

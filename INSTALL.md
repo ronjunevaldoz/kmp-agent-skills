@@ -24,7 +24,7 @@ listed twice; remove any previously synced `~/.claude/skills/kmp-*` and
 
 ## 🚀 Global Machine-Wide Install (other assistants, Zero Repo Bloat)
 
-For individual developers, pair-programming assistants, and multi-repo workflows, installing globally is the cleanest approach. It makes all 77 skills instantly available to your AI assistant across **every KMP project** on your machine with **zero git pollution**, **zero token waste on specialized repos**, and **zero repository maintenance**.
+For individual developers, pair-programming assistants, and multi-repo workflows, installing globally is the cleanest approach. It makes all 78 skills instantly available to your AI assistant across **every KMP project** on your machine with **zero git pollution**, **zero token waste on specialized repos**, and **zero repository maintenance**.
 
 ### Fast Global Sync
 

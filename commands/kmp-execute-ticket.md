@@ -52,9 +52,10 @@ Paste the ticket content:
 
 Display before continuing:
 ```
-TICKET:   #<number> — <title>
-SOURCE:   GitHub Issues | Pasted
-LABELS:   <labels>
+TICKET:    #<number> — <title>
+SOURCE:    GitHub Issues | Pasted
+MILESTONE: <milestone or "⚠️ NONE — must assign before starting">
+LABELS:    <labels>
 
 DESCRIPTION:
 <first 500 chars>
@@ -63,7 +64,12 @@ ACCEPTANCE CRITERIA:
 - <one bullet per criterion extracted from description>
 ```
 
-**Gate: confirm with user before proceeding.**
+**Gate (DoR): If MILESTONE is missing, assign one before continuing:**
+```bash
+gh issue edit <number> --milestone "<active-milestone>"
+```
+
+Confirm with user before proceeding to Phase 2.
 
 ---
 
@@ -75,17 +81,23 @@ and include the criteria in the plan as met, pending, or unclear.
 
 ---
 
-## Phase 3 — Branch
+## Phase 3 — Branch or Worktree
+ 
+Standard branch format: `feat/<ticket-id>-<short-kebab-slug>` (or `fix/`, `chore/`).
+Slug: lowercase kebab-case from the ticket title, max 5 words.
+Example: `#42 — Add DataStore preferences for user settings` → `feat/42-datastore-user-prefs`
 
+**Option A — In-tree branch:**
 ```bash
-git checkout -b feature/<ticket-id>-<short-kebab-slug>
+git checkout -b feat/<ticket-id>-<short-kebab-slug>
 ```
 
-Slug: lowercase kebab-case from the ticket title, max 5 words.
-
-Example: `#42 — Add DataStore preferences for user settings` → `feature/42-datastore-user-prefs`
-
-If branch exists, switch to it.
+**Option B — Isolated worktree (Recommended for parallel tasks):**
+```bash
+git worktree add ../worktrees/feat-<ticket-id>-<short-kebab-slug> -b feat/<ticket-id>-<short-kebab-slug>
+cp local.properties ../worktrees/feat-<ticket-id>-<short-kebab-slug>/local.properties
+cd ../worktrees/feat-<ticket-id>-<short-kebab-slug>
+```
 
 ---
 
@@ -192,6 +204,7 @@ Next:
 ```bash
 gh pr create \
   --title "<ticket title (≤70 chars)>" \
+  --milestone "<ticket milestone>" \
   --body "$(cat <<'EOF'
 ## Summary
 
@@ -204,11 +217,21 @@ gh pr create \
 - **Files created**: <N>  |  **Tests written**: <N> unit + <N> UI
 - **Validation**: PASS (ktlint: PASS, detekt: PASS | NOT CONFIGURED)
 
-## Test plan
+## Delivery Gates Verification
 
-- [ ] `./gradlew jvmTest` passes
-- [ ] Roborazzi golden images committed
-- [ ] No new architecture smells (`audit_project.py`)
+### Definition of Ready (DoR)
+- [x] Acceptance criteria satisfied
+- [x] Architecture layer boundaries respected
+
+### UI & Performance Gates (if applicable)
+- [x] Semantic design tokens used (AppTheme)
+- [x] Before vs After visual evidence attached
+- [x] Zero per-frame allocations in render/draw paths
+
+### Definition of Done (DoD)
+- [x] `./gradlew check` passes across all target platforms
+- [x] Milestone assigned to PR
+- [x] Conventional commits verified
 
 Closes #<number>
 
@@ -216,7 +239,7 @@ Closes #<number>
 EOF
 )"
 ```
-```
+
 
 ---
 

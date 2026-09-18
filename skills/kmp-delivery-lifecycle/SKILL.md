@@ -152,20 +152,38 @@ Before submitting a Pull Request for review or marking a ticket complete:
 
 When working on multiple issues, sub-issues, or PR reviews simultaneously on a single device, **use `git worktree` instead of stash-and-switch branch churn**. Worktrees share the `.git` database but provide isolated working directories and build outputs.
 
+### Branch Naming Conventions (Mandatory)
+
+Always prefix branch names with the conventional type and target GitHub issue ID:
+
+```text
+<type>/<issue-id>-<short-description>
+```
+
+| Type | When | Example |
+|---|---|---|
+| `feat/` | New features, sub-tasks, capability additions | `feat/102-camera-hud` |
+| `fix/` | Bug fixes, rendering defects, regressions | `fix/104-gizmo-wireframe` |
+| `chore/` | Housekeeping, dependency bumps, agent setups | `chore/28-standardize-agents` |
+| `refactor/` | Restructuring without behavior change | `refactor/55-scene-hierarchy` |
+| `docs/` | Documentation additions or sync | `docs/88-kmp-openrewrite` |
+
+*Why this is enforced:* GitHub automatically connects branches containing `#<id>` or `<id>-` to the issue in project boards, and worktree directories (`../worktrees/feat-102-camera-hud`) become self-describing and collision-free.
+
 ### KMP Worktree Setup Recipe
 
 Always allocate worktrees outside the primary git root (or under a gitignored directory like `.worktrees/`) to prevent recursive audit loops and tooling confusion:
 
 ```bash
-# 1. Create a worktree for a specific task branch
-git worktree add ../my-project-worktrees/task-102-camera-hud feat/camera-hud
+# 1. Create a worktree for a specific task branch (branch: feat/102-camera-hud)
+git worktree add ../my-project-worktrees/feat-102-camera-hud -b feat/102-camera-hud
 
 # 2. MANDATORY for KMP: Copy local.properties
 # (local.properties is gitignored; Android SDK and NDK paths are required to compile)
-cp local.properties ../my-project-worktrees/task-102-camera-hud/local.properties
+cp local.properties ../my-project-worktrees/feat-102-camera-hud/local.properties
 
 # 3. Enter and work in total isolation
-cd ../my-project-worktrees/task-102-camera-hud
+cd ../my-project-worktrees/feat-102-camera-hud
 ./gradlew check
 ```
 
@@ -178,10 +196,10 @@ After the Pull Request is merged into `main`:
 cd /path/to/primary/repo
 
 # 2. Prune and delete the worktree directory
-git worktree remove ../my-project-worktrees/task-102-camera-hud
+git worktree remove ../my-project-worktrees/feat-102-camera-hud
 
 # 3. Delete the local feature branch once merged
-git branch -d feat/camera-hud
+git branch -d feat/102-camera-hud
 ```
 
 ### Operational Worktree Rules
@@ -263,5 +281,5 @@ Validate adherence to delivery gates across repositories:
 
 | Date | Change |
 |---|---|
-| 2026-09-18 | Added Section 5 Git Worktree Parallel Execution runbook (KMP local.properties copying, isolated build dirs, cleanup pruning). |
+| 2026-09-18 | Added Section 5 Git Worktree Parallel Execution runbook with mandatory `<type>/<issue-id>-<description>` branch naming conventions. |
 | 2026-09-18 | Initial release — codified Definition of Ready (DoR), Definition of Done (DoD), milestone/version binding, conditional UI validation, and performance gates. |

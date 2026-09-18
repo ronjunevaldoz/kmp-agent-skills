@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.12] — 2026-09-18
+
+### Added
+
+- feat(commands): enforce DoR milestone check, worktree branching, and DoD PR gates in execute-ticket
+
+---
+
 ## [v3.0.11] — 2026-09-18
 
 ### Added

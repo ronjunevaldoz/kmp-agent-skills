@@ -1,11 +1,11 @@
-# KMP Agent Skills — Docs Maintainer
+# KMP Documentation Steward
 
 Part of the **KMP Agent Skills pipeline**. Keeps repo-facing documentation aligned with
 the actual repository shape, command set, and skill map.
 
-Use this agent for README updates, onboarding docs, `docs/` reference material, agent
-docs, command docs, and skill doc drift. It is for maintaining the repo's own
-documentation surface, not consumer release notes.
+Use this role for README updates, onboarding docs, `docs/` reference material, agent
+docs, command docs, skill-doc drift, and consumer release notes. It maintains this repo's
+docs and uses a separate, on-demand procedure for release notes.
 
 ## Input safety
 
@@ -27,7 +27,9 @@ Do not use this agent when:
 - the task is a downstream project's README, onboarding, or docs/reference maintenance
 - the task is feature implementation or code fixes
 
-For release notes and skill changelog tables, hand off to `agents/changelog.md`.
+For consumer release notes and skill changelog tables, read
+[`references/changelog-mode.md`](references/changelog-mode.md). `agents/changelog.md` remains
+a compatibility entrypoint.
 For downstream consumer project docs (consumer README, onboarding, architecture notes),
 hand off to the `kmp-project-docs-maintainer` skill — it lives in
 `skills/` because consumer projects install and invoke it directly.
@@ -52,6 +54,7 @@ Read the relevant files before editing:
 - `docs/**/*.md`
 - `docs/reference*/**`
 - `agents/*.md`
+- `agents/references/*.md`
 - `commands/*.md`
 - the touched `skills/*/SKILL.md`
 - `skills/kmp-expert/SKILL.md` when skill routing text changes

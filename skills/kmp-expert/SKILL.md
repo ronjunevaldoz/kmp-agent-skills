@@ -1,15 +1,9 @@
 ---
 name: kmp-expert
 description: >
-  KMP Expert Orchestrator — maps all skills in this collection, their dependency
-  order, and how to sequence them for any Kotlin Multiplatform project. Use this skill
-  first to decide which other skill to invoke, in what order, for a given task. Covers:
-  skill dependency graph, layer-by-layer build order, feature-slice assembly sequence,
-  decision trees for the most common "what do I use here?" questions, and when to hand
-  off to the project audit skill. This is a meta-skill; it delegates to domain skills
-  for implementation and review, and it can turn confirmed audit findings into issue
-  drafts or question drafts when the repo needs tracking. The long-term goal is to keep
-  this skills collection aligned with the cleanest KMP architecture patterns possible.
+  Route Kotlin Multiplatform project or feature work to the smallest relevant skills and
+  sequence them. Use for skill selection, build-order decisions, or adoption-roadmap routing;
+  use the audit skill for project findings.
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
@@ -38,6 +32,12 @@ metadata:
     - skill collection
     - skills index
 ---
+
+# KMP Skill Router
+
+This skill's public ID remains `kmp-expert` for compatibility. Agents are named by role;
+skills are named by reusable capability. Keep skill folder/frontmatter IDs stable and improve
+their short descriptions or display labels instead of renaming installed skills.
 
 ## When to Use This Skill
 
@@ -171,110 +171,9 @@ versions when the local repo can be checked directly.
 
 ## The 77 Skills and What They Own
 
-### Layer 0 — Architecture Contract
-| Skill | Owns |
-|---|---|
-| `kmp-clean-architecture` | 6-layer dependency contract, `:model` vs `:api` split, `internal` visibility rules, Detekt architecture enforcement |
-| `kmp-feature-scaffold` | Project structure, 6-layer module graph, AGP 9, build-logic, version catalog, Koin 4 |
-| `kmp-presenter-module` | Pure-Kotlin ViewModel, MVI `UiState`/`UiIntent` contracts, no Compose dep, Koin wiring, Screen/Content split |
-
-### Layer 1 — Project Foundation
-| Skill | Owns |
-|---|---|
-| `kmp-dependency-injection` | Koin module organization, manual vs annotated wiring, app/feature/ViewModel scopes, test overrides |
-| `kmp-coroutines-flow-patterns` | Structured concurrency, scope hierarchy, parallel decomposition, `Flow`/`StateFlow`/`SharedFlow`/`Channel` selection, exception transparency, cancellation-safe cleanup, `Mutex`, `runTest`/Turbine testing |
-| `kmp-flavor-environment` | Dev/staging/prod config, BuildKonfig, secrets, `AppConfig` facade |
-| `kmp-ci-github-actions` | GitHub Actions, test matrix, XCFramework release workflow YAML |
-| `kmp-github-issue-governance` | GitHub issue/sub-issue lifecycle, Epic vs Task decisions, anti-spam comment policy, in-place updates, shell-safe payload transport |
-| `kmp-delivery-lifecycle` | Definition of Ready (DoR), Definition of Done (DoD), UI verification evidence, conditional performance gates, PR readiness checklists |
-| `kmp-android-cli` | Google's `android` CLI — agent-first project scaffolding, emulator/device management, build + deploy, SDK installs; `android init`/`android skills add` agent bootstrap |
-| `kmp-release` | Versioning (`gradle.properties`), Maven Central (vanniktech), GPG signing, git-cliff changelog, GitHub Release, secrets management, local publish script |
-| `kmp-audit` | Existing project health checks, boundary review, architecture drift, readiness gaps; `--roadmap` for adoption plan |
-| `kmp-migration` | Incremental adoption guide: assess current state, prioritized skill adoption order, MVVM→MVI, monolith→multi-module, Hilt→Koin migration paths |
-| `kmp-refactor` | Rename/move/copy/delete: textual sweep (docs/skills/commands) vs IDE-native refactor (Kotlin symbols), module-move checklist against the 6-layer contract, safe-delete dangling-reference check |
-| `kmp-openrewrite` | OpenRewrite AST refactoring: automated dependency upgrades, libs.versions.toml catalog migrations, Gradle deprecation fixes, Ktor 2→3 framework migration |
-| `kmp-project-docs-maintainer` | Consumer-facing README, onboarding, and docs/reference sync for downstream KMP projects |
-| `kmp-layout-system` | SVG wireframe docs for screens — draft and document app layout before or after implementation; lives in `docs/layout-system/` |
-| `kmp-lessons` | Structured lesson files capturing pattern mismatches and fixes; feeds the skill-harvester |
-| `kmp-skill-harvester` | Reads accumulated lesson files and proposes amendments to source skills; produces a harvest report |
-| `kmp-legal-docs` | Privacy Policy, Terms & Conditions, Google Play Data Safety, App Store privacy labels, GDPR/CCPA, in-app `LegalDocsScreen`, consent gate |
-| `kmp-proguard-r8` | R8 minification for KMP Android release builds: keep rules per library (Koin, Ktor, SQLDelight, serialization), release crash diagnosis, mapping.txt management |
-| `kmp-security` | Certificate/SSL pinning, root/jailbreak/tamper detection (freeRASP), encrypted local storage (KSafe), iOS/Native release-binary stripping, OWASP Mobile Top 10 coverage map |
-| `kmp-in-app-purchases` | IAP and subscriptions: shared `PurchaseState` domain model, Play Billing (Android) and StoreKit 2 (iOS) implementations, MVI ViewModel integration, server-side validation |
-| `kmp-desktop-app` | Desktop-specific: window management, system tray, file picker, native menu bar, keyboard shortcuts, drag-and-drop, JPackage packaging (dmg/msi/deb) |
-
-### Layer 2 — Core Infrastructure
-| Skill | Owns |
-|---|---|
-| `kmp-ktor-auth-service` | Ktor auth service, bearer/JWT, sessions, Ktor RPC, login/refresh/logout flows, protected routes |
-| `kmp-mongodb-database` | MongoDB coroutine driver, repository boundary, document mapping, reactive reads with Flow, change streams |
-| `kmp-kotlin-rpc` | Kotlin RPC boundaries, shared service contracts, client/server layout, Ktor auth integration |
-| `kmp-network-layer` | Ktor 3 client, `NetworkResult<T>`, `safeRequest {}`, token refresh interceptor |
-| `kmp-resilience` | Retry/backoff/jitter, timeouts, circuit breaker, rate limiting, idempotency keys, transient-vs-fatal error classification, backend/platform resilience parity |
-| `kmp-mcp-sdk` | Model Context Protocol via the official `modelcontextprotocol/kotlin-sdk` — MCP server exposing tools/resources/prompts, MCP client, transport selection (STDIO/Streamable HTTP/SSE/WebSocket) |
-| `kmp-sqldelight-setup` | SQLDelight 2, platform drivers, schema files, migrations, Flow queries |
-| `kmp-datastore` | Preferences DataStore + Proto DataStore, expect/actual factory, Koin wiring, SharedPreferences migration |
-| `kmp-xcframework-spm` | XCFramework build, SPM binary target, Xcode integration |
-| `kmp-library-publishing` | Maven Central publishing (vanniktech plugin), GitHub Packages, BOM, binary-compatibility-validator, SNAPSHOT vs stable channels, GPG signing, release checklist |
-| `kmp-docs-site` | GitHub Pages developer guide for a published library — MkDocs Material, Dokka HTML API reference, compiler-verified snippet extraction, release-tag-triggered CI deploy |
-| `kmp-api-mimicry` | Mimicking a reference API's shape (Modifier-style chains, slot lambdas, DSL markers) for a from-scratch library on a non-standard runtime (custom native renderer, custom transport) — plain-function DSL vs. real-compiler-plugin decision, mirror-map documentation |
-| `kmp-kotlinpoet` | Authoring a custom KSP annotation processor with KotlinPoet — FileSpec/TypeSpec/FunSpec builders, two-module processor structure, `kotlinpoet-ksp` interop for converting KSP types |
-| `kmp-logging` | logger wrapper, kotlin-logging or Kermit, log levels, logger factory, crash breadcrumb bridge, Koin wiring |
-
-### Layer 3 — Platform Patterns
-| Skill | Owns |
-|---|---|
-| `kmp-expect-actual` | `expect/actual` mechanism, interface-injection alternative, `@ObjCName`, Kotlin/Native memory |
-| `kmp-repository-pattern` | Data layer, single source of truth, fetch strategies, domain mapping, optimistic updates |
-| `kmp-jni-pro` | JVM↔C++ JNI bridges (`JNIEnv`, `Java_*`, `GetStringUTFChars`, `*-jni.cpp`/`*-wrapper.cpp`), memory safety across the JVM boundary, 3rd-party C++ as read-only black box + C-shim wrapping, symbol-conflict isolation. **NOT** Kotlin/Native cinterop (`CPointer`/`.def`) |
-| `kmp-native-authoring` | Authoring brand-new, first-party C/C++ source for a KMP library's native core (directory layout, CMake, public C-ABI header, native ctest) — always followed by `jni-pro` for the actual bridge. **NOT** bridging to code that already exists |
-
-### Layer 4 — Feature Building Blocks
-| Skill | Owns |
-|---|---|
-| `kmp-navigation` | Type-safe routes, nested graphs, bottom nav, deep links |
-| `kmp-shared-resources` | Strings, images, fonts, plurals, localization |
-| `kmp-mvi` | MVI architecture, Contract pattern, `MviViewModel`, State/Intent/Effect, one-shot effects |
-| `kmp-paging` | Paging 3 — `PagingSource`, `Pager`, `PagingData`, cursor vs offset, `RemoteMediator`, load-state handling |
-| `kmp-analytics` | Sealed `AnalyticsEvent`, `Analytics` interface, Firebase/Amplitude impls, screen tracking, `FakeAnalytics` |
-| `kmp-form-validation` | `ValidationResult`, `FieldState`, synchronous + async validators, submit gating, `ValidatedTextField` |
-| `kmp-image-loading` | Coil 3 — `AsyncImage`, `AvatarImage`, `HeroImage`, single `ImageLoader`, memory/disk cache |
-| `kmp-permissions` | `PermissionState` sealed type, `expect/actual PermissionController`, Android launcher, iOS Info.plist |
-| `kmp-deep-linking` | App Links + Universal Links, `DeepLinkParser`, NavHost `navDeepLink`, intent handling, AASA |
-| `kmp-biometric-auth` | `BiometricResult`, `expect/actual BiometricAuthenticator`, `BiometricPrompt`, `LAContext` |
-| `kmp-push-notifications` | FCM + APNs, `PushToken`, `FirebaseMessagingService`, `NotificationHandler` expect/actual, deep-link routing |
-| `kmp-workmanager` | `CoroutineWorker`, `BGTaskScheduler`, `expect/actual BackgroundScheduler`, one-time + periodic, retry |
-| `kmp-feature-flags` | `FeatureFlag` enum, `FeatureFlagProvider`, Firebase Remote Config, A/B variants, kill switch, fake provider |
-| `kmp-offline-first` | `SyncState` sealed class, `SyncManager` interface, optimistic updates with rollback, conflict resolution, local-first read pattern |
-| `kmp-crash-reporting` | `CrashReporter` interface, Firebase Crashlytics + Sentry actuals, breadcrumb logger bridge, dSYM symbolication |
-
-### Layer 5 — UI System
-| Skill | Owns |
-|---|---|
-| `kmp-compose-design-system` | Tokens (colors, typography, shapes, spacing), dark mode, 6 core components, no Material dependency |
-| `kmp-compose-design-system-extended` | 27 additional components: Dialog, Sheet, Toast, Tabs, TopAppBar, Checkbox, etc. |
-| `kmp-shadcn-compose` | Published-library alternative to `design-system` — Maven Central setup, `ShadcnTheme`, 70+ components. Gated to explicit user choice (`/kmp-new-project` Step 6a); never suggested unprompted — carries a real experimental-API dependency risk |
-| `kmp-shadcn-compose-layouts` | Composes shadcn-compose components into full page layouts — login/auth forms, generic forms, data table screens, admin/dashboard shells — plus `scan_shadcn_layout_gaps.py` auditing for hand-rolled fields/tables/shells that should migrate to `ShadcnField`/`ShadcnTable`/`ShadcnSidebar` |
-| `kmp-compose-adaptive-layout` | WindowSizeClass, Compact/Medium/Expanded breakpoints, list-detail split, adaptive navigation, cross-session pattern consistency |
-| `kmp-compose-slot-api` | `@Composable () -> Unit` slots, scoped slots, CompositionLocal, component API shape |
-| `kmp-compose-state-hoisting` | Hoist-until-shared rule, controlled components, stateless vs stateful composables |
-| `kmp-compose-state-container` | `remember` vs `rememberSaveable` vs `ViewModel` survival matrix, custom Saver |
-| `kmp-compose-graphics-modifiers` | `graphicsLayer`, Canvas, drawBehind, drawWithCache, workflow node shells, custom drawing performance |
-| `kmp-compose-preview-driven-development` | Desktop-first `@Preview` workflow, `@PreviewParameterProvider`, PDD cycle, `./gradlew :desktopApp:run` |
-| `kmp-imagevector-generator` | Raster/SVG → compiled ImageVector toolchain (quantize/trace/normalize/codegen), semantic vs literal tinting, node budget, no hand-written path data |
-
-### Layer 6 — Testing & Quality
-| Skill | Owns |
-|---|---|
-| `kmp-unit-testing` | `runTest`, Turbine, fake-over-mock, `:core:testing` fixtures module, JVM ViewModel tests |
-| `kmp-roborazzi` | Screenshot tests from `@Preview` on JVM/Desktop, golden images, CI diff job |
-| `kmp-code-quality` | Ktlint (formatting) + Detekt (architecture rules), CI gates |
-| `kmp-compose-accessibility` | Semantic roles, `contentDescription`, `mergeDescendants`, touch targets, traversal order, Roborazzi a11y snapshots |
-| `kmp-compose-animation` | `AnimatedVisibility`, `animateContentSize`, `Crossfade`, `AnimatedContent`, `animateXAsState`, shared elements, reduced motion |
-| `kmp-benchmark` | `kotlinx-benchmark` setup, `@State`/`@Benchmark` conventions, per-target registration, `docs/reference/benchmark-matrix.md` result placement |
-| `kmp-compose-web-performance` | Live browser profiling for the Web/Wasm target via the official `chrome-devtools-mcp` — performance traces, Lighthouse audits, network waterfall, Wasm bundle-size awareness |
-
----
+The complete catalog is maintained in [`README.md`](../../../README.md); the task-to-skill
+routes live in [`references/skill-invocation-map.md`](references/skill-invocation-map.md).
+Keep that mapping canonical instead of copying the full skill inventory into agents.
 
 ## Dependency Graph
 
@@ -294,20 +193,8 @@ Full content: `references/decision-trees.md`.
 
 ## Common Anti-Patterns
 
-Review each of these before shipping a feature:
-
-- [ ] **DTO leaking to ViewModel**: `state.userDto.name` in a Screen composable
-- [ ] **NetworkResult in MVI State**: `State(result: NetworkResult<User>)` — map to domain first
-- [ ] **Direct DB query in ViewModel**: `db.userQueries.select()` in `handleIntent()` — use Repository
-- [ ] **`GlobalScope` coroutine**: anywhere in the codebase — use `viewModelScope` or `CoroutineScope(SupervisorJob())`
-- [ ] **Mutable `LaunchedEffect` key**: `LaunchedEffect(state.someFlag)` — restarts the effect on every change; use `Channel<Effect>` instead
-- [ ] **`isLoading = true` without reset on error**: every `updateState { copy(isLoading = true) }` must have a matching `false` in the error branch
-- [ ] **State in `remember` that must survive rotation**: registration form, search query, scroll offset with meaning
-- [ ] **ViewModel state for dropdown/tooltip open state**: pure ephemeral UI → `remember`
-- [ ] **`@Preview` impossible because state is buried**: composable has internal `remember` that can't be injected — hoist it
-- [ ] **`actual everywhere` for pure Kotlin logic**: identical actuals on all platforms → move to `commonMain`
-- [ ] **No local cache — pass-through repository**: `override suspend fun getUser() = remote.getUser().toDomain()` — no resilience, no offline support
-- [ ] **`observeProducts()` triggers a network call**: the Flow should be reactive (SQLDelight); refresh is a separate `suspend fun`
+Load [`references/common-anti-patterns.md`](references/common-anti-patterns.md) when planning or
+reviewing a feature that touches those patterns.
 
 ---
 
@@ -427,4 +314,3 @@ Keep the response concise — this skill routes to other skills, not implements.
 ## Changelog
 
 Full content: `references/changelog.md`.
-

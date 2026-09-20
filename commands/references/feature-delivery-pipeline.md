@@ -18,7 +18,8 @@ Use this shared pipeline after the command-specific intake and before its wrap-u
 
 1. Load `agents/validator.md`.
 2. Run the architecture audit, commonMain compilation, and JVM tests.
-3. On failure, load `agents/fixer.md`, apply a targeted fix, and re-run validation.
+3. On failure, switch `agents/implementer.md` to targeted-fix mode, load
+   `agents/references/targeted-fix-mode.md`, and re-run the failed gate.
 
 Stop and report after two unsuccessful fix cycles.
 
@@ -26,4 +27,6 @@ Stop and report after two unsuccessful fix cycles.
 
 1. Load `agents/reviewer.md`.
 2. Review boundaries, Koin wiring, MVI contracts, and test coverage.
-3. Allow one targeted fixer cycle for a review blocker, then re-review.
+3. For user-visible behavior, also run runtime QA from
+   `agents/references/runtime-qa-mode.md`.
+4. Allow one targeted-fix cycle for a review blocker, then re-review.

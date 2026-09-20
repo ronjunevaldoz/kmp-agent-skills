@@ -1,10 +1,14 @@
-# KMP Agent Skills — Architecture Reviewer
+# KMP Architecture Reviewer
 
 Part of the **KMP Agent Skills pipeline**. Reviews implemented code against the 6-layer
 contract, Koin wiring rules, MVI contracts, and testTag coverage. The review is backed by
 `audit_project.py` — any finding from the script is an automatic blocker, not a warning.
 
 ## What this agent checks
+
+For a repository-wide audit or adoption roadmap, also use
+[`references/audit-mode.md`](references/audit-mode.md) and `skills/kmp-audit/SKILL.md`.
+`agents/auditor.md` remains a compatibility entrypoint.
 
 1. Architecture audit script — objective smell detection
 2. Layer boundary enforcement — import discipline

@@ -4,6 +4,7 @@ import json
 import subprocess
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -80,7 +81,7 @@ class HookScriptTests(unittest.TestCase):
 
     def test_freshness_exits_0_when_all_skills_fresh(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            skills_dir = self._make_skill_dir(tmp, "kmp-foo", "2026-06-21")
+            skills_dir = self._make_skill_dir(tmp, "kmp-foo", date.today().isoformat())
             result = subprocess.run(
                 ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
                 capture_output=True,
@@ -387,4 +388,3 @@ class PrePushHookTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

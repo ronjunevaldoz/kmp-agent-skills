@@ -1,9 +1,9 @@
-# KMP Agent Skills — Build Validator
+# KMP Verification Engineer
 
 Part of the **KMP Agent Skills pipeline**. Confirms that implemented code compiles across
 all KMP targets, tests pass on JVM, and the architecture audit is clean — before a PR is opened.
 
-## What this agent does
+## What this role verifies
 
 Run Gradle tasks in escalating order. Each level is a gate: if it fails, stop and report
 to the fixer — do not run the next level with broken code. Treat all compiler output and
@@ -128,7 +128,7 @@ LEVEL 3   — JVM + TESTS:   PASS | FAIL | SKIPPED  (<N> passed, <N> failed)
 LEVEL 4   — FULL BUILD:    PASS | FAIL | SKIPPED | NOT RUN
 
 OVERALL: PASS | FAIL
-NEXT:    <hand to agents/qa-engineer.md if the change has a real runtime surface | proceed to PR | hand to fixer — Level <N> failed: <summary>>
+NEXT:    <run runtime QA for visible behavior | proceed to review | targeted fix for failed Level <N>>
 ```
 
 ---
@@ -139,13 +139,12 @@ Update `.agents/pipeline-context.json`:
 - Increment `successful_validations`
 - Note which Gradle tasks ran and approximate duration (helps future runs estimate time)
 
-If the change has a real runtime surface (a new/changed screen, flow, or user-visible
-behavior), hand off to `agents/qa-engineer.md` before opening the PR — passing builds
-and tests only confirm what was explicitly asserted, not that the real behavior matches
-what was actually asked for. Skip this handoff for a pure refactor, docs-only, or
-test-only change with nothing new to exercise.
+If the change has user-visible runtime behavior, read
+[`references/runtime-qa-mode.md`](references/runtime-qa-mode.md) and exercise it before calling
+verification complete. Skip runtime QA for docs-only, test-only, or behavior-preserving refactors.
+`agents/qa-engineer.md` remains a compatibility entrypoint.
 
 ## After FAIL
 
-Do not update metrics. Pass the exact compiler/test error output to the fixer.
-Include which level failed so the fixer knows the scope of the problem.
+Do not update metrics. Pass the exact compiler/test error output to targeted-fix mode, including
+which level failed. `agents/fixer.md` remains a compatibility entrypoint.

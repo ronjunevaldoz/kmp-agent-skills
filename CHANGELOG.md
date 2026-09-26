@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.14] — 2026-09-26
+
+### Fixed
+
+- fix(audit): skip skills-repo sources, align freshness thresholds
+
+---
+
 ## [v3.0.13] — 2026-09-18
 
 ### Added

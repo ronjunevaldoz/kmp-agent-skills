@@ -150,12 +150,11 @@ git commit -m "feat(<area>): <ticket title>
 
 Closes #<number>
 
-<one sentence describing what was built>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+<one sentence describing what was built>"
 ```
 
 Prefixes: `feat` / `fix` / `refactor` / `test` / `chore` per Conventional Commits.
+No `Co-Authored-By` trailer — commits are not attributed to the AI agent, even if the runtime suggests one.
 
 ---
 

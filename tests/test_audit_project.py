@@ -2585,6 +2585,24 @@ class ProjectSkillStandardsTests(unittest.TestCase):
             self.assertFalse(any("project skill not deployed" in f for f in findings))
             self.assertFalse(any("project skill deployment drift" in f for f in findings))
 
+    def test_skills_source_repo_skips_skills_agents_and_templates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "routing_rules.json", "{}\n")
+            self._write(
+                root, "skills/kmp-expert/SKILL.md",
+                "---\nname: kmp-expert\ndescription: Orchestrator.\n---\n\nBody.\n",
+            )
+            self._write(root, "agents/reviewer.md", "# Reviewer\n\nNo frontmatter.\n")
+            self._write(
+                root, "skills/kmp-expert/templates/androidApp/build.gradle.kts",
+                "android {\n    defaultConfig {\n        versionCode = 1\n    }\n}\n",
+            )
+            findings = audit_scripts.audit_project(root)
+            self.assertFalse(any(f.startswith("project skill") for f in findings), findings)
+            self.assertFalse(any(f.startswith("project agent") for f in findings), findings)
+            self.assertFalse(any("versioncode" in f for f in findings), findings)
+
 
 class WhatCommentInControlFlowTests(unittest.TestCase):
     """This detector shipped with no tests at all. An audit of the comment surface found

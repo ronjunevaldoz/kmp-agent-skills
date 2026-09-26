@@ -187,6 +187,7 @@ versions when the local repo can be checked directly.
 | `kmp-ci-github-actions` | GitHub Actions, test matrix, XCFramework release workflow YAML |
 | `kmp-github-issue-governance` | GitHub issue/sub-issue lifecycle, Epic vs Task decisions, anti-spam comment policy, in-place updates, shell-safe payload transport |
 | `kmp-delivery-lifecycle` | Definition of Ready (DoR), Definition of Done (DoD), UI verification evidence, conditional performance gates, PR readiness checklists |
+| `kmp-token-saver` | Token-saving agent workflow: Ponytail (YAGNI/smallest correct solution), Caveman (terse replies), RTK (shell output compression), AGENTS.md guardrails for non-Claude runtimes |
 | `kmp-android-cli` | Google's `android` CLI — agent-first project scaffolding, emulator/device management, build + deploy, SDK installs; `android init`/`android skills add` agent bootstrap |
 | `kmp-release` | Versioning (`gradle.properties`), Maven Central (vanniktech), GPG signing, git-cliff changelog, GitHub Release, secrets management, local publish script |
 | `kmp-audit` | Existing project health checks, boundary review, architecture drift, readiness gaps; `--roadmap` for adoption plan |

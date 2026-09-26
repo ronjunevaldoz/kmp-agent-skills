@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.0.15] — 2026-09-26
+
+### Fixed
+
+- fix(commands): drop Co-Authored-By trailer from execute-ticket commit template
+
+---
+
 ## [v3.0.14] — 2026-09-26
 
 ### Fixed

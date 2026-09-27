@@ -201,6 +201,11 @@ COMMIT:     <short sha>
 
 Next:
 ```bash
+# UI changed? Push first, then render before/after from committed goldens (kmp-roborazzi).
+# No UI change → skip the script; the body gets one line: "No before/after: <reason>".
+git push -u origin HEAD
+python3 ~/.agents/skills/kmp-roborazzi/scripts/pr_visual_evidence.py > /tmp/visual.md
+
 gh pr create \
   --title "<ticket title (≤70 chars)>" \
   --milestone "<ticket milestone>" \
@@ -216,6 +221,8 @@ gh pr create \
 - **Files created**: <N>  |  **Tests written**: <N> unit + <N> UI
 - **Validation**: PASS (ktlint: PASS, detekt: PASS | NOT CONFIGURED)
 
+<contents of /tmp/visual.md, or "No before/after: <reason>">
+
 ## Delivery Gates Verification
 
 ### Definition of Ready (DoR)
@@ -224,7 +231,7 @@ gh pr create \
 
 ### UI & Performance Gates (if applicable)
 - [x] Semantic design tokens used (AppTheme)
-- [x] Before vs After visual evidence attached
+- [x] Before/After table from committed goldens in this body (kmp-delivery-lifecycle Phase 3A.3)
 - [x] Zero per-frame allocations in render/draw paths
 
 ### Definition of Done (DoD)

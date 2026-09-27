@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.1.1] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): deploy from a detached or diverged skills source (#10)
+
+---
+
 ## [v3.1.0] — 2026-09-27
 
 ### Added

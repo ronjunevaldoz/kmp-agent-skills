@@ -2,7 +2,7 @@
 name: kmp-project-docs-maintainer
 description: >
   Maintains downstream consumer-facing KMP project documentation only: README,
-  GETTING_STARTED, INSTALL, RELEASING, docs/reference pages, onboarding guides,
+  GETTING_STARTED, INSTALL, RELEASING, PRODUCT.md, docs/reference pages, onboarding guides,
   architecture notes, and architecture diagrams. Use this skill when project docs need to
   match the actual code, commands, config, folder layout, or app/library structure.
   Does NOT cover consumer release-note generation, per-skill changelogs, or
@@ -10,7 +10,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-11'
+  last-updated: '2026-09-27'
   references:
     - references/docs-hygiene.md
   keywords:
@@ -238,6 +238,7 @@ Rules:
 | Renamed command or path | Every docs mention, code sample, and navigation link |
 | Architecture shift | README plus the affected reference pages, diagrams, and architecture notes |
 | Release or setup change | RELEASING, INSTALL, and any onboarding checklist that relies on it |
+| Users, platforms, or product principles change | `PRODUCT.md` (template and rules: `kmp-compose-design-system` → `references/design-context.md`) |
 
 ## Project Doc Workflow
 
@@ -476,6 +477,7 @@ Consumer projects follow a clean 3-tier README hierarchy documented in `referenc
 
 | Date | Change |
 |---|---|
+| 2026-09-27 | Added `PRODUCT.md` to the maintained docs and the change checklist — design work now reads it before any screen change (`kmp-compose-design-system` → `references/design-context.md`). |
 | 2026-09-11 | Updated docs hygiene rules: documented recursive non-doc file checks, asset/image isolation to `docs/assets/` or `docs/images/`, canonical top-level `docs/` subdirectories enforcement, and archive historical task exemption. |
 | 2026-08-29 | Trimmed `SKILL.md` under 500 lines per agentskills.io progressive disclosure. Moved KDoc vs Ground-Truth Docs Boundary and Code Examples & Linking Policy tables into `references/docs-hygiene.md`. Tightened Writing Style bullets and Vibe-to-Plan Template steps. |
 | 2026-08-26 | Cross-referenced `conorbronsdon/avoid-ai-writing` in the Writing Style section — user asked whether the tool was useful to us. Verified real via `gh api` before recommending it: 3264 stars, actively maintained, a 62-category/112-word tiered AI-tell detector with a real test suite and honest cited false-positive caveats (Stanford *Patterns* 2023, BFI Working Paper 2025). Cited rather than reimplemented — its scope is far deeper than this skill's own `_detect_hedging_language`, which stays scoped to its existing narrow KDoc/code-comment phrase list rather than duplicating a 112-word catalog. |

@@ -143,7 +143,7 @@ dependencies {
 }
 ```
 
-Published to <PUBLISH_TARGET>. See [releases](../../releases) for the latest version.
+Published to <PUBLISH_TARGET>. See [releases](<RELEASES_URL>) for the latest version.
 
 ## Platforms
 

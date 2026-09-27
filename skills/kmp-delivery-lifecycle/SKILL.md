@@ -5,10 +5,12 @@ description: >
   gates for Kotlin Multiplatform engineering. Use before picking up a task or feature
   to verify prerequisites, during implementation to validate UI and performance constraints,
   and before opening or merging Pull Requests to guarantee release-quality standards.
+  Load when opening a PR (gh pr create) that changes UI: it owns the before/after
+  screenshot evidence rule for PR bodies and bug issues.
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-18'
+  last-updated: '2026-09-27'
   keywords:
     - definition of ready
     - definition of done
@@ -21,6 +23,11 @@ metadata:
     - ui validation
     - pr readiness
     - verification checklist
+    - pull request
+    - open a PR
+    - gh pr create
+    - before/after screenshots
+    - visual evidence
 ---
 
 # KMP Delivery Lifecycle: Definition of Ready (DoR) & Definition of Done (DoD)
@@ -32,6 +39,7 @@ Use this skill when:
 - Specifying verifiable acceptance criteria (Given/When/Then) for complex feature initiatives
 - Determining whether a task requires UI layout verification, accessibility audits, or performance benchmarks
 - Verifying code against the **Definition of Done (DoD)** before opening or squash-merging a Pull Request
+- Opening a PR or filing a bug that changes what users see — Phase 3A.3 before/after evidence is mandatory
 - Preventing premature feature sign-off, untested regressions, or unverified multiplatform claims
 
 Do NOT use this skill when:
@@ -39,7 +47,7 @@ Do NOT use this skill when:
 - Running static code quality rules or Detekt configuration (use `kmp-code-quality`)
 - Performing ad-hoc profiling without delivery criteria (use `kmp-benchmark` or `kmp-compose-web-performance`)
 
-**Trigger keywords:** definition of ready, definition of done, DoR, DoD, quality gate, delivery lifecycle, acceptance criteria, pr readiness, readiness checklist, done checklist, ui validation, performance gate.
+**Trigger keywords:** definition of ready, definition of done, DoR, DoD, quality gate, delivery lifecycle, acceptance criteria, pr readiness, readiness checklist, done checklist, ui validation, performance gate, open a PR, pull request, gh pr create, before/after screenshots, visual evidence.
 
 ---
 
@@ -106,8 +114,21 @@ When a task touches visual presentation, user interaction, or performance-critic
 2. **Accessibility (a11y)**:
    - Minimum tap target of 48×48 dp for interactive controls.
    - Every icon or image has a meaningful `contentDescription` or is marked decorative.
-3. **Visual Evidence**:
-   - Side-by-side **Before vs After table** (fixed 380px width) or collapsible `<details>` block with real device/simulator screenshots attached to the PR.
+3. **Visual Evidence** (every PR and bug issue that changes what users see):
+   - **Source:** committed Roborazzi goldens (`kmp-roborazzi`). Before = snapshot at the
+     merge-base with the target branch; After = snapshot at the PR head. Do not "attach"
+     screenshots — `gh` and the REST API cannot upload attachments to PR bodies or comments.
+   - **Stale base:** if a golden was already stale at the base, make the branch's first commit
+     a re-record on the base with no code change and use that commit as Before.
+   - **Links:** SHA-pinned `https://github.com/<owner>/<repo>/blob/<sha>/<path>?raw=true` inside
+     an HTML `<table>` with `<img width=...>` — phone ~360, desktop ~420. Push first; unpushed
+     SHAs 404. Never branch-pinned URLs: they break once the branch is deleted.
+   - **Generate it:** `python3 <skills-root>/kmp-roborazzi/scripts/pr_visual_evidence.py > /tmp/visual.md`
+     (base defaults to merge-base with `origin/main`; `--base`, `--glob`, `--target`, `--repo`
+     override). Modified/renamed → Before | After row; new-only and removed snapshots get their
+     own sections; long lists fold into `<details>`. Include the output in the `--body-file`.
+   - **Private repos:** images render only for signed-in members; public repos render for everyone.
+   - **No visual change:** write one line instead, e.g. `No before/after: server-only`.
 
 ### B. Performance Validation Gate (Trigger: Touches Render Loops, Canvas, Flow Chains, Wasm)
 
@@ -133,8 +154,8 @@ Before submitting a Pull Request for review or marking a ticket complete:
   - No broken or skipped tests without linked tracking issues.
 - [ ] **2. Architecture Audit**:
   - `python3 skills/kmp-audit/scripts/audit_project.py .` passes with zero critical/high findings.
-- [ ] **3. Visual & Diagnostic Evidence Attached**:
-  - PR contains Before/After screenshots or diagnostic test logs per `kmp-github-issue-governance`.
+- [ ] **3. Visual & Diagnostic Evidence in the PR Body**:
+  - PR body contains the Phase 3A.3 Before/After table (or the one-line "No before/after: <reason>"), or diagnostic test logs per `kmp-github-issue-governance`.
 - [ ] **4. Milestone & Release Target Alignment**:
   - Pull Request is assigned to the matching GitHub Milestone (`gh pr edit <pr> --milestone "<milestone>"`).
   - Commit types match the target version bump (`feat` -> minor, `fix` -> patch, `BREAKING CHANGE` -> major).
@@ -225,7 +246,7 @@ Include this markdown block in PR descriptions to prove verification:
 
 #### UI & Performance Gates
 - [x] Design system tokens used (no hardcoded colors/dp)
-- [x] Before/After visual evidence attached
+- [x] Before/After table from committed goldens in PR body (or "No before/after: <reason>")
 - [x] Zero per-frame allocations in render/draw paths
 
 #### Definition of Done (DoD)
@@ -243,7 +264,8 @@ Include this markdown block in PR descriptions to prove verification:
 | Picking up an unclarified ticket with no acceptance criteria | Halt and document the Given/When/Then criteria before writing code (DoR Gate). |
 | Marking a task done when only the JVM target tests pass | Execute `./gradlew check` across all declared targets (Desktop, Wasm, iOS, Android). |
 | Leaving an issue or PR unassigned to a Milestone | Bind to the active milestone using `gh issue edit --milestone` or `gh pr edit --milestone`. |
-| Merging visual changes without side-by-side evidence | Attach a Before vs After table with fixed widths (`width="380"`) or `<details>` block. |
+| Merging visual changes without side-by-side evidence | Generate the Before vs After table from committed goldens with `kmp-roborazzi/scripts/pr_visual_evidence.py` and put it in the PR body (Phase 3A.3). |
+| Promising "screenshots attached" from an agent via `gh` | `gh`/REST cannot upload attachments — use SHA-pinned blob links to committed snapshots. |
 | Over-abstracting performance gates for pure data/model changes | Only enforce allocation & render gates when touching `:ui`, shaders, or collections. |
 
 ---
@@ -267,6 +289,7 @@ Validate adherence to delivery gates across repositories:
 ## Related Skills
 
 - `kmp-github-issue-governance` — issue decomposition, anti-spam comment policy, PR visual evidence
+- `kmp-roborazzi` — committed goldens and `scripts/pr_visual_evidence.py` for the Phase 3A.3 table
 - `kmp-clean-architecture` — 6-layer contract and module boundaries
 - `kmp-code-quality` — Detekt, Ktlint, and compiler warning gates
 - `kmp-compose-design-system` — semantic tokens, themes, and UI components
@@ -281,5 +304,6 @@ Validate adherence to delivery gates across repositories:
 
 | Date | Change |
 |---|---|
+| 2026-09-27 | Rewrote Phase 3A.3 Visual Evidence as an agent-executable recipe: committed goldens at merge-base vs PR head, SHA-pinned blob links, `kmp-roborazzi/scripts/pr_visual_evidence.py`, private-repo note, and the one-line "No before/after" rule. Dropped the "screenshots attached" instruction — `gh`/REST cannot upload attachments, and UI PRs shipped without evidence. Added PR keywords so the gate loads at PR time. |
 | 2026-09-18 | Added Section 5 Git Worktree Parallel Execution runbook with mandatory `<type>/<issue-id>-<description>` branch naming conventions. |
 | 2026-09-18 | Initial release — codified Definition of Ready (DoR), Definition of Done (DoD), milestone/version binding, conditional UI validation, and performance gates. |

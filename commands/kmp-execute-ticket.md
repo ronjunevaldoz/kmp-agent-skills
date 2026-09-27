@@ -52,9 +52,10 @@ Paste the ticket content:
 
 Display before continuing:
 ```
-TICKET:   #<number> — <title>
-SOURCE:   GitHub Issues | Pasted
-LABELS:   <labels>
+TICKET:    #<number> — <title>
+SOURCE:    GitHub Issues | Pasted
+MILESTONE: <milestone or "⚠️ NONE — must assign before starting">
+LABELS:    <labels>
 
 DESCRIPTION:
 <first 500 chars>
@@ -63,29 +64,40 @@ ACCEPTANCE CRITERIA:
 - <one bullet per criterion extracted from description>
 ```
 
-**Gate: confirm with user before proceeding.**
+**Gate (DoR): If MILESTONE is missing, assign one before continuing:**
+```bash
+gh issue edit <number> --milestone "<active-milestone>"
+```
+
+Confirm with user before proceeding to Phase 2.
 
 ---
 
 ## Phase 2 — Plan
 
 Follow the Plan section of [Feature Delivery Pipeline](references/feature-delivery-pipeline.md).
-Read `.claude/pipeline-context.json`, map every acceptance criterion to a layer and Koin binding,
+Read `.agents/pipeline-context.json`, map every acceptance criterion to a layer and Koin binding,
 and include the criteria in the plan as met, pending, or unclear.
 
 ---
 
-## Phase 3 — Branch
+## Phase 3 — Branch or Worktree
+ 
+Standard branch format: `feat/<ticket-id>-<short-kebab-slug>` (or `fix/`, `chore/`).
+Slug: lowercase kebab-case from the ticket title, max 5 words.
+Example: `#42 — Add DataStore preferences for user settings` → `feat/42-datastore-user-prefs`
 
+**Option A — In-tree branch:**
 ```bash
-git checkout -b feature/<ticket-id>-<short-kebab-slug>
+git checkout -b feat/<ticket-id>-<short-kebab-slug>
 ```
 
-Slug: lowercase kebab-case from the ticket title, max 5 words.
-
-Example: `#42 — Add DataStore preferences for user settings` → `feature/42-datastore-user-prefs`
-
-If branch exists, switch to it.
+**Option B — Isolated worktree (Recommended for parallel tasks):**
+```bash
+git worktree add ../worktrees/feat-<ticket-id>-<short-kebab-slug> -b feat/<ticket-id>-<short-kebab-slug>
+cp local.properties ../worktrees/feat-<ticket-id>-<short-kebab-slug>/local.properties
+cd ../worktrees/feat-<ticket-id>-<short-kebab-slug>
+```
 
 ---
 
@@ -138,18 +150,17 @@ git commit -m "feat(<area>): <ticket title>
 
 Closes #<number>
 
-<one sentence describing what was built>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+<one sentence describing what was built>"
 ```
 
 Prefixes: `feat` / `fix` / `refactor` / `test` / `chore` per Conventional Commits.
+No `Co-Authored-By` trailer — commits are not attributed to the AI agent, even if the runtime suggests one.
 
 ---
 
 ## Phase 8 — Update and commit pipeline context
 
-Write the updated values to `.claude/pipeline-context.json`:
+Write the updated values to `.agents/pipeline-context.json`:
 
 ```json
 {
@@ -167,7 +178,7 @@ Write the updated values to `.claude/pipeline-context.json`:
 Then commit it so the next session inherits the learned patterns:
 
 ```bash
-git add .claude/pipeline-context.json
+git add .agents/pipeline-context.json
 git commit -m "chore(pipeline): update context after <feature-name>"
 ```
 
@@ -190,8 +201,14 @@ COMMIT:     <short sha>
 
 Next:
 ```bash
+# UI changed? Push first, then render before/after from committed goldens (kmp-roborazzi).
+# No UI change → skip the script; the body gets one line: "No before/after: <reason>".
+git push -u origin HEAD
+python3 ~/.agents/skills/kmp-roborazzi/scripts/pr_visual_evidence.py > /tmp/visual.md
+
 gh pr create \
   --title "<ticket title (≤70 chars)>" \
+  --milestone "<ticket milestone>" \
   --body "$(cat <<'EOF'
 ## Summary
 
@@ -204,11 +221,23 @@ gh pr create \
 - **Files created**: <N>  |  **Tests written**: <N> unit + <N> UI
 - **Validation**: PASS (ktlint: PASS, detekt: PASS | NOT CONFIGURED)
 
-## Test plan
+<contents of /tmp/visual.md, or "No before/after: <reason>">
 
-- [ ] `./gradlew jvmTest` passes
-- [ ] Roborazzi golden images committed
-- [ ] No new architecture smells (`audit_project.py`)
+## Delivery Gates Verification
+
+### Definition of Ready (DoR)
+- [x] Acceptance criteria satisfied
+- [x] Architecture layer boundaries respected
+
+### UI & Performance Gates (if applicable)
+- [x] Semantic design tokens used (AppTheme)
+- [x] Before/After table from committed goldens in this body (kmp-delivery-lifecycle Phase 3A.3)
+- [x] Zero per-frame allocations in render/draw paths
+
+### Definition of Done (DoD)
+- [x] `./gradlew check` passes across all target platforms
+- [x] Milestone assigned to PR
+- [x] Conventional commits verified
 
 Closes #<number>
 
@@ -216,7 +245,7 @@ Closes #<number>
 EOF
 )"
 ```
-```
+
 
 ---
 

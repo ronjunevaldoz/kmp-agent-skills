@@ -177,7 +177,7 @@ files and replicate the exact same:
 Never introduce a second pattern in the same project.
 
 If nothing matches, establish the pattern using the template below and update
-`.claude/pipeline-context.json`:
+`.agents/pipeline-context.json`:
 
 ```json
 "adaptive_layout_established": true,
@@ -189,7 +189,7 @@ If nothing matches, establish the pattern using the template below and update
 If the project already has many screens **without** `WindowSizeClass`, retrofitting all
 of them in one session is impractical. Use migration mode to avoid being blocked:
 
-1. Set `adaptive_layout_migration_mode: true` in `.claude/pipeline-context.json` and commit it
+1. Set `adaptive_layout_migration_mode: true` in `.agents/pipeline-context.json` and commit it
 2. The reviewer will warn (not block) on pre-existing screens and only enforce the full
    rule on screens created or modified in the current session
 3. Track the remaining screens as a follow-up ticket

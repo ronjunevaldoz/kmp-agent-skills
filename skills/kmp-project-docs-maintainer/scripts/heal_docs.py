@@ -2,13 +2,10 @@
 """heal_docs.py — Self-Healing Documentation Engine for KMP Projects
 
 Automates:
-  1. Sitemap synchronization in docs/README.md (extracts title, category, status).
-  2. Broken link detection and self-healing.
-  3. Automatic archival of completed task plans into docs/tasks/archive/YYYY-MM/.
-  4. Naming convention enforcement:
-     - Architecture: docs/architecture/<subsystem>.md
-     - ADRs: docs/decisions/ADR-XXX-<slug>.md
-     - Tasks: docs/tasks/YYYY-MM-DD-<slug>-plan.md
+  1. Safe cleanup: auto-renames snake_case files to kebab-case and updates inbound links.
+  2. Safe cleanup: auto-archives completed tasks (*-done or 100% checked) to docs/tasks/<parent>/archive/.
+  3. Sitemap synchronization in docs/README.md (extracts title, category, status, and summaries).
+  4. Task index synchronization in docs/tasks.md with verified checkbox progress metrics.
 """
 
 import argparse
@@ -17,6 +14,9 @@ import os
 import re
 import sys
 from pathlib import Path
+
+_SNAKE_CASE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9]*(_[A-Za-z0-9]+)+$")
+
 
 def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
     content = file_path.read_text(encoding="utf-8")
@@ -72,6 +72,88 @@ def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
         "summary": summary
     }
 
+def auto_rename_kebab(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[tuple[Path, Path]]:
+    """Safely renames snake_case markdown files to kebab-case and updates inbound links."""
+    renamed = []
+    for md in sorted(docs_dir.rglob("*.md")):
+        if "archive" in md.parts or md.name in ("README.md", "CHANGELOG.md", "KNOWN_ISSUES.md"):
+            continue
+        if _SNAKE_CASE_RE.match(md.stem):
+            kebab = md.stem.replace("_", "-").lower()
+            target_path = md.parent / f"{kebab}.md"
+            if target_path.exists() and target_path != md:
+                continue
+            renamed.append((md, target_path))
+
+    if not renamed:
+        return []
+
+    for old_path, new_path in renamed:
+        old_name = old_path.name
+        new_name = new_path.name
+        print(f"  ✏️ Renaming: {old_path.relative_to(repo_root)} -> {new_name}")
+        if not dry_run:
+            old_path.rename(new_path)
+            for doc in docs_dir.rglob("*.md"):
+                if not doc.is_file():
+                    continue
+                try:
+                    text = doc.read_text(encoding="utf-8")
+                    if old_name in text:
+                        doc.write_text(text.replace(old_name, new_name), encoding="utf-8")
+                except Exception:
+                    pass
+    return renamed
+
+
+def auto_archive_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[str]:
+    """Auto-archives completed tasks (*-done.md or 100% checked) to docs/tasks/<parent>/archive/."""
+    tasks_dir = docs_dir / "tasks"
+    if not tasks_dir.exists():
+        return []
+
+    archived = []
+    task_status_re = re.compile(r"^(\d{2}-[a-z0-9-]+)-(todo|doing|blocked|done)$")
+
+    for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
+        if parent_dir.name == "archive":
+            continue
+        archive_dir = parent_dir / "archive"
+        for md in sorted(parent_dir.glob("*.md")):
+            if not md.is_file():
+                continue
+            content = md.read_text(encoding="utf-8", errors="ignore")
+            total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
+            checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
+            is_100_percent = total_boxes > 0 and checked_boxes == total_boxes
+            is_done_suffix = md.stem.endswith("-done")
+
+            if is_done_suffix or is_100_percent:
+                stem = md.stem
+                m = task_status_re.match(stem)
+                if m:
+                    base_prefix = m.group(1)
+                    target_name = f"{base_prefix}-done.md"
+                else:
+                    target_name = md.name if is_done_suffix else f"{stem}-done.md"
+
+                target_path = archive_dir / target_name
+                archived.append(f"{md.relative_to(repo_root)} -> {target_path.relative_to(repo_root)}")
+
+                if not dry_run:
+                    archive_dir.mkdir(parents=True, exist_ok=True)
+                    updated_content = re.sub(
+                        r"(\*\*Status:\*\*\s*)(todo|doing|blocked)",
+                        r"\1done",
+                        content,
+                    )
+                    target_path.write_text(updated_content, encoding="utf-8")
+                    if md != target_path:
+                        md.unlink()
+                    print(f"  📦 Archived: {md.name} -> tasks/{parent_dir.name}/archive/{target_name}")
+    return archived
+
+
 def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     docs_dir = repo_root / "docs"
     if not docs_dir.exists():
@@ -81,12 +163,22 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     print(f"\n🩺 Self-Healing Documentation Scan: {repo_root.name}")
     print(f"{'='*60}")
     
-    # 1. Scan all markdown files in docs/ (ignoring README.md itself)
+    # 1. Safe auto-cleanups (snake_case normalization and archiving completed tasks)
+    renamed = auto_rename_kebab(docs_dir, repo_root, dry_run)
+    if renamed:
+        print(f"  ✨ Normalized {len(renamed)} file(s) to kebab-case")
+
+    archived = auto_archive_done_tasks(docs_dir, repo_root, dry_run)
+    if archived:
+        print(f"  📦 Auto-archived {len(archived)} completed task(s)")
+
+    # 2. Scan all markdown files in docs/ (ignoring README.md itself)
     doc_entries = []
     for p in sorted(docs_dir.rglob("*.md")):
         if p.name == "README.md":
             continue
         doc_entries.append(extract_doc_info(p, repo_root))
+
         
     print(f"  Found {len(doc_entries)} documentation files across categories:")
     categories = {}
@@ -137,7 +229,159 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
         
     readme_path.write_text(sitemap_content, encoding="utf-8")
     print(f"\n✅ Self-Healed {readme_path.relative_to(repo_root)} successfully!")
+    
+    # 3. Synchronize docs/tasks.md with objective progress and checkbox metrics
+    sync_tasks(docs_dir, repo_root, dry_run)
+
+    # 4. Check consumer skills and agents for naming & spec hygiene
+    warnings = check_consumer_skills_and_agents(repo_root)
+    if warnings:
+        print(f"\n⚠️  Consumer Skills & Agents Warnings ({len(warnings)} issue{'s' if len(warnings) != 1 else ''}):")
+        for w in warnings:
+            print(f"    • {w}")
+
     return 0
+
+
+def check_consumer_skills_and_agents(repo_root: Path) -> list[str]:
+    """Lightweight check of consumer skills and agents for naming, spec, and fragmentation issues."""
+    warnings: list[str] = []
+
+    # 1. Project-owned skills under skills/
+    skills_dir = repo_root / "skills"
+    if skills_dir.is_dir():
+        for sdir in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
+            skill_md = sdir / "SKILL.md"
+            if not skill_md.is_file():
+                warnings.append(f"Skill '{sdir.name}' missing SKILL.md")
+                continue
+            try:
+                text = skill_md.read_text(encoding="utf-8", errors="ignore")
+                fm_match = re.search(r"\A---\r?\n(.*?)\r?\n---\r?\n", text, re.DOTALL)
+                if not fm_match:
+                    warnings.append(f"Skill '{sdir.name}' missing YAML frontmatter (---)")
+                    continue
+                fm = fm_match.group(1)
+                name_match = re.search(r"^name:\s*['\"]?([^\r\n'\"]+)['\"]?\s*$", fm, re.MULTILINE)
+                if not name_match:
+                    warnings.append(f"Skill '{sdir.name}' frontmatter missing 'name:'")
+                else:
+                    name_val = name_match.group(1).strip()
+                    if name_val != sdir.name:
+                        warnings.append(f"Skill '{sdir.name}' frontmatter name '{name_val}' != directory name")
+                    if len(name_val) > 64:
+                        warnings.append(f"Skill '{sdir.name}' name exceeds 64 chars")
+
+                # Micro-scoped / too specific check
+                micro_prefixes = ("fix-", "patch-", "bug-", "update-", "add-", "refactor-", "temp-")
+                micro_suffixes = ("-viewmodel", "-impl", "-file", "-function")
+                if any(sdir.name.startswith(p) for p in micro_prefixes) or any(sdir.name.endswith(s) for s in micro_suffixes):
+                    warnings.append(f"Skill '{sdir.name}' is micro-scoped / too specific; prefer generic domain naming")
+
+                desc_match = re.search(
+                    r"^description:\s*(?:>|\|)?\s*(.*?)(?=\n[a-z_A-Z0-9-]+:|\Z)",
+                    fm,
+                    re.MULTILINE | re.DOTALL,
+                )
+                if not desc_match or not desc_match.group(1).strip():
+                    warnings.append(f"Skill '{sdir.name}' frontmatter missing 'description:'")
+                elif len(desc_match.group(1).strip()) > 1024:
+                    warnings.append(f"Skill '{sdir.name}' description exceeds 1024 chars")
+            except Exception:
+                pass
+
+    # 2. Project-owned agents under agents/
+    agents_dir = repo_root / "agents"
+    if agents_dir.is_dir():
+        for amd in sorted(agents_dir.glob("*.md")):
+            stem = amd.stem
+            if stem.endswith(("-agent", "-bot")):
+                warnings.append(
+                    f"Agent '{amd.name}' has redundant suffix; name directly by role "
+                    f"(e.g. '{stem.removesuffix('-agent')}.md')"
+                )
+            action_prefixes = ("fix-", "run-", "deploy-", "build-", "update-", "generate-", "clean-")
+            if any(stem.startswith(p) for p in action_prefixes):
+                warnings.append(f"Agent '{amd.name}' is action-named; agents must represent roles/personas")
+            model_prefixes = ("claude-", "gpt-", "sonnet-", "opus-", "haiku-", "gemini-")
+            if any(stem.startswith(p) for p in model_prefixes):
+                warnings.append(f"Agent '{amd.name}' is model-prefixed; configure model in frontmatter instead")
+
+    return warnings
+
+
+def sync_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> None:
+    tasks_dir = docs_dir / "tasks"
+    if not tasks_dir.exists():
+        return
+        
+    tasks_file = docs_dir / "tasks.md"
+    active_tasks = []
+    
+    task_file_re = re.compile(r"^\d{2}-[a-z][a-z0-9]*(?:-[a-z0-9]+)*-(todo|doing|blocked|done)$")
+    task_date_re = re.compile(r"\*\*Date:\*\*\s*(\d{4}-\d{2}-\d{2})")
+
+    for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
+        if parent_dir.name == "archive":
+            continue
+        for md in sorted(parent_dir.rglob("*.md")):
+            if "archive" in md.parts:
+                continue
+            m = task_file_re.match(md.stem)
+            status = m.group(1) if m else "doing"
+            content = md.read_text(encoding="utf-8", errors="ignore")
+            
+            title = md.stem
+            title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+            if title_match:
+                title = title_match.group(1).strip()
+                
+            date_match = task_date_re.search(content)
+            task_date = date_match.group(1) if date_match else "-"
+            
+            total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
+            checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
+            if total_boxes > 0:
+                pct = int((checked_boxes / total_boxes) * 100)
+                progress = f"{pct}% ({checked_boxes}/{total_boxes})"
+            else:
+                progress = "-"
+                
+            rel_link = f"tasks/{parent_dir.name}/{md.name}"
+            active_tasks.append({
+                "name": md.name,
+                "title": title,
+                "link": f"[{title}]({rel_link})",
+                "status": status,
+                "progress": progress,
+                "parent": parent_dir.name,
+                "date": task_date,
+            })
+            
+    if not active_tasks and not tasks_file.exists():
+        return
+        
+    lines = [
+        "# Tasks",
+        "",
+        "> Single source of truth for active project tasks, progress status, and parent feature lanes.",
+        "",
+        f"**Last Synchronized**: `{datetime.date.today().isoformat()}` | **Active Tasks**: `{len(active_tasks)}`",
+        "",
+        "| Task | Status | Progress | Date | Parent |",
+        "| :--- | :--- | :--- | :--- | :--- |",
+    ]
+    for t in active_tasks:
+        lines.append(f"| {t['link']} | `{t['status']}` | {t['progress']} | {t['date']} | `{t['parent']}` |")
+        
+    lines.append("")
+    tasks_content = "\n".join(lines) + "\n"
+    if dry_run:
+        print("\n[DRY RUN] Generated docs/tasks.md preview:")
+        print("\n".join(lines[:15]))
+    else:
+        tasks_file.write_text(tasks_content, encoding="utf-8")
+        print(f"✅ Self-Healed {tasks_file.relative_to(repo_root)} successfully ({len(active_tasks)} active tasks)!")
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-Healing Documentation Engine")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -12,6 +13,17 @@ SCRIPT = REPO_ROOT / "scripts" / "bootstrap-consumer-skills.sh"
 
 
 class BootstrapConsumerSkillsTests(unittest.TestCase):
+    def _fake_source(self, root: Path) -> Path:
+        # A throwaway source, not REPO_ROOT: the update script fetches and may pull its
+        # source, which must never touch the developer's real checkout from a test.
+        source = root / "source"
+        (source / "scripts").mkdir(parents=True)
+        shutil.copy(REPO_ROOT / "scripts" / "update-consumer-skills.sh", source / "scripts")
+        (source / "skills.json").write_text('{"version":"9.9.9"}\n', encoding="utf-8")
+        (source / "skills" / "kmp-expert").mkdir(parents=True)
+        (source / "skills" / "kmp-expert" / "SKILL.md").write_text("---\nname: kmp-expert\n---\n", encoding="utf-8")
+        return source
+
     def _run(self, cwd: Path, target: str, env: dict) -> subprocess.CompletedProcess:
         return subprocess.run(
             ["bash", str(SCRIPT), target],
@@ -37,11 +49,12 @@ class BootstrapConsumerSkillsTests(unittest.TestCase):
 
     def test_bootstraps_from_local_source_when_target_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            project = Path(tmp)
+            project = Path(tmp) / "project"
+            project.mkdir()
             # Deliberately no .claude/skills — the missing case.
 
             env = os.environ.copy()
-            env["KMP_AGENT_SKILLS_SOURCE"] = str(REPO_ROOT)
+            env["KMP_AGENT_SKILLS_SOURCE"] = str(self._fake_source(Path(tmp)))
             env.pop("KMM_AGENT_SKILLS_SOURCE", None)
 
             result = self._run(project, ".claude/skills", env)
@@ -52,6 +65,23 @@ class BootstrapConsumerSkillsTests(unittest.TestCase):
             self.assertTrue(deployed.is_dir())
             self.assertTrue((deployed / "kmp-expert" / "SKILL.md").is_file())
             self.assertTrue((deployed / ".kmp-agent-skills-version").is_file())
+
+    def test_reports_failure_instead_of_success_when_update_fails(self) -> None:
+        # Used to print "Bootstrapped" even when the update script aborted, which hid
+        # the CI failure behind a success message.
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            source = self._fake_source(Path(tmp))
+            (source / "scripts" / "update-consumer-skills.sh").write_text("exit 1\n", encoding="utf-8")
+
+            env = os.environ.copy()
+            env["KMP_AGENT_SKILLS_SOURCE"] = str(source)
+            result = self._run(project, ".claude/skills", env)
+
+            self.assertEqual(result.returncode, 0, result.stderr)  # SessionStart hook never fails
+            self.assertIn("failed", result.stderr)
+            self.assertNotIn("Bootstrapped", result.stderr)
 
     def test_noop_when_target_is_empty_directory(self) -> None:
         # An empty (but existing) dir counts as "missing" for bootstrap purposes —

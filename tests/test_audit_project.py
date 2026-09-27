@@ -2510,6 +2510,39 @@ class ProjectSkillStandardsTests(unittest.TestCase):
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any(f.startswith("project skill") for f in findings))
 
+    def test_flags_skill_name_dir_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: other-name\ndescription: Does a thing.\n---\n\nBody.\n"
+            self._write(root, "skills/my-skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill name directory mismatch" in f for f in findings))
+
+    def test_flags_skill_name_invalid_format(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: My_Skill\ndescription: Does a thing.\n---\n\nBody.\n"
+            self._write(root, "skills/My_Skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill name invalid format" in f for f in findings))
+
+    def test_flags_skill_micro_scoped_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_text = "---\nname: fix-login-error\ndescription: Fixes login.\n---\n\nBody.\n"
+            self._write(root, "skills/fix-login-error/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill micro-scoped / too specific" in f for f in findings))
+
+    def test_flags_skill_description_exceeds_1024_chars(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            long_desc = "a" * 1050
+            skill_text = f"---\nname: my-skill\ndescription: {long_desc}\n---\n\nBody.\n"
+            self._write(root, "skills/my-skill/SKILL.md", skill_text)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project skill description exceeds 1024 chars" in f for f in findings))
+
     def test_no_skills_dir_returns_no_findings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -2551,6 +2584,24 @@ class ProjectSkillStandardsTests(unittest.TestCase):
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any("project skill not deployed" in f for f in findings))
             self.assertFalse(any("project skill deployment drift" in f for f in findings))
+
+    def test_skills_source_repo_skips_skills_agents_and_templates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "routing_rules.json", "{}\n")
+            self._write(
+                root, "skills/kmp-expert/SKILL.md",
+                "---\nname: kmp-expert\ndescription: Orchestrator.\n---\n\nBody.\n",
+            )
+            self._write(root, "agents/reviewer.md", "# Reviewer\n\nNo frontmatter.\n")
+            self._write(
+                root, "skills/kmp-expert/templates/androidApp/build.gradle.kts",
+                "android {\n    defaultConfig {\n        versionCode = 1\n    }\n}\n",
+            )
+            findings = audit_scripts.audit_project(root)
+            self.assertFalse(any(f.startswith("project skill") for f in findings), findings)
+            self.assertFalse(any(f.startswith("project agent") for f in findings), findings)
+            self.assertFalse(any("versioncode" in f for f in findings), findings)
 
 
 class WhatCommentInControlFlowTests(unittest.TestCase):
@@ -3734,6 +3785,38 @@ class AgentFileStandardsTests(unittest.TestCase):
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any(f.startswith("project agent") for f in findings))
 
+    def test_flags_agent_redundant_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: reviewer-agent\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/reviewer-agent.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent redundant suffix" in f for f in findings))
+
+    def test_flags_agent_action_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: fix-bugs\ndescription: Fixes bugs.\n---\n\nBody.\n"
+            self._write(root, "agents/fix-bugs.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent action-named" in f for f in findings))
+
+    def test_flags_agent_model_prefixed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: claude-reviewer\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/claude-reviewer.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent model-prefixed" in f for f in findings))
+
+    def test_flags_agent_name_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            content = "---\nname: custom-reviewer\ndescription: Reviews code.\n---\n\nBody.\n"
+            self._write(root, "agents/reviewer.md", content)
+            findings = audit_scripts.audit_project(root)
+            self.assertTrue(any("project agent name mismatch" in f for f in findings))
+
     def test_flags_codex_toml_missing_required_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -4236,7 +4319,7 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             findings = audit_scripts._detect_agent_setup(root)
             self.assertTrue(any(".agents/skills/ missing or empty" in f for f in findings))
 
-    def test_ignores_when_agents_skills_matches(self) -> None:
+    def test_warns_redundant_when_claude_skills_mirror_matches_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._base_claude_setup(root)
@@ -4246,6 +4329,7 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             findings = audit_scripts._detect_agent_setup(root)
             self.assertFalse(any(".agents/skills/" in f and "missing" in f for f in findings))
             self.assertFalse(any("drifted" in f for f in findings))
+            self.assertTrue(any("redundant repo-local .claude/skills/ mirror" in f for f in findings))
 
     def test_flags_drift_between_claude_and_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -4336,9 +4420,7 @@ class AgentSetupGitignoredTests(unittest.TestCase):
             self.assertTrue(
                 any("commands/ exists but is gitignored" in f for f in findings)
             )
-            self.assertTrue(
-                any("settings.json exists but is gitignored" in f for f in findings)
-            )
+            self.assertFalse(any("settings.json exists but is gitignored" in f for f in findings))
 
     def test_ignores_when_only_skills_mirror_is_gitignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -5220,6 +5302,46 @@ class InvestigationNarrationCommentTests(unittest.TestCase):
             )
             findings = audit_scripts.audit_project(root)
             self.assertFalse(any("investigation narration comment" in f for f in findings))
+
+
+class MisplacedGithubAutomationTests(unittest.TestCase):
+    def test_flags_misplaced_gh_scripts_in_tools(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tools_dir = root / "tools"
+            tools_dir.mkdir(parents=True)
+            (tools_dir / "gh-sub-issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (tools_dir / "gh_sub_issue.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "create_issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (tools_dir / "pr_validator.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 4)
+            self.assertTrue(all("misplaced GitHub automation script" in f for f in findings))
+
+    def test_ignores_standard_verification_and_analysis_tools(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tools_dir = root / "tools"
+            tools_dir.mkdir(parents=True)
+            (tools_dir / "loc_survey.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "verify_agent_skills_sync.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "test_verify_detekt_baselines.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+            (tools_dir / "check_template_consumer.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 0)
+
+    def test_ignores_scripts_in_github_scripts_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gh_scripts = root / ".github" / "scripts"
+            gh_scripts.mkdir(parents=True)
+            (gh_scripts / "gh-sub-issue.sh").write_text("#!/bin/bash\n", encoding="utf-8")
+            (gh_scripts / "gh_sub_issue.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+            findings = audit_scripts._detect_misplaced_github_automation(root)
+            self.assertEqual(len(findings), 0)
 
 
 if __name__ == "__main__":

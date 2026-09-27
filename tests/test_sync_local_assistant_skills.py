@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -12,7 +13,7 @@ SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync-local-assistant-skills.sh"
 
 
 class SyncLocalAssistantSkillsTests(unittest.TestCase):
-    """Dry-run only — never touches real ~/.claude, ~/.codex, ~/.gemini, ~/.agents."""
+    """Never touches real global assistant skill directories (dry-run or fake HOME)."""
 
     def _fake_source(self, tmp: str) -> Path:
         source = Path(tmp) / "kmp-agent-skills"
@@ -20,7 +21,7 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
         (source / "skills.json").write_text(json.dumps({"version": "0.0.0-test"}), encoding="utf-8")
         return source
 
-    def test_dry_run_lists_all_four_targets(self) -> None:
+    def test_dry_run_lists_supported_targets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             source = self._fake_source(tmp)
             result = subprocess.run(
@@ -28,7 +29,7 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
                 capture_output=True, text=True,
             )
         self.assertEqual(result.returncode, 0, result.stderr)
-        for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills"):
+        for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills", ".gemini/config/plugins/kmp-agent-skills/skills"):
             self.assertIn(target, result.stdout, f"missing target: {target}")
 
     def test_dry_run_does_not_create_agents_dir(self) -> None:
@@ -44,6 +45,32 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse((fake_home / ".agents").exists())
+
+    def test_real_sync_keeps_client_dirs_and_only_newest_backup(self) -> None:
+        # Fake HOME, never the real one. Real bugs: --delete wiped Codex's bundled
+        # ~/.codex/skills/.system on every sync, and a backup dir piled up per sync.
+        with tempfile.TemporaryDirectory() as tmp:
+            source = self._fake_source(tmp)
+            (source / "skills" / "kmp-x").mkdir()
+            (source / "skills" / "kmp-x" / "SKILL.md").write_text("x", encoding="utf-8")
+            home = Path(tmp) / "home"
+            codex = home / ".codex" / "skills"
+            (codex / ".system" / "imagegen").mkdir(parents=True)
+            (codex / "kmp-stale").mkdir()
+            old_backup = home / ".codex" / "skills-backup-kmp-agent-skills-20000101000000"
+            old_backup.mkdir()
+
+            result = subprocess.run(
+                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--skip-commands"],
+                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((codex / ".system" / "imagegen").is_dir(), "client .system deleted")
+            self.assertTrue((codex / "kmp-x" / "SKILL.md").is_file())
+            self.assertFalse((codex / "kmp-stale").exists(), "stale synced skill kept")
+            self.assertFalse(old_backup.exists(), "old backup not pruned")
+            self.assertEqual(len(list((home / ".codex").glob("skills-backup-kmp-agent-skills-*"))), 1)
 
     def test_missing_source_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

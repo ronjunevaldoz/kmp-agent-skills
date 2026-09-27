@@ -42,13 +42,13 @@ Do not use this agent when:
 
 ```bash
 # Violation report
-python3 .claude/skills/kmp-audit/scripts/audit_project.py <project_root>
+python3 .agents/skills/kmp-audit/scripts/audit_project.py <project_root>
 
 # Adoption roadmap (for existing projects with no prior skill adoption)
-python3 .claude/skills/kmp-audit/scripts/audit_project.py <project_root> --roadmap
+python3 .agents/skills/kmp-audit/scripts/audit_project.py <project_root> --roadmap
 
 # Module structure vs canonical App/Library layout — informational, not a gate
-python3 .claude/skills/kmp-audit/scripts/generate_structure_diagram.py <project_root> --mermaid
+python3 .agents/skills/kmp-audit/scripts/generate_structure_diagram.py <project_root> --mermaid
 ```
 
 `audit_project.py` prints its blocking findings first, then a separate non-blocking

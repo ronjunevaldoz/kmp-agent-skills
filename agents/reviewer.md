@@ -125,7 +125,7 @@ Spacing token check:
 
 ## Check 9: Transport consistency (kRPC vs HTTP)
 
-Read `.claude/pipeline-context.json` and check `krpc_established`:
+Read `.agents/pipeline-context.json` and check `krpc_established`:
 
 - **`krpc_established: true`** → skip the grep; kRPC is confirmed active. Proceed directly to
   the transport consistency checks below.
@@ -136,7 +136,7 @@ grep -r "RemoteService\|@Rpc\|withRpc\|KtorRPCClient\|rpcClient\|\.rpc(" \
   <project_root>/*/src --include="*.kt" -l
 ```
 
-If the grep finds files, set `krpc_established: true` in `.claude/pipeline-context.json`
+If the grep finds files, set `krpc_established: true` in `.agents/pipeline-context.json`
 before continuing.
 
 **If kRPC is present in the project:**
@@ -167,7 +167,7 @@ Run before reviewing any `:ui` file:
 grep -r "WindowSizeClass\|calculateWindowSizeClass" <project_root>/*/src --include="*.kt" -l
 ```
 
-Read `.claude/pipeline-context.json` and check `adaptive_layout_migration_mode`:
+Read `.agents/pipeline-context.json` and check `adaptive_layout_migration_mode`:
 
 **Normal mode** (`adaptive_layout_migration_mode: false`, default):
 - If **any** existing screen uses `WindowSizeClass` and the newly added screen does **not**,
@@ -343,7 +343,7 @@ REQUIRED CHANGES:
   <one action per blocker — specific file, line intent, and correct replacement>
 ```
 
-On `APPROVE`: update `.claude/pipeline-context.json` — add any reusable patterns under `proven_patterns`.
+On `APPROVE`: update `.agents/pipeline-context.json` — add any reusable patterns under `proven_patterns`.
 On `NEEDS_FIXES`: hand `REQUIRED CHANGES` to the fixer.
 
 ---

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import re
 import subprocess
 import sys
@@ -332,69 +333,46 @@ def _detect_agent_setup(root: Path) -> list[str]:
         return []
 
     findings: list[str] = []
-    claude = root / ".claude"
-
-    if not (root / "CLAUDE.md").exists():
-        findings.append("agent-setup [HIGH]: CLAUDE.md missing — skills context never loads (run /kmp-setup-agents)")
-
-    if not (claude / "AGENTS.md").exists():
-        findings.append("agent-setup [HIGH]: .claude/AGENTS.md missing — no skill routing table (run /kmp-setup-agents)")
-    elif _git_ignored(root, ".claude/AGENTS.md"):
-        findings.append(
-            "agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — CLAUDE.md "
-            "loads it as the literal system prompt every session, so a fresh clone, "
-            "teammate, or CI runner gets none at all until someone reruns "
-            "/kmp-setup-agents; commit it (see \"What To Commit Vs Gitignore\" in "
-            "docs/reference/ai-collaboration.md)"
-        )
-
-    commands_dir = claude / "commands"
-    if not commands_dir.exists() or not any(commands_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .claude/commands/ missing — consumer commands not installed")
-    elif _git_ignored(root, ".claude/commands"):
-        findings.append(
-            "agent-setup [MEDIUM]: .claude/commands/ exists but is gitignored — "
-            "installed consumer commands never reach a fresh clone or teammate"
-        )
-
-    settings_json = claude / "settings.json"
-    if settings_json.exists() and _git_ignored(root, ".claude/settings.json"):
-        findings.append(
-            "agent-setup [MEDIUM]: .claude/settings.json exists but is gitignored — "
-            "the Bash allowlist and hook wiring never reach a fresh clone or teammate"
-        )
-
-    skills_dir = claude / "skills"
-    if not skills_dir.exists() or not any(skills_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .claude/skills/ missing or empty — skills not deployed")
-
-    has_claude_setup = (root / "CLAUDE.md").exists() or claude.exists()
-
     agents_skills_dir = root / ".agents" / "skills"
-    if has_claude_setup:
-        if not agents_skills_dir.exists() or not any(agents_skills_dir.iterdir()):
-            findings.append(
-                "agent-setup [MEDIUM]: .agents/skills/ missing or empty — the "
-                "agentskills.io cross-client target isn't deployed; other clients "
-                "(Cursor, Amp, Goose, ...) working in this project see no skills "
-                "(run /kmp-setup-agents or update-consumer-skills.sh)"
-            )
-        elif skills_dir.exists() and any(skills_dir.iterdir()):
-            claude_names = {p.name for p in skills_dir.iterdir() if p.is_dir()}
+    legacy_claude_dir = root / ".claude"
+    legacy_setup = (root / "CLAUDE.md").exists() or legacy_claude_dir.exists()
+    if not (root / "AGENTS.md").exists() and not legacy_setup:
+        findings.append("agent-setup [HIGH]: AGENTS.md missing — no universal agent routing table (run /kmp-setup-agents)")
+    if legacy_setup and (not agents_skills_dir.exists() or not any(agents_skills_dir.iterdir())):
+        findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — migrate the legacy Claude deployment")
+    if legacy_claude_dir.exists() and (legacy_claude_dir / "AGENTS.md").exists() and _git_ignored(root, ".claude/AGENTS.md"):
+        findings.append("agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — migrate to committed AGENTS.md")
+
+    commands_dir = root / ".agents" / "commands"
+    if not commands_dir.exists() and legacy_claude_dir.exists():
+        commands_dir = legacy_claude_dir / "commands"
+    if not commands_dir.exists() or not any(commands_dir.iterdir()):
+        findings.append("agent-setup [MEDIUM]: .agents/commands/ missing — consumer commands not installed")
+    elif commands_dir == legacy_claude_dir / "commands" and _git_ignored(root, ".claude/commands"):
+        findings.append("agent-setup [MEDIUM]: legacy .claude/commands/ exists but is gitignored — migrate commands to .agents/commands/")
+
+    deployed_skills_dir = agents_skills_dir
+    if not deployed_skills_dir.exists() and legacy_claude_dir.exists():
+        deployed_skills_dir = legacy_claude_dir / "skills"
+    if not deployed_skills_dir.exists() or not any(deployed_skills_dir.iterdir()):
+        findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — skills not deployed")
+    elif legacy_claude_dir.exists() and agents_skills_dir.exists():
+        legacy_skills_dir = legacy_claude_dir / "skills"
+        if legacy_skills_dir.exists() and any(legacy_skills_dir.iterdir()):
+            legacy_names = {p.name for p in legacy_skills_dir.iterdir() if p.is_dir()}
             agents_names = {p.name for p in agents_skills_dir.iterdir() if p.is_dir()}
-            if claude_names != agents_names:
-                only_claude = sorted(claude_names - agents_names)
-                only_agents = sorted(agents_names - claude_names)
-                detail = []
-                if only_claude:
-                    detail.append(f"only in .claude/skills/: {only_claude}")
-                if only_agents:
-                    detail.append(f"only in .agents/skills/: {only_agents}")
+            if legacy_names != agents_names:
                 findings.append(
-                    "agent-setup [MEDIUM]: .claude/skills/ and .agents/skills/ have "
-                    "drifted — " + "; ".join(detail) + " (re-run the deploy step so "
-                    "both copies match)"
+                    "agent-setup [MEDIUM]: legacy .claude/skills/ and .agents/skills/ have drifted; "
+                    "remove the legacy Claude deployment and use .agents/skills/"
                 )
+            else:
+                findings.append(
+                    "agent-setup [LOW]: redundant repo-local .claude/skills/ mirror detected; "
+                    "modern assistants load skills from .agents/skills/ — remove .claude/skills/ to avoid dual-maintenance"
+                )
+
+    has_agent_setup = (root / "AGENTS.md").exists() or (root / ".agents").exists() or legacy_setup
 
     project_skills_dir = root / "skills"
     if project_skills_dir.is_dir():
@@ -407,7 +385,7 @@ def _detect_agent_setup(root: Path) -> list[str]:
                 "agent-setup [HIGH]: bundled-looking skill name(s) under project-root "
                 f"skills/ — {bundled_named}; project-root skills/ is for project-owned "
                 "CUSTOM skills only, bundled kmp-agent-skills content belongs in "
-                ".agents/skills/ and .claude/skills/, never copied into the source tree"
+                ".agents/skills/, never copied into the source tree"
             )
     source_layout = {
         "agents/": root / "agents",
@@ -419,17 +397,22 @@ def _detect_agent_setup(root: Path) -> list[str]:
         "docs/reference/agent-catalog.md": root / "docs" / "reference" / "agent-catalog.md",
     }
     missing_source_layout = [label for label, path in source_layout.items() if not path.exists()]
-    if has_claude_setup and missing_source_layout:
+    if has_agent_setup and missing_source_layout:
         findings.append(
             "agent-setup [MEDIUM]: project-owned agent scaffold incomplete — missing "
             + ", ".join(missing_source_layout)
-            + "; keep project-specific agent sources at the repo root and `.claude/` as the deployed runtime"
+            + "; keep project-specific agent sources at the repo root and `.agents/` as the deployed runtime"
         )
 
     # Multi-surface project: AGENTS.md exists but only mentions one surface
-    agents_md = claude / "AGENTS.md"
+    agents_md = root / "AGENTS.md"
     if agents_md.exists():
         text = agents_md.read_text(encoding="utf-8", errors="ignore")
+    elif legacy_setup and (legacy_claude_dir / "AGENTS.md").exists():
+        text = (legacy_claude_dir / "AGENTS.md").read_text(encoding="utf-8", errors="ignore")
+    else:
+        text = ""
+    if text:
         settings = root / "settings.gradle.kts"
         if settings.exists():
             s = settings.read_text(encoding="utf-8", errors="ignore")
@@ -443,6 +426,38 @@ def _detect_agent_setup(root: Path) -> list[str]:
                         "agent-setup [MEDIUM]: AGENTS.md covers only one surface of a multi-surface project "
                         "— add routing for the missing surface"
                     )
+
+    return findings
+
+
+def _detect_misplaced_github_automation(root: Path) -> list[str]:
+    """Flag ad-hoc GitHub issue/PR automation scripts residing in tools/ instead of
+    .github/scripts/ or using the official kmp-github-issue-governance skill.
+    """
+    tools_dir = root / "tools"
+    if not tools_dir.is_dir():
+        return []
+
+    findings: list[str] = []
+    github_script_patterns = [
+        re.compile(r"^gh[-_].*\.(sh|py|bash|zsh)$", re.IGNORECASE),
+        re.compile(r".*[-_]?(issue|sub-issue|sub_issue|pr)[-_]?.*\.(sh|py|bash|zsh)$", re.IGNORECASE),
+    ]
+
+    for p in sorted(tools_dir.iterdir()):
+        if not p.is_file():
+            continue
+        # Don't flag repository integrity / verification tools like test_verify_ui_doc_refs.py
+        name = p.name.lower()
+        if "verify" in name or "test_" in name or name.startswith("check_template"):
+            continue
+        if any(pat.match(p.name) for pat in github_script_patterns):
+            rel = p.relative_to(root).as_posix()
+            findings.append(
+                f"hygiene [MEDIUM]: misplaced GitHub automation script '{rel}' — "
+                f"GitHub issue/PR scripts belong in .github/scripts/ or should use "
+                f"kmp-github-issue-governance instead of cluttering tools/"
+            )
 
     return findings
 
@@ -3995,24 +4010,31 @@ def _detect_leftover_wizard_demo_code(root: Path) -> list[str]:
 
 _FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
 _FRONTMATTER_NAME_RE = re.compile(r"^name:\s*\S", re.MULTILINE)
+_FRONTMATTER_NAME_VAL_RE = re.compile(r"^name:\s*['\"]?([^\r\n'\"]+)['\"]?\s*$", re.MULTILINE)
 _FRONTMATTER_DESCRIPTION_RE = re.compile(r"^description:\s*\S", re.MULTILINE)
+_FRONTMATTER_DESC_VAL_RE = re.compile(r"^description:\s*(?:>|\|)?\s*(.*?)(?=\n[a-z_A-Z0-9-]+:|\Z)", re.MULTILINE | re.DOTALL)
 _SKILL_MD_MAX_LINES = 500
+_AGENTSKILLS_NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+_MICRO_SCOPED_SKILL_PREFIXES = ("fix-", "patch-", "bug-", "update-", "add-", "refactor-", "temp-", "change-")
+_MICRO_SCOPED_SKILL_SUFFIXES = ("-viewmodel", "-impl", "-file", "-function", "-button", "-screen")
 
 
 def _detect_project_skill_standards(root: Path) -> list[str]:
     """Flag a project-owned skill at <project root>/skills/<skill-name>/ that doesn't
     meet the real, official skill anatomy (verified against anthropic-skills:skill-creator's
-    own documented convention, not assumed):
+    own documented convention and agentskills.io specification):
 
       - skills/<name>/SKILL.md must exist (a skill folder with none is undiscoverable)
       - SKILL.md must open with YAML frontmatter (--- ... ---)
-      - frontmatter must have both name: and description: — these are the primary
-        triggering mechanism; a skill missing either can't be found or won't trigger
+      - frontmatter must have both name: and description:
+      - name: must match parent directory name, be <= 64 chars, lowercase alphanumeric + hyphens
+      - description: must stay <= 1024 chars per agentskills.io spec
+      - skill must not be micro-scoped / one-off action named (e.g. fix-*, patch-*, *-viewmodel)
       - SKILL.md body should stay under ~500 lines unless it points to a references/
         subdirectory for progressive disclosure (skill-creator's own stated guideline)
 
     Scoped to the project's own top-level skills/ directory only — not this collection's
-    deployed .claude/skills/ copies, and not this repo's own skills/ when auditing itself.
+    deployed .agents/skills/ copies, and not this repo's own skills/ when auditing itself.
     """
     findings: list[str] = []
     skills_dir = root / "skills"
@@ -4048,17 +4070,49 @@ def _detect_project_skill_standards(root: Path) -> list[str]:
             continue
 
         frontmatter = fm_match.group(1)
-        if not _FRONTMATTER_NAME_RE.search(frontmatter):
+        name_match = _FRONTMATTER_NAME_VAL_RE.search(frontmatter)
+        if not name_match:
             findings.append(
                 f"project skill frontmatter missing name [HIGH]: {rel} — name is the "
                 f"skill identifier; without it the skill can't be reliably referenced"
             )
-        if not _FRONTMATTER_DESCRIPTION_RE.search(frontmatter):
+        else:
+            name_val = name_match.group(1).strip()
+            if name_val != skill_dir.name:
+                findings.append(
+                    f"project skill name directory mismatch [HIGH]: {rel} — frontmatter name "
+                    f"'{name_val}' does not match directory name '{skill_dir.name}' (spec requires match)"
+                )
+            if len(name_val) > 64 or not _AGENTSKILLS_NAME_RE.match(name_val):
+                findings.append(
+                    f"project skill name invalid format [HIGH]: {rel} — '{name_val}' "
+                    f"must be lowercase alphanumeric and hyphens only, <= 64 chars"
+                )
+
+        # Micro-scoped / "too specific" smell check
+        if any(skill_dir.name.startswith(p) for p in _MICRO_SCOPED_SKILL_PREFIXES) or any(
+            skill_dir.name.endswith(s) for s in _MICRO_SCOPED_SKILL_SUFFIXES
+        ):
+            findings.append(
+                f"project skill micro-scoped / too specific [MEDIUM]: {rel} — '{skill_dir.name}' "
+                f"appears scoped to a single action, bugfix, or file; skills should represent "
+                f"generic domain or feature capabilities (e.g. 'user-profile', 'billing', 'auth-session')"
+            )
+
+        desc_match = _FRONTMATTER_DESC_VAL_RE.search(frontmatter)
+        if not desc_match or not desc_match.group(1).strip():
             findings.append(
                 f"project skill frontmatter missing description [HIGH]: {rel} — "
                 f"description is the primary triggering mechanism; a skill without one "
                 f"won't reliably trigger for the tasks it's meant to handle"
             )
+        else:
+            desc_val = desc_match.group(1).strip()
+            if len(desc_val) > 1024:
+                findings.append(
+                    f"project skill description exceeds 1024 chars [HIGH]: {rel} — "
+                    f"length is {len(desc_val)} chars (hard spec limit is 1024)"
+                )
 
         body = text[fm_match.end():]
         body_lines = body.count("\n") + 1
@@ -4075,7 +4129,7 @@ def _detect_project_skill_standards(root: Path) -> list[str]:
 
 def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
     """Flag project-owned skills under ./skills/ that were never deployed or drifted
-    from their deployed `.claude/skills/` copies.
+    from their deployed `.agents/skills/` copies.
 
     Project-owned custom skills are authored at the repo root and then copied into the
     assistant runtime directory. If the deployed copy is missing or stale, Claude loads
@@ -4083,7 +4137,11 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
     """
     findings: list[str] = []
     skills_dir = root / "skills"
-    deployed_skills_dir = root / ".claude" / "skills"
+    deployed_skills_dir = root / ".agents" / "skills"
+    if not deployed_skills_dir.exists() and (root / ".claude" / "skills").exists():
+        # Backward-compatible audit of legacy Claude-only projects. New deployments
+        # always use .agents/skills.
+        deployed_skills_dir = root / ".claude" / "skills"
     if not skills_dir.is_dir():
         return findings
 
@@ -4100,7 +4158,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
         if not deployed_skill_md.is_file():
             findings.append(
                 f"project skill not deployed [MEDIUM]: {rel} — deploy it to "
-                f".claude/skills/{skill_dir.name}/ so Claude loads the project-owned copy"
+                f".agents/skills/{skill_dir.name}/ so agents load the project-owned copy"
             )
             continue
 
@@ -4116,7 +4174,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
         if set(source_files) != set(deployed_files):
             findings.append(
                 f"project skill deployment drift [MEDIUM]: {rel} — deployed file set in "
-                f".claude/skills/{skill_dir.name}/ does not match the project-owned source"
+                f".agents/skills/{skill_dir.name}/ does not match the project-owned source"
             )
             continue
 
@@ -4124,7 +4182,7 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
             if deployed_files.get(rel_file) != source_text:
                 findings.append(
                     f"project skill deployment drift [MEDIUM]: {rel}/{rel_file} — "
-                    f"deployed copy under .claude/skills/{skill_dir.name}/ is stale"
+                    f"deployed copy under .agents/skills/{skill_dir.name}/ is stale"
                 )
                 break
 
@@ -4142,6 +4200,9 @@ def _detect_project_skill_deployment_drift(root: Path) -> list[str]:
 
 _TIER_NAME_LITERALS = {"flagship-coding", "balanced-coding", "fast-utility", "precision-review"}
 _AGENT_MODEL_FIELD_RE = re.compile(r"^model:\s*['\"]?([\w.-]+)['\"]?\s*$", re.MULTILINE)
+_AGENT_REDUNDANT_SUFFIXES = ("-agent", "-bot")
+_AGENT_ACTION_PREFIXES = ("fix-", "run-", "deploy-", "build-", "update-", "generate-", "clean-")
+_AGENT_MODEL_PREFIXES = ("claude-", "gpt-", "sonnet-", "opus-", "haiku-", "gemini-")
 _TOML_KEY_RE = {
     "name": re.compile(r'^\s*name\s*=\s*["\'].+["\']', re.MULTILINE),
     "description": re.compile(r'^\s*description\s*=\s*["\'].+["\']', re.MULTILINE),
@@ -4159,8 +4220,34 @@ def _agent_md_standards_findings(text: str, rel: Path) -> list[str]:
         )
         return findings
     frontmatter = fm_match.group(1)
-    if not _FRONTMATTER_NAME_RE.search(frontmatter):
+    name_match = _FRONTMATTER_NAME_VAL_RE.search(frontmatter)
+    if not name_match:
         findings.append(f"project agent frontmatter missing name [HIGH]: {rel}")
+    else:
+        name_val = name_match.group(1).strip()
+        if name_val != rel.stem:
+            findings.append(
+                f"project agent name mismatch [HIGH]: {rel} — frontmatter name '{name_val}' "
+                f"does not match file stem '{rel.stem}'"
+            )
+
+    # Persona & naming convention checks
+    if rel.stem.endswith(_AGENT_REDUNDANT_SUFFIXES):
+        findings.append(
+            f"project agent redundant suffix [MEDIUM]: {rel} — '{rel.name}' ends with redundant '-agent'/'-bot'; "
+            f"agent files under agents/ should be named directly by persona/role (e.g. 'planner.md', 'implementer.md')"
+        )
+    if any(rel.stem.startswith(p) for p in _AGENT_ACTION_PREFIXES):
+        findings.append(
+            f"project agent action-named [MEDIUM]: {rel} — '{rel.stem}' is named after an action/verb; "
+            f"agents represent functional personas/roles (e.g. 'fixer', 'auditor'), while actions belong to slash commands"
+        )
+    if any(rel.stem.startswith(p) for p in _AGENT_MODEL_PREFIXES):
+        findings.append(
+            f"project agent model-prefixed [MEDIUM]: {rel} — '{rel.stem}' is named after a provider/model; "
+            f"model choice belongs in the 'model:' frontmatter field, not the agent's persona name"
+        )
+
     if not _FRONTMATTER_DESCRIPTION_RE.search(frontmatter):
         findings.append(f"project agent frontmatter missing description [HIGH]: {rel}")
     model_match = _AGENT_MODEL_FIELD_RE.search(frontmatter)
@@ -4987,8 +5074,23 @@ def _detect_missing_adaptive_coverage(root: Path) -> list[str]:
     return findings
 
 
+@functools.lru_cache(maxsize=None)
+def _is_skills_source_repo(root: Path) -> bool:
+    """True when auditing the kmp-agent-skills repo itself, not a consumer project.
+
+    - Its skills/ and agents/ are the source copies, never deployed in-repo.
+    - Its templates hold placeholders (versionCode = 1, GROUP_ID).
+    - Skill quality is covered by audit_skills_repo.py and scan_skill_issues.py.
+    """
+    return (root / "routing_rules.json").is_file() and (
+        root / "skills" / "kmp-expert" / "SKILL.md"
+    ).is_file()
+
+
 def _is_excluded(path: Path, root: Path) -> bool:
     parts = path.relative_to(root).parts
+    if parts and parts[0] in {"skills", "agents"} and _is_skills_source_repo(root):
+        return True
     return any(
         part in _EXCLUDED_DIRS or part.endswith(".cpp")  # excludes llama.cpp/, stable-diffusion.cpp/ submodules
         for part in parts
@@ -5225,6 +5327,7 @@ def audit_project(root: Path) -> list[str]:
 
     # ── Agent & consumer setup ─────────────────────────────────────────────────
     findings.extend(_detect_agent_setup(root))
+    findings.extend(_detect_misplaced_github_automation(root))
 
     # ── Project-owned agent file standards + deployment drift ──────────────────
     findings.extend(_detect_agent_file_standards(root))

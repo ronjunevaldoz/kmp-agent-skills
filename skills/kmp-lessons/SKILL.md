@@ -54,7 +54,7 @@ issue alongside the lesson — see "Proactively Offering to File a GitHub Issue"
 `docs/lessons/YYYY-MM-DD-<slug>.md` and never appends to or overwrites an existing file:
 
 ```bash
-python3 ~/.claude/skills/kmp-lessons/scripts/create_lesson.py \
+python3 ~/.agents/skills/kmp-lessons/scripts/create_lesson.py \
   --skill kmp-mvi \
   --type correction --severity high \
   --title "Effect replayed on nav back" \
@@ -321,7 +321,7 @@ Lessons are structured markdown files, not code. Validation is structural:
 
 Using `create_lesson.py` guarantees the frontmatter, section skeleton, naming, and the
 one-file-per-lesson rule. Run the harvester to confirm a batch parses:
-`python3 ~/.claude/skills/kmp-skill-harvester/scripts/harvest_lessons.py .`
+`python3 ~/.agents/skills/kmp-skill-harvester/scripts/harvest_lessons.py .`
 
 `kmp-audit`'s `combined lesson file [HIGH]` detector is the backstop
 for a lesson file that bypassed the script (hand-written, merged, or copy-pasted) —

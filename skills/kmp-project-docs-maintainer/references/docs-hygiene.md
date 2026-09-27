@@ -345,10 +345,14 @@ active file, or a reader can't trust it as a substitute for opening each one.
 | Unprocessed lessons in `docs/lessons/` | 20 files | Harvest via `kmp-skill-harvester` |
 | Lesson file age without harvest | 30 days | Harvest or archive |
 | Task file with a `-done` filename suffix still in active `docs/tasks/<parent>/` | 0 | Move to `docs/tasks/<parent>/archive/` immediately |
+| Task file in `doing` or `blocked` state older than 14 days without update | 0 | Update progress, demote to blocked/todo, or complete and archive |
+| Task file with 100% completed checkboxes (`[x]`) not marked `-done` | 0 | Rename to `-done` and move to `docs/tasks/<parent>/archive/` |
 | Task filename not matching `<NN>-<slug>-<status>.md` (status: todo/doing/blocked/done) | 0 | Rename to match the task naming convention |
 | Task file missing a `**Date:**` line in its content | 0 | Add the date line — filenames no longer carry a date prefix |
 | Active task file not mentioned in `docs/tasks.md` | 0 | Add a Task Log row — the index must name every active task so status is readable without opening each file |
-| Non-doc file (`.json`, `.yaml`, etc.) directly in `docs/` | 0 | Move to purpose-specific directory |
+| Non-doc file (`.json`, `.yaml`, `.py`, `.zip`, etc.) anywhere inside `docs/` | 0 | Move to purpose-specific directory (`tests/fixtures/`, `api/`, `spec/`) |
+| Asset/image file outside `docs/assets/` or `docs/images/` | 0 | Move to `docs/assets/` or `docs/images/` |
+| Non-canonical top-level directory in `docs/` (only `reference`, `tasks`, `decisions`, `lessons`, `bugs`, `mvp`, `archive`, `audits`, `assets`, `images` allowed) | 0 | Move under `docs/reference/`, `docs/tasks/`, or `docs/archive/` |
 | Snake_case filename in `docs/` | 0 | Rename to kebab-case |
 | Reference doc (`docs/` root or `docs/reference/`) with no inbound links anywhere in the repo | 0 | Review — link it from wherever introduces the topic, or delete per Delete vs Archive above if it's genuinely stale |
 | Decision record filename not matching `NNNN-slug.md` (4-digit, sequential) | 0 | Rename to match the ADR naming convention |
@@ -370,6 +374,9 @@ python3 skills/kmp-audit/scripts/audit_skills_repo.py . --docs-hygiene-only
 
 # Full audit including docs hygiene
 python3 skills/kmp-audit/scripts/audit_skills_repo.py .
+
+# Self-healing engine (auto-fixes safe violations, updates sitemap & task progress)
+python3 skills/kmp-project-docs-maintainer/scripts/heal_docs.py
 ```
 
 Despite the name, `--docs-hygiene-only` works standalone against **any** project's `docs/`
@@ -377,6 +384,17 @@ root, not just this skills repo — it ships inside `kmp-audit`'s own `scripts/`
 every consumer project that installs `kmp-audit` already has it locally. `audit_project.py`
 (the other script in the same directory) is a separate tool for Kotlin/Compose code smells
 and does not implement these hygiene checks — don't reach for it here.
+
+### Self-Healing (`heal_docs.py`) vs Audit Flagging (`audit_skills_repo.py`)
+
+| Concern | `heal_docs.py` Auto-Remediation | `audit_skills_repo.py` Audit Gate |
+|---|---|---|
+| **Completed Tasks** | Automatically renames to `-done.md` and archives to `docs/tasks/<parent>/archive/` | Blocks commits if `-done` or 100% completed tasks remain active |
+| **Snake_case Files** | Automatically converts to kebab-case and rewrites internal markdown links | Flags snake_case filenames in `docs/` |
+| **Task Progress Tracker** | Recomputes checkbox metrics and regenerates `docs/tasks.md` | Blocks commits if active tasks are missing from `docs/tasks.md` |
+| **Sitemap Synchronization** | Regenerates `docs/README.md` category/status navigation table | N/A (serves as agent entry point) |
+| **Rogue Dirs & Non-Docs** | *Untouched* (avoids accidental loss or repository bloat) | Blocks commits for non-canonical dirs or misplaced binary files |
+
 
 ### KDoc vs Ground-Truth Docs Boundary (Zero Redundancy Rule)
 

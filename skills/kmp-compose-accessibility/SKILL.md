@@ -8,7 +8,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-08-24'
+  last-updated: '2026-09-27'
   keywords:
     - accessibility
     - a11y
@@ -264,7 +264,7 @@ Run this checklist per screen before shipping:
 | Focus order matches logical reading order | WCAG 2.4.3 |
 | Dynamic content updates have `liveRegion` | WCAG 4.1.3 |
 | Screen title is announced (TopAppBar title or `heading = true` on a Text) | WCAG 2.4.2 |
-| Animations respect `LocalAccessibilityManager.isReduceMotionEnabled` | WCAG 2.3.3 |
+| Animations respect `rememberReduceMotion()` (expect/actual, `kmp-compose-animation`) | WCAG 2.3.3 |
 
 **This checklist is a Compose binding of WCAG, not a Compose-specific standard** — every
 row above cites the real WCAG success criterion because the requirement itself is
@@ -276,7 +276,7 @@ framework-agnostic; only the API used to satisfy it changes per platform:
 | 4.1.2 (name, role, value) | `Modifier.semantics { role = Role.Button }` | native `<button>`, or `role="button"` |
 | 2.5.5 (target size) | 48×48dp minimum | 44×44 CSS px minimum |
 | 4.1.3 (status messages) | `liveRegion` | `aria-live` |
-| 2.3.3 (animation from interactions) | `LocalAccessibilityManager.isReduceMotionEnabled` | `prefers-reduced-motion` media query |
+| 2.3.3 (animation from interactions) | `rememberReduceMotion()` expect/actual over each platform's setting | `prefers-reduced-motion` media query |
 
 If a project ships both a KMP/Compose app and a web frontend, the accessibility
 *requirement* is identical across both — verify against this table and `ts-accessibility`
@@ -343,4 +343,5 @@ When implementing accessibility, respond in this order:
 
 | Date | Change |
 |---|---|
+| 2026-09-27 | Reduced-motion rows pointed at `LocalAccessibilityManager.isReduceMotionEnabled`, which doesn't exist in Compose's common `AccessibilityManager` (only `calculateRecommendedTimeoutMillis`). Now point at `kmp-compose-animation`'s `rememberReduceMotion()` expect/actual. |
 | 2026-08-24 | Added a "WCAG criterion → Compose / Web" table right after the a11y checklist — user asked to extract the accessibility guidance into generic, framework-agnostic form. The checklist already cited real WCAG criteria per row; the gap was stating explicitly that the requirement is universal and cross-referencing `ts-accessibility` for the web binding, not re-deriving the mapping. |

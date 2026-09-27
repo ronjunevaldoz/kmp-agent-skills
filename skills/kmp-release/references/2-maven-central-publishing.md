@@ -101,6 +101,8 @@ Store these in your secrets manager of choice and inject them at publish time. N
 
 `--no-configuration-cache` is required — the vanniktech plugin is not configuration-cache compatible as of v0.37.
 
+**Bulk multi-module packaging:** In multi-module projects (`core`, `compose`, `testing`, `bom`), always run this task from the root project. Never publish individual subprojects via `./gradlew :submodule:publish...` — running per-module publishes creates fractured, uncoordinated staging deployments on Maven Central Portal. The root task stages all modules and platform variants together in one atomic bulk package.
+
 ### Secrets management options
 
 | Approach | When to use |

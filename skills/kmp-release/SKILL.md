@@ -212,6 +212,7 @@ else
 fi
 
 # Run publish (credentials injected via env or secrets manager)
+# Always invoke from root: stages all modules and platform variants as a single bulk package
 ./gradlew publishAllPublicationsToMavenCentralRepository --no-configuration-cache
 
 # Commit, tag, push

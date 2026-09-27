@@ -2,6 +2,189 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.1.2] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): keep client-owned dirs and only the newest sync backup (#11)
+
+---
+
+## [v3.1.1] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): deploy from a detached or diverged skills source (#10)
+
+---
+
+## [v3.1.0] — 2026-09-27
+
+### Added
+
+- feat(roborazzi): add PR before/after evidence from committed goldens (#9)
+
+---
+
+## [v3.0.15] — 2026-09-26
+
+### Fixed
+
+- fix(commands): drop Co-Authored-By trailer from execute-ticket commit template
+
+---
+
+## [v3.0.14] — 2026-09-26
+
+### Fixed
+
+- fix(audit): skip skills-repo sources, align freshness thresholds
+
+---
+
+## [v3.0.13] — 2026-09-18
+
+### Added
+
+- feat(sync): add Antigravity plugin and workspace discovery support
+
+---
+
+## [v3.0.12] — 2026-09-18
+
+### Added
+
+- feat(commands): enforce DoR milestone check, worktree branching, and DoD PR gates in execute-ticket
+
+---
+
+## [v3.0.11] — 2026-09-18
+
+### Added
+
+- feat(delivery): mandate issue-id prefixed branch naming
+
+---
+
+## [v3.0.10] — 2026-09-18
+
+### Added
+
+- feat(delivery): add git worktree parallel execution runbook
+
+---
+
+## [v3.0.9] — 2026-09-18
+
+### Added
+
+- feat(skills): add kmp-delivery-lifecycle and kmp-openrewrite skills
+
+### Docs
+
+- docs: add testing and output style to new skills
+- docs: add freshness rules and changelog to new skills
+
+---
+
+## [v3.0.8] — 2026-09-15
+
+### Added
+
+- feat(issue-gov): add visual and verification evidence standards
+
+### Chore
+
+- chore(agents): add .claude/ to .gitignore
+
+---
+
+## [v3.0.7] — 2026-09-14
+
+### Added
+
+- feat(scripts): sync user-level slash commands in sync-local-assistant-skills.sh
+- feat(audit): flag misplaced GitHub automation scripts and redundant claude mirrors
+- feat(skills): add kmp-github-issue-governance skill and payload validation
+
+### Docs
+
+- docs: index kmp-github-issue-governance and update count to 75 skills
+
+---
+
+## [v3.0.6] — 2026-09-12
+
+### Added
+
+- feat(skills): add cross-assistant token saving and mandate root bulk maven publishing
+
+---
+
+## [v3.0.5] — 2026-09-11
+
+### Added
+
+- feat(hooks): reject low-entropy micro-commits and block un-squashed fixups on push
+
+---
+
+## [v3.0.4] — 2026-09-11
+
+### Added
+
+- feat(kmp-audit): audit consumer skill spec and micro-scoped smells and agent persona standards
+- feat(kmp-project-docs-maintainer): auto-archive completed tasks and normalize kebab-case in heal_docs
+- feat(tasks): add new_task scaffolding script, /kmp-new-task command, and pre-commit hygiene gates
+- feat(tasks): add task staleness auditing, checkbox progress tracking, and tasks.md self-healing
+
+---
+
+## [v3.0.3] — 2026-09-11
+
+### Added
+
+- feat(audit): add recursive non-doc asset auditing, canonical docs topology checks, and task archive exemptions
+
+### Fixed
+
+- fix(scaffold): resolve heal_docs path in pre-commit hook, correct install layout, and align agent setup
+
+### Docs
+
+- docs(hygiene): link assistant setup guides in INSTALL.md and prune stale test-coverage.md
+
+---
+
+## [v3.0.2] — 2026-09-11
+
+### Docs
+
+- docs(expect-actual): clarify expect/actual vs platform-exclusive file naming conventions
+
+---
+
+## [v3.0.1] — 2026-09-10
+
+### Added
+
+- feat(routing): prioritize project-owned skill namespaces
+
+### Fixed
+
+- fix(skills): make stale cleanup opt in
+- fix(skills): preserve consumer-owned agent skills during sync
+
+---
+
+## [v3.0.0] — 2026-09-10
+
+### Added
+
+- feat(skills): make .agents the canonical project skill runtime
+
+---
+
 ## [v2.60.0] — 2026-08-31
 
 ### Added

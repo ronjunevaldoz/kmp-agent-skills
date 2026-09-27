@@ -139,3 +139,32 @@ after install in the same session: output was unfiltered, exactly as expected.
   model, not a real provider API key. Don't assume Headroom always needs a paid key.
 
 Source: [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom)
+
+---
+
+## Antigravity, Gemini CLI & Non-Claude Environments
+
+Antigravity, Gemini CLI, Cursor, and Codex do **not** run Claude plugins (`caveman`, `ponytail`) or evaluate `~/.claude/settings.json` hooks (RTK pre-tool interceptors).
+
+To establish equivalent token savings in these environments:
+
+### 1. Response Density & YAGNI Guardrails (`AGENTS.md`)
+Add explicit operational directives to the workspace `AGENTS.md` (or `.cursorrules` / system prompt):
+```markdown
+- **Token saver / terse response density:** prioritize high-density technical output. Emit compact targeted diffs and bulleted technical facts; omit discursive explanations, narrative recaps, and conversational pleasantries.
+- **Smallest correct solution (anti-overengineering):** prefer the minimal correct change using stdlib and existing patterns before introducing new helpers, wrappers, or abstractions.
+```
+
+### 2. RTK Shell Compression in Non-Claude Terminals
+Because Antigravity runs commands in the user's login shell (`zsh`) via `run_command` without Claude pre-tool hooks:
+- **Explicit prefixing:**
+  ```bash
+  rtk run -- ./gradlew check
+  rtk run -- pytest
+  ```
+- **Shell function / alias in `~/.zshrc`:**
+  ```bash
+  # Optional user-level alias for auto-compressed noisy tools
+  alias gradlew="rtk run -- ./gradlew"
+  ```
+- **Tracking savings:** `rtk gain` still tracks all commands executed via `rtk run`.

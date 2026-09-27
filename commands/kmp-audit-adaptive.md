@@ -10,7 +10,7 @@ Target project: `$ARGUMENTS` (defaults to `.` if empty)
 ## Step 1 — Run the audit
 
 ```bash
-python3 ~/.claude/skills/kmp-audit/scripts/audit_project.py "${ARGUMENTS:-.}"
+python3 ~/.agents/skills/kmp-audit/scripts/audit_project.py "${ARGUMENTS:-.}"
 ```
 
 Filter the output for these two finding types and collect them:

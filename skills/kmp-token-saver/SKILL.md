@@ -1,11 +1,12 @@
 ---
 name: kmp-token-saver
 description: >
-  Token-saving workflow for KMP agent work. Use when the user asks to reduce token
+  Token-saving workflow for KMP agent work across all assistant runtimes (Claude Code,
+  Antigravity, Gemini CLI, Cursor, Windsurf, Codex). Use when the user asks to reduce token
   usage, shorten replies, compress noisy tool output, or choose the smallest correct
   solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse
-  replies, RTK for shell output compression, and Headroom for tool/log/file/RAG
-  compression when the host is already configured. Headroom stays optional until setup
+  replies, RTK for shell output compression, and universal AGENTS.md guardrails for
+  environments without Claude plugin runtimes. Headroom stays optional until setup
   exists; do not block the task on it.
 license: Apache-2.0
 metadata:
@@ -71,6 +72,24 @@ install (`brew install rtk`) is safe to run directly, but the hook wiring
 confirmation of the exact diff, not a repeat of an earlier general go-ahead. See
 `references/token-saving-tools.md` for the verified details — this was hit in
 practice, not a hypothetical.
+
+## Cross-Assistant Compatibility Matrix
+
+Token saving strategies depend on the active assistant runtime:
+
+| Assistant Runtime | Prompt / Terse Density | Anti-Overengineering (YAGNI) | Command Output Compression | Context Window Compression |
+|---|---|---|---|---|
+| **Claude Code** | Caveman plugin (`/caveman [level]`) | Ponytail plugin (`ponytail@ponytail`) | RTK via `PreToolUse` hook (`~/.claude/settings.json`) | Native compaction + Headroom proxy |
+| **Google Antigravity & Gemini CLI** | Workspace `AGENTS.md` guardrail | Workspace `AGENTS.md` guardrail | Manual prefix `rtk run -- <cmd>` or shell alias in `~/.zshrc` | Native transcript checkpoints (`transcript.jsonl`) |
+| **Cursor / Windsurf / Codex** | `.cursorrules` / `AGENTS.md` | `AGENTS.md` guardrail | Shell wrapper / terminal alias | Context window truncation |
+
+### Antigravity & Gemini Runtime Notes
+
+Antigravity executes terminal operations through a sandboxed execution runtime (`run_command`), completely bypassing `~/.claude/settings.json`, Claude plugins, and Claude slash commands.
+To achieve equivalent token efficiency in Antigravity:
+1. **Terse Density & YAGNI**: Rely on universal `AGENTS.md` operational guardrails (`Token saver / terse response density` and `Smallest correct solution`).
+2. **Command Output Compression**: Use `rtk run -- <cmd>` explicitly for verbose test or build commands (e.g. `rtk run -- ./gradlew desktopTest`), or add shell aliases to `~/.zshrc`.
+3. **Context Management**: Antigravity natively truncates and creates checkpoint summaries (`transcript.jsonl`) once session tokens approach the window limit.
 
 ## Tool Choice
 
@@ -152,6 +171,7 @@ Validate this skill with short prompt-routing checks, not heavy integration scaf
 - assuming Headroom is absent without checking `pip3 show headroom-ai` first — it was found genuinely already installed once, and `scripts/install-headroom.sh` skips the install step entirely when that's true rather than re-installing
 - telling the user Headroom is "set up" once the package is installed and the proxy is running — nothing actually routes through it until `~/.claude/settings.json`'s `env` block points `ANTHROPIC_BASE_URL` at the proxy, a step this skill originally missed entirely
 - assuming Headroom always needs a paid provider API key — a real observed setup routed it to a local Ollama model instead, with `ANTHROPIC_AUTH_TOKEN` set to a placeholder, not a real credential
+- assuming Claude-only hooks and plugins function in Antigravity or other agent runtimes without shell or `AGENTS.md` configuration — Antigravity executes in isolated runtimes and does not evaluate `~/.claude/settings.json` hooks or slash commands
 
 ## Related Skills
 
@@ -177,6 +197,7 @@ See [token-saving-tools.md](references/token-saving-tools.md) for tool-by-tool s
 
 | Date | Change |
 |---|---|
+| 2026-09-12 | Added Cross-Assistant Compatibility Matrix covering Claude Code, Google Antigravity & Gemini CLI, and Cursor / Windsurf / Codex. Documented why Antigravity bypasses Claude-specific `settings.json` hooks, and codified the equivalent token-saving workflow via `AGENTS.md` response density directives, manual/aliased `rtk` command execution, and native context checkpoint management. |
 | 2026-07-13 | Fixed a real gap: this skill never documented that Headroom needs `~/.claude/settings.json`'s `env` block wired with `ANTHROPIC_BASE_URL` pointed at the local proxy — package install and a running proxy alone route nothing. Verified against a real, working setup (found by the user) that also showed the backend doesn't have to be a paid provider key; it can point at a local model (observed: Ollama). Updated `scripts/install-headroom.sh`'s printed next-steps, `references/token-saving-tools.md`, and 2 new anti-patterns. This settings.json wiring is treated the same as RTK's hook wiring — the user edits it, not this skill's script. |
 | 2026-07-13 | Added `scripts/install-rtk.sh` — Phase 1 (`brew install rtk`) runs directly, then previews Phase 2 via `rtk init -g --dry-run` without applying it, matching the existing two-phase authorization rule. Also ran the previously-blocked `scripts/install-ponytail.sh` after the user gave specific confirmation naming that exact script: verified `ponytail@ponytail` is now installed at `scope: user`, `enabled: true` (was previously only `scope: project`, disabled, for one project). |
 | 2026-07-13 | Added `scripts/install-headroom.sh`, scoped deliberately to the `pip install "headroom-ai[all]"` step only — idempotent (`pip show headroom-ai` first), never collects API keys or starts the local proxy, both left as printed next-steps for the user. Also discovered Headroom was already genuinely installed on this machine (`pip3 show headroom-ai` → v0.30.0), contradicting an earlier claim in this same skill that none of the three optional tools were present — a reminder to verify real install state before documenting it. |

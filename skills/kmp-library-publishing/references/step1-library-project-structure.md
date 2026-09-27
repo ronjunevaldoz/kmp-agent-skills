@@ -163,6 +163,13 @@ Each gets its own `mavenPublishing { coordinates(...) }` block with its own arti
 (Step 4 below) is what lets a consumer pin all of them to one version via a single BOM
 import instead of separate version numbers per artifact.
 
+**Bulk publishing across all modules:** When publishing a multi-module family, never invoke
+per-module publish tasks (e.g. `./gradlew :<PROJECT_NAME>-core:publish...`). Always invoke
+root `./gradlew publishAllPublicationsToMavenCentralRepository --no-configuration-cache`.
+The root task bundles all modules and cross-compiled platforms into a single coordinated
+staging repository on Maven Central Portal, ensuring atomic validation and avoiding
+desynchronized versions.
+
 **When to split vs keep one `:library`:** a genuinely separate consumer surface (core
 logic vs a Compose UI layer vs test fakes) that some consumers want without the others'
 dependencies. Splitting because it's "organized that way internally" isn't a reason —

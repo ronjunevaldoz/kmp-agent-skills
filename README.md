@@ -11,7 +11,7 @@ Created and maintained by [Ron Valdoz](https://github.com/ronjunevaldoz).
 AI agent skills for **Kotlin Multiplatform (KMP)** development — clean module boundaries,
 version catalogs, build-logic convention plugins, and explicit review loops before code is generated.
 
-Built on the open [Agent Skills](https://agentskills.io) format. All 74 skills verified
+Built on the open [Agent Skills](https://agentskills.io) format. All 77 skills verified
 against the real [`skills-ref`](https://github.com/agentskills/agentskills) reference
 validator — see [`docs/reference/agentskills-io-standards.md`](docs/reference/agentskills-io-standards.md)
 for what was checked and how.
@@ -24,14 +24,14 @@ for what was checked and how.
 
 Run `/kmp-new-project` with a natural language description. The agent asks for your group ID, project
 name, and what the app does — then scaffolds a full multi-module KMP project with clean architecture,
-a design system, and a ready-to-use `.claude/` agent setup.
+a design system, and a ready-to-use `.agents/` agent setup.
 
 ```
 /kmp-new-project "A shopping app with auth, product listing, and orders"
 ```
 
 The 9-step pipeline handles everything: module graph → clean-arch layers → Koin/Ktor/SQLDelight
-wiring → design system → feature scaffolds → `.claude/AGENTS.md` tailored to your modules.
+wiring → design system → feature scaffolds → `AGENTS.md` tailored to your modules.
 
 ### Set up agents in an existing project
 
@@ -43,7 +43,7 @@ and feature modules it finds.
 /kmp-setup-agents
 ```
 
-Writes: `.claude/AGENTS.md` (tailored skill routing), `CLAUDE.md` (CLI flags), all consumer
+Writes: `AGENTS.md` (tailored skill routing), all consumer
 commands (`kmp-*.md`), deployed skills, and a `settings.json` Bash allowlist.
 
 ### Cross-agent repo policy
@@ -124,18 +124,18 @@ python3 scripts/release.py auto --dry-run # preview first
 
 ## Skills
 
-74 skills covering the full KMP stack. Load the smallest set that answers the request.
+77 skills covering the full KMP stack. Load the smallest set that answers the request.
 Health at a glance (size, freshness, known issues) without reading every `SKILL.md`:
 [`docs/reference/skills-report.md`](docs/reference/skills-report.md).
 
 | Category | Count | Covers |
 |---|---|---|
-| Foundation | 8 | Module structure, clean architecture, DI, CI, Android CLI |
+| Foundation | 10 | Module structure, clean architecture, DI, CI, GitHub issue governance, delivery lifecycle, Android CLI |
 | Infrastructure | 15 | Auth, networking, resilience, MCP, database, publishing, JNI, codegen |
 | Patterns | 22 | MVI, navigation, offline-first, notifications, IAP, security, and more |
 | UI System | 13 | Design system, state hoisting, animation, adaptive layout |
 | Testing & Quality | 6 | Unit tests, screenshot tests, lint/static analysis, web performance |
-| Meta | 10 | Routing, audit, migration, docs, release, refactor |
+| Meta | 11 | Routing, audit, migration, OpenRewrite, docs, release, refactor |
 
 <details>
 <summary>Full skill list (click to expand)</summary>
@@ -148,6 +148,8 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 - [`coroutines-flow-patterns`](skills/kmp-coroutines-flow-patterns/) — structured concurrency, Flow/StateFlow/SharedFlow selection, exception transparency, testing
 - [`flavor-environment`](skills/kmp-flavor-environment/) — BuildKonfig, secrets, env setup
 - [`ci-github-actions`](skills/kmp-ci-github-actions/) — CI matrix and release workflow
+- [`github-issue-governance`](skills/kmp-github-issue-governance/) — issue/sub-issue lifecycle, epic vs task decisions, anti-spam comment policy, shell-safe payload transport
+- [`delivery-lifecycle`](skills/kmp-delivery-lifecycle/) — Definition of Ready (DoR), Definition of Done (DoD), UI/performance gates, PR readiness checklists
 - [`android-cli`](skills/kmp-android-cli/) — Google's `android` CLI: emulator, build/deploy, SDK installs, agent bootstrap
 
 ### Infrastructure
@@ -219,6 +221,7 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 - [`audit`](skills/kmp-audit/) — repo review, fix sequencing, CI governance gate
 - [`migration`](skills/kmp-migration/) — MVVM→MVI, monolith→multi-module, incremental adoption
 - [`refactor`](skills/kmp-refactor/) — rename/move/copy/delete: textual sweep vs IDE refactor, module-move checklist, safe-delete checks
+- [`openrewrite`](skills/kmp-openrewrite/) — automated AST refactoring, Gradle catalog migration, Ktor 2→3, dependency bumps
 - [`project-docs-maintainer`](skills/kmp-project-docs-maintainer/) — consumer-facing project docs and onboarding
 - [`legal-docs`](skills/kmp-legal-docs/) — privacy policy, terms, GDPR, data-safety labels
 - [`lessons`](skills/kmp-lessons/) — structured lesson files for pattern mismatches
@@ -232,14 +235,14 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 
 ## Commands
 
-All commands are `kmp-` prefixed so they don't collide with your own `.claude/commands/`.
+All commands are `kmp-` prefixed so they don't collide with your own command namespace.
 
 ### Consumer commands — install these in your project
 
 | Command | What it does |
 |---|---|
 | `/kmp-new-project <description>` | Scaffold a full KMP project from a description |
-| `/kmp-setup-agents [path]` | Initialize `.claude/` agent setup in an existing project |
+| `/kmp-setup-agents [path]` | Initialize `.agents/` agent setup in an existing project |
 | `/kmp-implement-feature <name>` | Plan → Implement → Validate → Review a feature |
 | `/kmp-execute-ticket <id>` | Implement a GitHub Issue end-to-end |
 | `/kmp-run-audit [path]` | Architecture audit with per-finding remediation + auto skill-gap reporting |
@@ -256,7 +259,7 @@ All commands are `kmp-` prefixed so they don't collide with your own `.claude/co
 | `/kmp-record-design-baselines [path]` | Record Roborazzi golden PNGs |
 | `/kmp-audit-screenshots [path]` | Vision audit of screenshot goldens |
 | `/kmp-audit-design-visual [path]` | Cross-screen visual consistency check |
-| `/kmp-update-skills` | Pull latest skills and re-deploy to `.claude/skills/` |
+| `/kmp-update-skills` | Pull latest skills and re-deploy to `.agents/skills/` |
 | `/kmp-check-updates` | Check for a newer version of kmp-agent-skills |
 | `/kmp-report-skill-issue` | File a structured skill bug report |
 | `/kmp-refine-skill <name>` | Refine a project-owned skill against agentskills.io's real qualitative best practices (description phrasing, gotchas, scoping) |
@@ -280,7 +283,7 @@ All commands are `kmp-` prefixed so they don't collide with your own `.claude/co
 ## Installation
 
 ### 🚀 Recommended: Global Machine-Wide Install (Zero Git Bloat)
-Install once to make all 74 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
+Install once to make all 77 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
 
 ```bash
 # Sync latest released skills globally (~/.claude, ~/.gemini, ~/.codex, ~/.agents)

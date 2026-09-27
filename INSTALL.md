@@ -11,8 +11,8 @@ For individual developers, pair-programming assistants, and multi-repo workflows
 ### Fast Global Sync
 
 ```bash
-# Sync latest released skills into all local assistants (~/.claude, ~/.gemini, ~/.codex, ~/.agents)
-# Refresh local Claude / Codex / Gemini installs on this Mac:
+# Sync latest released skills into supported local assistants (~/.claude, ~/.gemini, ~/.codex, ~/.agents)
+# Refresh global Claude / Codex / Gemini / Agent Skills installs on this Mac:
 bash scripts/sync-local-assistant-skills.sh
 ```
 
@@ -22,6 +22,16 @@ Or using the [skills CLI](https://skills.sh):
 # Install globally for all agents
 npx skills add -g ronjunevaldoz/kmp-agent-skills
 ```
+
+### Assistant-Specific Guides
+
+For assistant-specific workflows, configuration files, and IDE rules, see:
+
+| Assistant | Setup Guide |
+|---|---|
+| **OpenAI Codex CLI & GitHub Copilot** | [`docs/reference/install-codex-and-copilot.md`](docs/reference/install-codex-and-copilot.md) |
+| **Cursor & Windsurf** | [`docs/reference/install-cursor-and-windsurf.md`](docs/reference/install-cursor-and-windsurf.md) |
+| **Gemini CLI, Aider & Continue** | [`docs/reference/install-gemini-aider-continue.md`](docs/reference/install-gemini-aider-continue.md) |
 
 ---
 
@@ -46,7 +56,7 @@ cp -r kmp-agent-skills/skills/kmp-audit             your-project/.agents/skills/
 > **Avoid Bulk Copying All 74 Skills into Specialized Repositories.**
 > Committing mobile app skills (Biometrics, In-App Billing, MongoDB, Push Notifications) into a 3D graphics engine or starter kit causes prompt dilution, context bloat, and maintenance tech debt.
 > - **Rule**: Only commit engine/domain-specific skills in `.agents/skills/` (e.g., `awake-render-vulkan`, `starterkit-world-openworld`).
-> - Rely on the **Global Install** (`~/.gemini/skills/`, `~/.claude/skills/`) for generic Kotlin Multiplatform rules.
+> - Rely on the **Global Install** (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`, `~/.agents/skills/`) for generic Kotlin Multiplatform rules.
 
 ---
 
@@ -57,14 +67,15 @@ Standardize on **`.agents/skills/`** as the single authoritative cross-client de
 ```
 your-project/
 ├── AGENTS.md                    # Universal guide for Gemini, Claude Code, Codex, Cursor
-├── CLAUDE.md                    # Pointer/profile for Claude Code
-├── GEMINI.md                    # Pointer/profile for Gemini CLI & Antigravity
 └── .agents/
-    └── skills/                  # Single cross-client skills target
-        ├── kmp-feature-scaffold/
-        │   └── SKILL.md
-        └── kmp-clean-architecture/
-            └── SKILL.md
+    ├── skills/                  # Single cross-client skills target
+    │   ├── kmp-feature-scaffold/
+    │   │   └── SKILL.md
+    │   └── kmp-clean-architecture/
+    │       └── SKILL.md
+    └── commands/                # Provider-neutral command sources
+        ├── kmp-verify.md
+        └── kmp-implement-feature.md
 ```
 
 ---
@@ -94,9 +105,9 @@ Claude Code, Gemini, and Codex match trigger keywords in each `SKILL.md` frontma
 Commands in `commands/` define executable slash commands. Install only the commands you review:
 
 ```bash
-mkdir -p your-project/.claude/commands/
-cp kmp-agent-skills/commands/kmp-new-skill.md your-project/.claude/commands/
-cp kmp-agent-skills/commands/kmp-run-audit.md your-project/.claude/commands/
+mkdir -p your-project/.agents/commands/
+cp kmp-agent-skills/commands/kmp-new-skill.md your-project/.agents/commands/
+cp kmp-agent-skills/commands/kmp-run-audit.md your-project/.agents/commands/
 ```
 
 **Key Commands**:

@@ -79,7 +79,7 @@ A fixer can't act on a vague verdict any more than a validator's raw compiler ou
 
 ## After PASS
 
-Update `.claude/pipeline-context.json` with any edge case found worth remembering for
+Update `.agents/pipeline-context.json` with any edge case found worth remembering for
 next time (a boundary value that mattered, a state this project's screens commonly miss).
 
 ## After FAIL

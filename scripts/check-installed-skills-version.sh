@@ -9,7 +9,7 @@
 #
 # Usage:
 #   bash scripts/check-installed-skills-version.sh [target-dir]
-#   target-dir defaults to ~/.claude/skills
+#   target-dir defaults to ~/.agents/skills
 #
 # Exit codes:
 #   0 — up to date
@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-TARGET="${1:-$HOME/.claude/skills}"
+TARGET="${1:-$HOME/.agents/skills}"
 REPO="ronjunevaldoz/kmp-agent-skills"
 MARKER="$TARGET/.kmp-agent-skills-version"
 

@@ -19,7 +19,7 @@ class PipelineContextFlagTests(unittest.TestCase):
     """
 
     def _pipeline_context(self) -> dict:
-        path = REPO_ROOT / ".claude" / "pipeline-context.json"
+        path = REPO_ROOT / ".agents" / "pipeline-context.json"
         return json.loads(path.read_text(encoding="utf-8"))
 
     def test_pipeline_context_has_krpc_established_key(self) -> None:

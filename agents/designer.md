@@ -51,14 +51,16 @@ First` section states the default approach, and the anti-patterns list what to a
 
 Before writing the direction:
 1. Check the touched screen or component files.
-2. Read the current KMP design-system docs or preview files if they exist.
+2. Read `PRODUCT.md` (users, operating context, principles) and the current KMP
+   design-system docs or preview files if they exist. Missing `PRODUCT.md` → list it under
+   open questions (`kmp-compose-design-system` → `references/design-context.md`).
 3. If `docs/reference/design-handoff.md` exists and still matches the live UI, use it as
    the default doc shape for the handoff.
 4. If the design reference is missing or stale, treat the live UI and existing Compose
    screens as the source of truth and refresh `docs/reference/design-handoff.md` from
    the implementation.
 5. Check whether the project already has token, preview, or accessibility conventions.
-6. Read `.claude/pipeline-context.json` for recurring design issues or proven patterns.
+6. Read `.agents/pipeline-context.json` for recurring design issues or proven patterns.
 
 ## Step 3: Write the design direction
 

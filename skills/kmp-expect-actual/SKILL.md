@@ -12,7 +12,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-08-24'
+  last-updated: '2026-09-11'
   keywords:
     - expect actual
     - expect class
@@ -298,6 +298,11 @@ Suffix convention (`*.android.kt`, `*.ios.kt`) is optional but strongly recommen
 it makes the platform of each file visible in search results and file trees without
 opening the file.
 
+### Suffix Scope Boundary
+- **`Name.<platform>.kt` is strictly for `actual` declarations** matching a `commonMain` `expect` (e.g. `FrameLoop.desktop.kt` matching `FrameLoop.kt`).
+- **Standard `Name.kt` is for platform-exclusive files**: target entry points (`Main.kt`, `MainActivity.kt`), platform DI modules, and platform-only classes (e.g. `WebGpuEngine.kt`) must **not** use the `.<platform>.kt` suffix. Adding a platform suffix to a file with no corresponding `expect` falsely implies a shared abstraction exists in `commonMain`.
+- **Coexistence is intentional**: Having `Name.<platform>.kt` for `actual`s alongside standard `Name.kt` for platform-only files across source sets is not a naming split or divergence—it is the clean distinction between `expect`/`actual` pairs and platform-exclusive code.
+
 ---
 
 ## Verification
@@ -413,6 +418,7 @@ Lead with the decision rule. Keep snippets small — one `expect`/`actual` pair 
 
 | Date | Change |
 |---|---|
+| 2026-09-11 | Added "Suffix Scope Boundary" under File Structure Convention — clarify that `Name.<platform>.kt` is reserved strictly for `actual` declarations matching an `expect`, while platform-exclusive files (`Main.kt`, platform DI, engine implementations) use standard `Name.kt`. Coexistence of both is the intended design, not a naming divergence. |
 | 2026-08-24 | Added "Copy-pasted `actual` leaves a sibling's vocabulary behind" — real finding from reviewing a KMP native-binding project: a second platform's `actual` implementation was copy-pasted from its sibling and left unused fields shaped for the wrong platform. Generalized to a push-notification-client example, not the domain it was found in. Cross-referenced from `kmp-jni-pro`'s new Phase 0f. |
 | 2026-08-04 | Split "The Four Categories That Warrant expect/actual" out of SKILL.md into `references/four-categories.md`, leaving a pointer stub plus a new References section. SKILL.md drops from 507 to 399 lines, clearing the agentskills.io 500-line recommendation. No content removed, only relocated. Part of the same backlog cleanup as the other 19 skills fixed alongside it (KI-008). |
 | 2026-07-20 | Added an explicit "leaking a raw platform type into a commonMain function signature" anti-pattern — a real, general KMP anti-pattern (not library-specific), named explicitly even though the skill's own `expect class PlatformContext` example already teaches the correct pattern. |

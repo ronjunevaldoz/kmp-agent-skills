@@ -135,7 +135,7 @@ NEXT:    <hand to agents/qa-engineer.md if the change has a real runtime surface
 
 ## After PASS
 
-Update `.claude/pipeline-context.json`:
+Update `.agents/pipeline-context.json`:
 - Increment `successful_validations`
 - Note which Gradle tasks ran and approximate duration (helps future runs estimate time)
 

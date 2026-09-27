@@ -277,5 +277,158 @@ class CommonFirstSharedCodeTests(unittest.TestCase):
         self.assertIn("jvm-only utilities in commonmain", audit)
 
 
+heal_docs = load_module(
+    "heal_docs",
+    REPO_ROOT / "skills" / "kmp-project-docs-maintainer" / "scripts" / "heal_docs.py",
+)
+
+
+class HealDocsTests(unittest.TestCase):
+    def test_heal_docs_syncs_sitemap_and_task_progress(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+            
+            task_file = tasks_dir / "01-login-doing.md"
+            task_file.write_text(
+                "# Login Flow\n\n**Date:** 2026-09-11\n\n"
+                "- [x] Model setup\n- [x] Domain use case\n- [ ] UI screen\n",
+                encoding="utf-8",
+            )
+            
+            # Run heal_docs
+            heal_docs.heal_docs(root, dry_run=False)
+            
+            readme = (docs / "README.md").read_text(encoding="utf-8")
+            self.assertIn("Documentation Sitemap & System Status", readme)
+            self.assertIn("tasks/auth/01-login-doing.md", readme)
+            
+            tasks_md = (docs / "tasks.md").read_text(encoding="utf-8")
+            self.assertIn("# Tasks", tasks_md)
+            self.assertIn("66% (2/3)", tasks_md)
+            self.assertIn("tasks/auth/01-login-doing.md", tasks_md)
+            self.assertIn("`doing`", tasks_md)
+            self.assertIn("`auth`", tasks_md)
+
+    def test_auto_archives_task_with_done_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+
+            task_file = tasks_dir / "01-login-done.md"
+            task_file.write_text(
+                "# Login Flow\n\n**Status:** done\n**Date:** 2026-09-11\n\n- [x] All done\n",
+                encoding="utf-8",
+            )
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(task_file.exists())
+            archived = tasks_dir / "archive" / "01-login-done.md"
+            self.assertTrue(archived.exists())
+            self.assertIn("tasks/auth/archive/01-login-done.md", (docs / "README.md").read_text(encoding="utf-8"))
+
+    def test_auto_archives_task_with_100_percent_checkboxes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+
+            task_file = tasks_dir / "02-biometric-doing.md"
+            task_file.write_text(
+                "# Biometric Flow\n\n**Status:** doing\n**Date:** 2026-09-11\n\n- [x] Step 1\n- [x] Step 2\n",
+                encoding="utf-8",
+            )
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(task_file.exists())
+            archived = tasks_dir / "archive" / "02-biometric-done.md"
+            self.assertTrue(archived.exists())
+            content = archived.read_text(encoding="utf-8")
+            self.assertIn("**Status:** done", content)
+
+    def test_auto_renames_snake_case_and_updates_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            ref_dir = docs / "reference"
+            ref_dir.mkdir(parents=True)
+
+            guide_file = ref_dir / "my_cool_guide.md"
+            guide_file.write_text("# Cool Guide\n\nSome guide content\n", encoding="utf-8")
+
+            caller = docs / "architecture.md"
+            caller.write_text("# Arch\n\nSee [Guide](reference/my_cool_guide.md)\n", encoding="utf-8")
+
+            heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertFalse(guide_file.exists())
+            new_guide = ref_dir / "my-cool-guide.md"
+            self.assertTrue(new_guide.exists())
+
+            updated_caller = caller.read_text(encoding="utf-8")
+            self.assertIn("reference/my-cool-guide.md", updated_caller)
+
+    def test_check_consumer_skills_and_agents_warnings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            docs.mkdir(parents=True)
+
+            # Create bad skill (micro-scoped, name mismatch)
+            bad_skill_dir = root / "skills" / "fix-login-error"
+            bad_skill_dir.mkdir(parents=True)
+            (bad_skill_dir / "SKILL.md").write_text(
+                "---\nname: other-name\ndescription: A fix.\n---\n\nBody.\n",
+                encoding="utf-8",
+            )
+
+            # Create bad agent (redundant suffix, action-named)
+            agents_dir = root / "agents"
+            agents_dir.mkdir(parents=True)
+            (agents_dir / "deploy-app-agent.md").write_text(
+                "---\nname: deploy-app\ndescription: Deploys.\n---\n\nBody.\n",
+                encoding="utf-8",
+            )
+
+            warnings = heal_docs.check_consumer_skills_and_agents(root)
+            self.assertTrue(any("directory name" in w for w in warnings))
+            self.assertTrue(any("micro-scoped" in w for w in warnings))
+            self.assertTrue(any("redundant suffix" in w for w in warnings))
+            self.assertTrue(any("action-named" in w for w in warnings))
+
+
+
+new_task = load_module(
+    "new_task",
+    REPO_ROOT / "skills" / "kmp-project-docs-maintainer" / "scripts" / "new_task.py",
+)
+
+
+class NewTaskTests(unittest.TestCase):
+    def test_scaffolds_task_with_proper_sequence_and_format(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # Create first task
+            t1 = new_task.create_task(root, "auth", "session-refresh")
+            self.assertEqual(t1.name, "01-session-refresh-todo.md")
+            self.assertTrue(t1.exists())
+            content1 = t1.read_text(encoding="utf-8")
+            self.assertIn("**Status:** todo", content1)
+            self.assertIn("**Date:**", content1)
+            self.assertIn("- [ ] `:model`", content1)
+            self.assertIn("- [ ] `:ui`", content1)
+
+            # Create second task in same parent
+            t2 = new_task.create_task(root, "auth", "biometric-login")
+            self.assertEqual(t2.name, "02-biometric-login-todo.md")
+
+
 if __name__ == "__main__":
     unittest.main()

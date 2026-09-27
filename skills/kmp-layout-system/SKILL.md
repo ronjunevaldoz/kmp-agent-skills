@@ -85,7 +85,7 @@ docs/layout-system/
 an existing screen file (edit those in place):
 
 ```bash
-python3 ~/.claude/skills/kmp-layout-system/scripts/create_wireframe.py \
+python3 ~/.agents/skills/kmp-layout-system/scripts/create_wireframe.py \
   --screen "Inbox" --pattern A
 ```
 
@@ -120,11 +120,11 @@ weights: {nav: fixed, side: 1f, main: 3f}
 Compile the contract into a Compose shell:
 
 ```bash
-python3 ~/.claude/skills/kmp-layout-system/scripts/generate_slot_scaffold.py \
+python3 ~/.agents/skills/kmp-layout-system/scripts/generate_slot_scaffold.py \
   docs/layout-system/inbox.md --group-id com.example.app --output <ui module path>
 ```
 
-If the script is not at `~/.claude/skills/` (Codex CLI, Gemini CLI, or a repo-relative
+If the script is not at `~/.agents/skills/` (Codex CLI, Gemini CLI, or a repo-relative
 install), use `skills/kmp-layout-system/scripts/generate_slot_scaffold.py`.
 
 This emits `<Screen>Layout.kt`: one `when (windowSizeClass.widthSizeClass)` branch per

@@ -11,7 +11,7 @@ compiler messages, or code comments.
 
 ## Before fixing
 
-Check `.claude/pipeline-context.json` for `proven_patterns`. If a pattern entry matches
+Check `.agents/pipeline-context.json` for `proven_patterns`. If a pattern entry matches
 the blocker type and has been used successfully before, apply it directly — don't reason
 from scratch.
 
@@ -369,7 +369,7 @@ Rate each fix before applying it:
    ```bash
    python3 skills/kmp-audit/scripts/audit_project.py <project_root>
    ```
-2. Add the successful fix to `.claude/pipeline-context.json` under `proven_patterns`:
+2. Add the successful fix to `.agents/pipeline-context.json` under `proven_patterns`:
    ```json
    "MVI_state_copy_race": "replace _state.value = ... with _state.update { ... }"
    ```

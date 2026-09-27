@@ -16,8 +16,9 @@
 #                         your shell profile so every consumer project on this machine
 #                         finds the clone without re-prompting.
 #   --agent-dir PATH     Destination skills directory (auto-detected if omitted)
-#   --commands-dir PATH  Destination for slash commands (default: .claude/commands)
+#   --commands-dir PATH  Destination for slash commands (default: .agents/commands)
 #   --install-commands   List available commands and prompt to install each one
+#   --prune-stale        Remove stale bundled kmp-* skill directories (opt-in)
 #   --dry-run            Show what would change without writing anything
 
 set -euo pipefail
@@ -26,6 +27,7 @@ SKILLS_SOURCE=""
 AGENT_DIR=""
 COMMANDS_DIR=""
 INSTALL_COMMANDS=false
+PRUNE_STALE=false
 SETUP_AGENTS=false
 DRY_RUN=false
 
@@ -35,6 +37,7 @@ while [[ $# -gt 0 ]]; do
     --agent-dir)        AGENT_DIR="$2"; shift 2 ;;
     --commands-dir)     COMMANDS_DIR="$2"; shift 2 ;;
     --install-commands) INSTALL_COMMANDS=true; shift ;;
+    --prune-stale)      PRUNE_STALE=true; shift ;;
     --setup-agents)     SETUP_AGENTS=true; shift ;;
     --dry-run)          DRY_RUN=true; shift ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -73,22 +76,10 @@ fi
 # ── Detect agent destination ──────────────────────────────────────────────────
 
 if [[ -z "$AGENT_DIR" ]]; then
-  if   [[ -d ".agents/skills" ]];         then AGENT_DIR=".agents/skills"
-  elif [[ -d ".claude/skills" ]];         then AGENT_DIR=".claude/skills"
-  elif [[ -d ".codex/skills" ]];          then AGENT_DIR=".codex/skills"
-  elif [[ -d ".github/copilot/skills" ]]; then AGENT_DIR=".github/copilot/skills"
-  elif [[ -d ".cursor/skills" ]];         then AGENT_DIR=".cursor/skills"
-  elif [[ -d ".continue/skills" ]];       then AGENT_DIR=".continue/skills"
-  else
-    echo "" >&2
-    echo "  ❌  Could not detect an agent skills directory in the current project." >&2
-    echo "  Pass --agent-dir PATH (e.g. --agent-dir .agents/skills)." >&2
-    echo "" >&2
-    exit 1
-  fi
+  AGENT_DIR=".agents/skills"
 fi
 
-# Default commands dir mirrors the agent dir's parent (e.g. .claude/commands)
+# Default commands dir mirrors the agent dir's parent (e.g. .agents/commands)
 if [[ -z "$COMMANDS_DIR" ]]; then
   AGENT_PARENT="$(dirname "$AGENT_DIR")"
   COMMANDS_DIR="$AGENT_PARENT/commands"
@@ -129,9 +120,15 @@ if [[ "$BEHIND" == "0" ]]; then
 else
   if $DRY_RUN; then
     echo "  [dry-run] would pull $BEHIND commit(s) from origin/main"
-  else
-    git -C "$SKILLS_SOURCE" pull origin main --ff-only --quiet
+  elif ! git -C "$SKILLS_SOURCE" symbolic-ref -q HEAD >/dev/null; then
+    # Detached HEAD = a pinned checkout (a release tag, or CI's PR merge ref) — deploy
+    # it as-is. Pulling would silently un-pin a tag, and on CI's shallow merge ref the
+    # --ff-only pull fails and `set -e` aborted the run before anything was deployed.
+    echo "  ℹ️   Source is a detached checkout — deploying it as-is (v$OLD_VERSION)"
+  elif git -C "$SKILLS_SOURCE" pull origin main --ff-only --quiet; then
     echo "  ✅  Pulled $BEHIND commit(s) from origin/main"
+  else
+    echo "  ⚠️  Could not fast-forward to origin/main — continuing with local skills (v$OLD_VERSION)"
   fi
 fi
 
@@ -147,16 +144,12 @@ echo ""
 
 # ── Deploy skills (auto — passive reference docs) ─────────────────────────────
 
-# `cp -r` only ever adds and overwrites — it never removes a skill directory that no
-# longer exists upstream. A skill renamed or deleted in a release therefore lingers in
-# the consumer's deployed copy forever (the exact situation `migrate-kmm-to-kmp.sh` was
-# written to clean up by hand after the kmm-*/kmp-* rename). Prune those here instead,
-# scoped tightly: only a directory that exists in the target, is absent from the source,
-# and is NOT one of the project's own `./skills/<name>` custom skills. The deployed
-# directory is a mirror by contract (`block-edit-vendored-skills.sh` refuses edits to
-# it), so removing a stale mirror there loses nothing that isn't reproducible.
+# `cp -r` only adds and overwrites. By default, preserve every existing target skill:
+# consumer projects may keep skills directly under .agents/skills, and an updater must
+# not make a destructive assumption about their ownership. Stale bundled skills can be
+# removed deliberately with --prune-stale after reviewing the dry-run output.
 # Resolve a skill's deploy target to the real directory to write into. A destination
-# that's a symlink — e.g. `.claude/skills/<name> -> ../../.agents/skills/<name>`, a real
+# that's a symlink — for example a per-skill link into another deployment, a real
 # layout found deployed in production, one symlink per skill rather than the whole
 # directory — breaks writing to it directly, confirmed by direct reproduction on both
 # tools this script uses: BSD/macOS `cp -r` errors "Not a directory" on a directory
@@ -198,6 +191,9 @@ prune_stale_skills() {
 
     [[ -d "$SKILLS_SOURCE/skills/$stale_name" ]] && continue   # still shipped upstream
     [[ -d "skills/$stale_name" ]] && continue                  # project-owned custom skill
+    # The bundled collection uses the kmp-* namespace. Preserve consumer-owned
+    # skills stored directly in the target (for example, Awaken's awake-* skills).
+    [[ "$stale_name" == kmp-* ]] || continue
 
     if $DRY_RUN; then
       echo "  [dry-run] would remove stale skill: $target/$stale_name"
@@ -218,7 +214,7 @@ if $DRY_RUN; then
   CHANGED=$(git -C "$SKILLS_SOURCE" diff "HEAD@{1}..HEAD" --name-only -- skills/ 2>/dev/null | wc -l | tr -d ' ' || echo 0)
   [[ -n "$CHANGED" ]] || CHANGED=0
   echo "  [dry-run] would copy $CHANGED changed skill file(s) → $AGENT_DIR/"
-  prune_stale_skills "$AGENT_DIR"
+  $PRUNE_STALE && prune_stale_skills "$AGENT_DIR"
 else
   for skill_src in "$SKILLS_SOURCE"/skills/*/; do
     skill_name="$(basename "$skill_src")"
@@ -227,39 +223,17 @@ else
     rm -rf "$resolved_target"
     cp -r "$skill_src" "$resolved_target"
   done
-  prune_stale_skills "$AGENT_DIR"
+  if $PRUNE_STALE; then
+    prune_stale_skills "$AGENT_DIR"
+  else
+    echo "  ℹ️   Preserved existing skills (use --prune-stale to remove stale kmp-* skills)"
+  fi
   # Version marker — read by scripts/check-installed-skills-version.sh, which
   # commands/kmp-setup-hooks.md wires as the Option E SessionStart hook for exactly
   # this deploy path. Without it that hook reports "no version marker" on every
   # session and the stale-skills check silently never runs.
   echo "$NEW_VERSION" > "$AGENT_DIR/.kmp-agent-skills-version"
   echo "  ✅  Skills deployed (v$NEW_VERSION)"
-fi
-
-# Mirror into .agents/skills/ too — the project-level half of agentskills.io's
-# cross-client convention (verified in docs/reference/agentskills-io-standards.md).
-# Deployed unconditionally, alongside whichever client-specific $AGENT_DIR was
-# detected/passed, so other agentskills.io-compliant clients working in this
-# project see the same skills without a separate per-client update step.
-if [[ "$AGENT_DIR" != ".agents/skills" ]]; then
-  echo ""
-  echo "Deploying skills to .agents/skills (cross-client convention)…"
-  if $DRY_RUN; then
-    echo "  [dry-run] would copy skills → .agents/skills/"
-    prune_stale_skills ".agents/skills"
-  else
-    mkdir -p ".agents/skills"
-    for skill_src in "$SKILLS_SOURCE"/skills/*/; do
-      skill_name="$(basename "$skill_src")"
-      resolved_target="$(resolve_target ".agents/skills/$skill_name")"
-      mkdir -p "$(dirname "$resolved_target")"
-      rm -rf "$resolved_target"
-      cp -r "$skill_src" "$resolved_target"
-    done
-    prune_stale_skills ".agents/skills"
-    echo "$NEW_VERSION" > ".agents/skills/.kmp-agent-skills-version"
-    echo "  ✅  Skills deployed to .agents/skills (v$NEW_VERSION)"
-  fi
 fi
 
 # ── Deploy project-owned custom skills (auto — source of truth at ./skills) ──
@@ -306,22 +280,6 @@ if [[ -d "skills" ]]; then
     fi
     echo "  ✅  project skill synced: $skill_name"
 
-    # Mirror into .agents/skills/ too, same cross-client reasoning as the bundled-skills
-    # mirror above — a project-owned custom skill should be visible to any
-    # agentskills.io-compliant client, not just whichever $AGENT_DIR was detected/passed.
-    if [[ "$AGENT_DIR" != ".agents/skills" ]]; then
-      agents_target=".agents/skills/$skill_name"
-      resolved_agents_target="$(resolve_target "$agents_target")"
-      mkdir -p "$resolved_agents_target"
-      if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete "$skill_dir/" "$resolved_agents_target/"
-      else
-        rm -rf "$resolved_agents_target"
-        mkdir -p "$(dirname "$resolved_agents_target")"
-        cp -R "$skill_dir" "$resolved_agents_target"
-      fi
-      echo "  ✅  project skill mirrored to .agents/skills: $skill_name"
-    fi
   done
 fi
 
@@ -430,9 +388,7 @@ fi
 # ── Agent setup (--setup-agents) ─────────────────────────────────────────────
 
 if $SETUP_AGENTS; then
-  CLAUDE_DIR="$(dirname "$AGENT_DIR")"
-  AGENTS_MD="$CLAUDE_DIR/AGENTS.md"
-  ROOT_CLAUDE_MD="CLAUDE.md"
+  AGENTS_MD="AGENTS.md"
   AI_COLLAB_DOC="docs/reference/ai-collaboration.md"
   AGENT_CATALOG_DOC="docs/reference/agent-catalog.md"
   SOURCE_READMES=(
@@ -464,7 +420,7 @@ if $SETUP_AGENTS; then
 # agents/
 
 Project-specific agent personas live here as the canonical source.
-Deploy copies into `.claude/` after edits; do not keep `.claude/` as the only copy.
+Deploy copies into `.agents/` after edits; do not keep generated files as the only copy.
 EOF
         ;;
       "rules/README.md")
@@ -480,7 +436,7 @@ EOF
 # hooks/
 
 Project-owned hook scripts live here.
-Wire them through `.claude/settings.json`; do not author the only copy inside runtime config.
+Keep hook wiring in the provider's runtime configuration; do not author the only copy inside runtime config.
 EOF
         ;;
       "commands/README.md")
@@ -488,7 +444,7 @@ EOF
 # commands/
 
 Project-specific slash command sources live here.
-Deploy copies into `.claude/commands/` after edits.
+Deploy copies into `.agents/commands/` after edits.
 EOF
         ;;
       "skills/README.md")
@@ -496,7 +452,7 @@ EOF
 # skills/
 
 Project-specific skills live flat under `skills/<skill-name>/`.
-Keep `SKILL.md` as the canonical source and deploy copies into `.claude/skills/`.
+Keep `SKILL.md` as the canonical source and deploy copies into `.agents/skills/`.
 
 Minimal starter:
 
@@ -512,7 +468,7 @@ description: Short trigger-oriented description of what this skill handles.
 
 ## Rules
 - Keep this skill project-owned.
-- Re-deploy after edits so `.claude/skills/my-project-skill/` stays in sync.
+- Re-deploy after edits so `.agents/skills/my-project-skill/` stays in sync.
 ```
 EOF
         ;;
@@ -543,12 +499,12 @@ EOF
 - `docs/*` answers "how is this project designed?"
 - `skills/*` answers "how should an agent work in this repo?"
 
-## Claude runtime
+## Shared agent runtime
 
-- `CLAUDE.md` stays thin and boots Claude into `.claude/AGENTS.md`
-- `.claude/AGENTS.md` is the deployed routing/context copy
-- `.claude/settings.json` owns runtime permissions and hook wiring
-- `.claude/commands/` and `.claude/skills/` are deployed copies, not the only source
+- `AGENTS.md` is the universal project entrypoint
+- `.agents/skills/` is the shared Agent Skills discovery directory
+- `.agents/commands/` contains provider-neutral command sources
+- Provider-specific adapters are generated separately and are never canonical
 
 ## Duplication rule
 
@@ -557,7 +513,7 @@ Use `rules/` only for small assistant-facing overlays; do not mirror this whole 
 
 ## Maintenance rule
 
-Edit project-owned artifacts first, then re-deploy the changed copy into `.claude/`.
+Edit project-owned artifacts first, then re-deploy the changed copy into `.agents/`.
 EOF
       echo "  ✅  $AI_COLLAB_DOC created"
     fi
@@ -607,7 +563,7 @@ EOF
 # AGENTS.md — $PROJECT_NAME
 
 This project uses [kmp-agent-skills](https://github.com/ronjunevaldoz/kmp-agent-skills).
-Skills are installed in \`.claude/skills/\`.
+Skills are installed in \`.agents/skills/\`.
 
 ## Skill routing
 
@@ -626,7 +582,7 @@ Skills are installed in \`.claude/skills/\`.
 
 ## Commands installed
 
-See \`.claude/commands/kmp-*.md\` for available slash commands.
+See \`.agents/commands/kmp-*.md\` for available commands.
 Key commands:
 - \`/kmp-implement-feature <name>\` — plan → implement → validate → review a new feature
 - \`/kmp-run-audit\` — run architecture audit with per-finding remediation
@@ -640,71 +596,8 @@ AGENTS_EOF
     fi
   fi
 
-  if [[ -f "$ROOT_CLAUDE_MD" ]]; then
-    echo "  ✓  $ROOT_CLAUDE_MD already exists"
-  else
-    if $DRY_RUN; then
-      echo "  [dry-run] would write $ROOT_CLAUDE_MD"
-    else
-      cat > "$ROOT_CLAUDE_MD" <<'EOF'
-### Claude Code Project Profile
-
-### Load skills context on initialization
---system-prompt-file=".claude/AGENTS.md"
-
-### Default flags
---compact
---verbose=false
-
-### Canonical project-owned agent sources
-- docs/reference/ai-collaboration.md
-- docs/reference/agent-catalog.md
-- agents/
-- rules/     (optional overlays only)
-- hooks/
-- commands/
-- skills/
-
-### Ignore generated and vendor directories
---ignore="**/build/**"
---ignore="**/.gradle/**"
---ignore="**/vendor/**"
---ignore="**/third_party/**"
-EOF
-      echo "  ✅  $ROOT_CLAUDE_MD generated"
-    fi
-  fi
-
-  SETTINGS_JSON="$CLAUDE_DIR/settings.json"
-  if [[ -f "$SETTINGS_JSON" ]]; then
-    echo "  ✓  $SETTINGS_JSON already exists"
-  else
-    if $DRY_RUN; then
-      echo "  [dry-run] would write $SETTINGS_JSON"
-    else
-      mkdir -p "$CLAUDE_DIR"
-      cat > "$SETTINGS_JSON" <<'EOF'
-{
-  "permissions": {
-    "allow": [
-      "Bash(./gradlew *)",
-      "Bash(git status)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(python3 .claude/skills/kmp-audit/scripts/*)",
-      "Bash(find . -name *.kt*)",
-      "Bash(grep *)"
-    ]
-  }
-}
-EOF
-      echo "  ✅  $SETTINGS_JSON generated"
-    fi
-  fi
-
-  # Not under $CLAUDE_DIR — agents/planner.md's body is copied verbatim into
-  # .codex/agents/planner.toml when translated for Codex, so a .claude/-prefixed
-  # path referenced from that shared source text would be broken there.
+  # Keep shared pipeline state outside provider-specific directories so translated
+  # agent instructions can use the same path on every client.
   PIPELINE_CONTEXT=".agents/pipeline-context.json"
   if [[ -f "$PIPELINE_CONTEXT" ]]; then
     echo "  ✓  $PIPELINE_CONTEXT already exists"

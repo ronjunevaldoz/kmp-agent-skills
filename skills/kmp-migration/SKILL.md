@@ -56,11 +56,12 @@ Keep the app shipping at every step — a half-migrated screen in production is 
 a broken build is not.
 
 Adoption order:
-1. **Run the audit** — understand current state before touching code
-2. **Adopt the architecture contract** — agree on layer rules, add Detekt gates
-3. **Add MVI to one screen** — prove the pattern works, set the example
-4. **Migrate the highest-traffic feature** — high leverage, high visibility
-5. **Spread one layer at a time** — complete the pattern across screens before adding new layers
+1. **Run the audit** — understand current state before touching code (`kmp-audit`)
+2. **Automate build & dependency upgrades** — modernize Gradle catalogs with OpenRewrite (`kmp-openrewrite`)
+3. **Adopt the architecture contract** — agree on layer rules, add Detekt gates
+4. **Add MVI to one screen** — prove the pattern works, set the example
+5. **Migrate the highest-traffic feature** — high leverage, high visibility
+6. **Spread one layer at a time** — complete the pattern across screens before adding new layers
 
 ---
 
@@ -70,7 +71,7 @@ Run the audit before writing any code:
 
 ```bash
 # Project architecture audit
-python3 .claude/skills/kmp-audit/scripts/audit_project.py . --roadmap
+python3 .agents/skills/kmp-audit/scripts/audit_project.py . --roadmap
 
 # If audit_project.py is not installed, run the skills version scanner
 python3 /path/to/kmp-agent-skills/skills/kmp-audit/scripts/audit_project.py . --roadmap

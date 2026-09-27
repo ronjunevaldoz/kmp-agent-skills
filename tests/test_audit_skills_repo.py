@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import json
 import subprocess
 import tempfile
@@ -533,9 +534,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_valid_task_file_no_findings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n\nBody.\n",
+                f"# Add auth\n\n**Date:** {today_str}\n\n- [ ] Step 1\n- [x] Step 2\n",
             )
             (root / "docs" / "tasks.md").write_text(
                 "# Tasks\n\n| Task | Status | Parent |\n|---|---|---|\n"
@@ -545,6 +547,52 @@ class TaskFileConventionTests(unittest.TestCase):
             findings: list[str] = []
             audit_repo_scripts._check_docs_hygiene(root, findings)
             self.assertFalse(any("task" in f.lower() or "01-add-auth" in f for f in findings))
+
+    def test_flags_stale_doing_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_task(
+                root, "todo-app", "01-add-auth-doing.md",
+                "# Add auth\n\n**Date:** 2026-01-01\n\n- [ ] Step 1\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-doing.md) | doing | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has been in 'doing' state for" in f for f in findings))
+
+    def test_flags_stale_blocked_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_task(
+                root, "todo-app", "01-add-auth-blocked.md",
+                "# Add auth\n\n**Date:** 2026-01-01\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-blocked.md) | blocked | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has been in 'blocked' state for" in f for f in findings))
+
+    def test_flags_100_percent_completed_task_not_marked_done(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
+            self._write_task(
+                root, "todo-app", "01-add-auth-doing.md",
+                f"# Add auth\n\n**Date:** {today_str}\n\n- [x] Step 1\n- [x] Step 2\n",
+            )
+            (root / "docs" / "tasks.md").write_text(
+                "# Tasks\n\n| [01-add-auth](tasks/todo-app/01-add-auth-doing.md) | doing | todo-app |\n",
+                encoding="utf-8",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("has 100% completed items" in f and "rename to -done" in f for f in findings))
 
     def test_flags_filename_not_matching_convention(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -583,6 +631,25 @@ class TaskFileConventionTests(unittest.TestCase):
             audit_repo_scripts._check_docs_hygiene(root, findings)
             self.assertFalse(any("01-add-auth-done.md" in f for f in findings))
 
+    def test_does_not_flag_historical_tasks_in_archive_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # Direct docs/tasks/archive directory
+            self._write_task(
+                root, "archive", "2026-08-23-vendor-components.md",
+                "# Historical\n\nNo date header needed in archive.\n",
+            )
+            # Sub-archive docs/tasks/<parent>/archive directory
+            self._write_task(
+                root, "feature-x/archive", "2026-08-20-old-plan.md",
+                "# Old plan\n",
+            )
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("does not match <NN>-<slug>-<status>.md" in f for f in findings))
+            self.assertFalse(any("missing a **Date:**" in f for f in findings))
+            self.assertFalse(any("not indexed in docs/tasks.md" in f for f in findings))
+
     def test_flags_missing_date_line(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -611,9 +678,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_flags_active_task_not_indexed_in_tasks_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n",
+                f"# Add auth\n\n**Date:** {today_str}\n",
             )
             (root / "docs" / "tasks.md").write_text("# Tasks\n\nNothing here yet.\n", encoding="utf-8")
             findings: list[str] = []
@@ -626,9 +694,10 @@ class TaskFileConventionTests(unittest.TestCase):
     def test_does_not_flag_task_indexed_in_tasks_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            today_str = datetime.date.today().isoformat()
             self._write_task(
                 root, "todo-app", "01-add-auth-doing.md",
-                "# Add auth\n\n**Date:** 2026-08-22\n",
+                f"# Add auth\n\n**Date:** {today_str}\n",
             )
             (root / "docs" / "tasks.md").write_text(
                 "# Tasks\n\n| Task | Status | Parent |\n|---|---|---|\n"
@@ -806,6 +875,87 @@ class ChangelogUnreleasedBacklogTests(unittest.TestCase):
             findings: list[str] = []
             audit_repo_scripts._check_changelog_unreleased_backlog(root, findings)
             self.assertEqual(findings, [])
+
+
+class DocsHygieneTopologyAndNonDocTests(unittest.TestCase):
+    """Verify canonical docs/ subdirectories and recursive non-doc / asset detection."""
+
+    def test_flags_non_canonical_top_level_subdirectories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            for rogue in ("plans", "handoffs", "benchmarks", "layout-system"):
+                (docs / rogue).mkdir(parents=True)
+                (docs / rogue / "note.md").write_text("# Note\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            for rogue in ("plans", "handoffs", "benchmarks", "layout-system"):
+                self.assertTrue(any(f"docs/{rogue}/ is not a canonical docs subdirectory" in f for f in findings))
+
+    def test_allows_canonical_top_level_subdirectories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            for canonical in ("reference", "tasks", "decisions", "lessons", "bugs", "mvp", "archive", "audits", "assets", "images"):
+                (docs / canonical).mkdir(parents=True)
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("is not a canonical docs subdirectory" in f for f in findings))
+
+    def test_flags_nested_non_doc_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "reference" / "fixtures").mkdir(parents=True)
+            (docs / "reference" / "fixtures" / "data.json").write_text("{}", encoding="utf-8")
+            (docs / "reference" / "sub").mkdir(parents=True)
+            (docs / "reference" / "sub" / "script.py").write_text("print(1)\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("data.json is a non-doc file inside docs/" in f for f in findings))
+            self.assertTrue(any("script.py is a non-doc file inside docs/" in f for f in findings))
+
+    def test_flags_image_assets_outside_assets_or_images(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "reference" / "previews").mkdir(parents=True)
+            (docs / "reference" / "previews" / "button.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertTrue(any("button.png is an asset file outside docs/assets/ or docs/images/" in f for f in findings))
+
+    def test_allows_image_assets_in_assets_or_images(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "assets" / "diagrams").mkdir(parents=True)
+            (docs / "assets" / "diagrams" / "arch.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+            (docs / "images").mkdir(parents=True)
+            (docs / "images" / "logo.svg").write_text("<svg></svg>", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("is an asset file outside" in f for f in findings))
+            self.assertFalse(any("is a non-doc file" in f for f in findings))
+
+    def test_does_not_flag_non_docs_in_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            (docs / "archive" / "old-run").mkdir(parents=True)
+            (docs / "archive" / "old-run" / "dump.json").write_text("{}", encoding="utf-8")
+            (docs / "tasks" / "archive").mkdir(parents=True)
+            (docs / "tasks" / "archive" / "result.csv").write_text("a,b\n", encoding="utf-8")
+
+            findings: list[str] = []
+            audit_repo_scripts._check_docs_hygiene(root, findings)
+            self.assertFalse(any("dump.json" in f for f in findings))
+            self.assertFalse(any("result.csv" in f for f in findings))
 
 
 if __name__ == "__main__":

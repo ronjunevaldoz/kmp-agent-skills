@@ -9,7 +9,7 @@ users to run it in any existing KMP project), and `update-consumer-skills.sh
 are always deployed. A template referenced from `assets/` would resolve in this repo and
 be missing in every consumer project.
 
-Path when reading this from a consumer project: `.claude/skills/kmp-expert/references/`
+Path when reading this from a consumer project: `.agents/skills/kmp-expert/references/`
 (or `.agents/skills/kmp-expert/references/` on a non-Claude client). Path in this repo:
 `skills/kmp-expert/references/`. Same dual-path convention `kmp-layout-system` already
 uses for its bundled script.
@@ -27,7 +27,7 @@ placeholder literally.
 # AGENTS.md — <project name>
 
 This project uses [kmp-agent-skills](https://github.com/ronjunevaldoz/kmp-agent-skills).
-Skills are installed in `.claude/skills/`.
+Skills are installed in `.agents/skills/`.
 
 ## Project overview
 
@@ -77,7 +77,7 @@ Examples:
 
 ## Commands installed
 
-See `.claude/commands/kmp-*.md` for available slash commands.
+See `.agents/commands/kmp-*.md` for available commands.
 Key commands:
 - `/kmp-implement-feature <name>` — plan → implement → validate → review
 - `/kmp-run-audit` — architecture audit with per-finding remediation
@@ -93,7 +93,7 @@ Key commands:
 # AGENTS.md — <library name>
 
 This project uses [kmp-agent-skills](https://github.com/ronjunevaldoz/kmp-agent-skills).
-Skills are installed in `.claude/skills/`.
+Skills are installed in `.agents/skills/`.
 
 ## Project overview
 
@@ -140,7 +140,7 @@ Group ID: <groupId>   Artifact: <artifactId>   Published to: Maven Central | Git
 
 ## Commands installed
 
-See `.claude/commands/kmp-*.md` for available slash commands.
+See `.agents/commands/kmp-*.md` for available commands.
 Key commands:
 - `/kmp-run-audit` — architecture audit with per-finding remediation
 - `/kmp-harvest-lessons` — collect patterns to upstream to skills

@@ -2,34 +2,29 @@
 # sync-local-assistant-skills.sh — sync the latest kmp-agent-skills release
 # into local assistant skill bundles on this machine.
 #
-# This updates user-level installs only:
-#   ~/.claude/skills
+# This updates user-level installs:
+#   ~/.claude/skills, ~/.claude/commands
 #   ~/.codex/skills
-#   ~/.gemini/skills
-#   ~/.agents/skills  — the cross-client convention (agentskills.io's own
-#                       client-implementation guide: "Some implementations also
-#                       scan .claude/skills/ ... other [clients] scan .agents/skills/
-#                       ... means skills installed by other compliant clients are
-#                       automatically visible to yours, and vice versa"). Syncing
-#                       here makes these skills visible to any agentskills.io-compliant
-#                       client without a client-specific sync step per tool — Cursor,
-#                       Amp, Goose, OpenCode, Letta, Roo Code, Kiro, and others.
-#
-# Commands are not copied. They stay project-local and require explicit review.
+#   ~/.gemini/skills, ~/.gemini/commands
+#   ~/.gemini/config/plugins/kmp-agent-skills (Antigravity plugin)
+#   ~/.agents/skills, ~/.agents/commands — the cross-client convention
 #
 # Options:
-#   --source PATH   Path to kmp-agent-skills clone (auto-detected if omitted)
-#   --dry-run       Show what would change without writing anything
+#   --source PATH      Path to kmp-agent-skills clone (auto-detected if omitted)
+#   --skip-commands    Skip synchronizing user-level slash commands (~/.agents/commands, ~/.claude/commands)
+#   --dry-run          Show what would change without writing anything
 
 set -euo pipefail
 
 SKILLS_SOURCE=""
+SYNC_COMMANDS=true
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --source) SKILLS_SOURCE="$2"; shift 2 ;;
-    --dry-run) DRY_RUN=true; shift ;;
+    --source)        SKILLS_SOURCE="$2"; shift 2 ;;
+    --skip-commands) SYNC_COMMANDS=false; shift ;;
+    --dry-run)       DRY_RUN=true; shift ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
@@ -79,6 +74,7 @@ TARGETS=(
   "$HOME/.codex/skills"
   "$HOME/.gemini/skills"
   "$HOME/.agents/skills"
+  "$HOME/.gemini/config/plugins/kmp-agent-skills/skills"
 )
 
 echo ""
@@ -95,7 +91,9 @@ echo ""
 
 for target in "${TARGETS[@]}"; do
   mkdir -p "$target"
-  echo "Syncing $(basename "$(dirname "$target")") skills..."
+  client_name="$(basename "$(dirname "$target")")"
+  [[ "$client_name" == "plugins" ]] && client_name="antigravity"
+  echo "Syncing $client_name skills..."
 
   if $DRY_RUN; then
     echo "  [dry-run] would mirror $SKILLS_SOURCE/skills/ -> $target/"
@@ -106,10 +104,16 @@ for target in "${TARGETS[@]}"; do
     backup_dir="${target}-backup-kmp-agent-skills-$(date +%Y%m%d%H%M%S)"
     cp -a "$target" "$backup_dir"
     echo "  Backed up existing install to $backup_dir"
+    # Keep only the newest backup — one per sync used to pile up forever.
+    for old_backup in "$target"-backup-kmp-agent-skills-*; do
+      if [[ "$old_backup" != "$backup_dir" ]]; then rm -rf "$old_backup"; fi
+    done
   fi
 
-  rsync -a --delete --exclude '.git' --exclude '.DS_Store' --exclude '.pytest_cache' \
-    --exclude '.kmp-agent-skills-version' \
+  # '/.*' protects top-level hidden entries the client owns (Codex's .system bundled
+  # skills, a .git, the version marker) — --delete used to wipe ~/.codex/skills/.system
+  # on every sync. skills/ ships no top-level dotfiles, so nothing of ours is skipped.
+  rsync -a --delete --exclude '/.*' --exclude '.DS_Store' --exclude '.pytest_cache' \
     "$SKILLS_SOURCE/skills/" "$target/"
 
   # A global (non-git) install otherwise has no record of what version it's on,
@@ -118,8 +122,59 @@ for target in "${TARGETS[@]}"; do
   # excluded from it above, so --delete never removes it.
   echo "$SOURCE_VERSION" > "$target/.kmp-agent-skills-version"
 
+  # If target is Antigravity plugin, update plugin manifest and version file
+  if [[ "$target" == *"/config/plugins/kmp-agent-skills/skills"* ]]; then
+    plugin_dir="$(dirname "$target")"
+    cat << EOF > "$plugin_dir/plugin.json"
+{
+  "name": "kmp-agent-skills",
+  "version": "$SOURCE_VERSION",
+  "description": "Comprehensive Kotlin Multiplatform & Android agent skills suite",
+  "author": {
+    "name": "Ron June Valdoz"
+  },
+  "license": "MIT",
+  "keywords": [
+    "kmp",
+    "kotlin",
+    "multiplatform",
+    "android",
+    "compose",
+    "architecture"
+  ]
+}
+EOF
+    echo "{\"version\": \"$SOURCE_VERSION\"}" > "$plugin_dir/installed_version.json"
+  fi
+
   echo "  ✅  Synced"
 done
+
+if $SYNC_COMMANDS && [[ -d "$SKILLS_SOURCE/commands" ]]; then
+  COMMAND_TARGETS=(
+    "$HOME/.agents/commands"
+    "$HOME/.claude/commands"
+    "$HOME/.gemini/commands"
+  )
+  echo ""
+  for cmd_target in "${COMMAND_TARGETS[@]}"; do
+    mkdir -p "$cmd_target"
+    client_name="$(basename "$(dirname "$cmd_target")")"
+    echo "Syncing $client_name user-level slash commands..."
+
+    if $DRY_RUN; then
+      echo "  [dry-run] would sync consumer commands -> $cmd_target/"
+      continue
+    fi
+
+    # Sync consumer commands (do not overwrite custom non-kmp commands)
+    for cmd_file in "$SKILLS_SOURCE/commands"/kmp-*.md; do
+      [[ -f "$cmd_file" ]] || continue
+      cp "$cmd_file" "$cmd_target/"
+    done
+    echo "  ✅  Synced $(ls "$SKILLS_SOURCE/commands"/kmp-*.md | wc -l | tr -d ' ') commands"
+  done
+fi
 
 echo ""
 echo "All local assistant skill bundles now match v$SOURCE_VERSION."

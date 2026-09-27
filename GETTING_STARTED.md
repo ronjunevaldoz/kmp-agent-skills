@@ -16,7 +16,7 @@ You have a Kotlin Multiplatform (KMP) project or want to start one. These agent 
 
 Collects your group ID, project name, platforms, and what the app does — then runs a
 9-step pipeline: scaffold → clean architecture → infrastructure → design system →
-features → tests → `.claude/` agent setup. Everything is wired and ready to build.
+features → tests → `.agents/` agent setup. Everything is wired and ready to build.
 
 ### Add agent workflows to an existing project
 
@@ -25,7 +25,7 @@ features → tests → `.claude/` agent setup. Everything is wired and ready to 
 ```
 
 Reads your `settings.gradle.kts` and `libs.versions.toml`, generates a tailored
-`AGENTS.md` routing table, installs consumer commands, deploys skills, and writes `CLAUDE.md`.
+`AGENTS.md` routing table, installs consumer commands, and deploys skills into `.agents/`.
 
 ### Audit an existing project
 

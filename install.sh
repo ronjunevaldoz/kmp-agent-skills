@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # install.sh — clone kmp-agent-skills into a tmp dir and sync the release into
-# local assistant skill bundles (~/.claude/skills, ~/.codex/skills, ~/.gemini/skills).
+# local assistant skill bundles (~/.agents/skills, ~/.codex/skills, ~/.gemini/skills).
 #
 # For anyone without a local checkout yet. If you already have this repo cloned,
 # just run scripts/sync-local-assistant-skills.sh directly instead — no need to

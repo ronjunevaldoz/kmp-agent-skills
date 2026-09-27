@@ -1,5 +1,5 @@
 {
-  "version": "2.60.0",
+  "version": "3.1.2",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -131,7 +131,7 @@
       "path": "skills/kmp-audit",
       "description": "KMP project audit skill for reviewing an existing Kotlin Multiplatform codebase. Use this skill to inspect architecture, module boundaries, state handling, repository and network layering, Compose patterns, expect/actual usage, shared resources, design system usage, test coverage, platform readiness, and the skills repo itself. Produces findings, risk levels, and a fix sequence instead of implementation code. Pair with kmp-expert to route any follow-up work to the right domain skills.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-30",
+      "last_updated": "2026-09-11",
       "keywords": [
         "investigation narration comment",
         "state the finding not the investigation",
@@ -295,9 +295,9 @@
     {
       "name": "kmp-ci-github-actions",
       "path": "skills/kmp-ci-github-actions",
-      "description": "Sets up GitHub Actions CI for a Kotlin Multiplatform (KMP) project. Produces two workflow files: ci.yml (lint, Android tests, iOS tests, Desktop JVM tests, Web JS + WasmJs tests, Gradle cache) and release.yml (XCFramework build + upload artifact). All target platforms are covered. Assumes AGP 9+ and the project structure from kmp-feature-scaffold.",
+      "description": "Sets up GitHub Actions CI for a Kotlin Multiplatform (KMP) project. Produces two workflow files: ci.yml (lint, Android tests, iOS tests, Desktop JVM tests, Web JS + WasmJs tests, Gradle cache) and release.yml (XCFramework build + upload artifact). All target platforms are covered. Assumes AGP 9+ and the project structure from kmp-feature-scaffold. Optional third workflow comments before/after screenshot tables on pull requests (PR) from committed snapshot goldens.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-22",
+      "last_updated": "2026-09-27",
       "keywords": [
         "GitHub Actions",
         "CI/CD",
@@ -311,7 +311,9 @@
         "JS",
         "WasmJs",
         "XCFramework",
-        "Gradle cache"
+        "Gradle cache",
+        "pull request comment",
+        "PR screenshots"
       ],
       "triggers": [
         "set up CI",
@@ -341,7 +343,9 @@
         "act local runner",
         "koverVerify",
         "test coverage CI",
-        "coverage gate"
+        "coverage gate",
+        "PR screenshot comment",
+        "before/after comment"
       ],
       "scripts": []
     },
@@ -1397,6 +1401,51 @@
       "scripts": []
     },
     {
+      "name": "kmp-delivery-lifecycle",
+      "path": "skills/kmp-delivery-lifecycle",
+      "description": "Enforce Definition of Ready (DoR), Definition of Done (DoD), and quality verification gates for Kotlin Multiplatform engineering. Use before picking up a task or feature to verify prerequisites, during implementation to validate UI and performance constraints, and before opening or merging Pull Requests to guarantee release-quality standards. Load when opening a PR (gh pr create) that changes UI: it owns the before/after screenshot evidence rule for PR bodies and bug issues.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-27",
+      "keywords": [
+        "definition of ready",
+        "definition of done",
+        "DoR",
+        "DoD",
+        "delivery lifecycle",
+        "acceptance criteria",
+        "quality gate",
+        "performance validation",
+        "ui validation",
+        "pr readiness",
+        "verification checklist",
+        "pull request",
+        "open a PR",
+        "gh pr create",
+        "before/after screenshots",
+        "visual evidence"
+      ],
+      "triggers": [
+        "definition of ready",
+        "definition of done",
+        "DoR",
+        "DoD",
+        "quality gate",
+        "delivery lifecycle",
+        "acceptance criteria",
+        "pr readiness",
+        "readiness checklist",
+        "done checklist",
+        "ui validation",
+        "performance gate",
+        "open a PR",
+        "pull request",
+        "gh pr create",
+        "before/after screenshots",
+        "visual evidence"
+      ],
+      "scripts": []
+    },
+    {
       "name": "kmp-dependency-injection",
       "path": "skills/kmp-dependency-injection",
       "description": "KMP dependency injection with Koin \u2014 recommend manual modules first, then annotated mode when less wiring is preferred. Covers app/feature scope boundaries, constructor injection, module organization, platform startup, test overrides, and the anti-patterns that hide architecture problems behind DI. Use this when deciding how to wire KMP dependencies instead of repeating Koin setup across other skills.",
@@ -1537,7 +1586,7 @@
       "path": "skills/kmp-expect-actual",
       "description": "The expect/actual mechanism in Kotlin Multiplatform \u2014 when to use it, when NOT to, and how to do it correctly. Covers: the four categories that genuinely warrant expect/actual (platform APIs, platform types, performance-critical code, SDK integration), the common-first rule that prefers a pure `commonMain` implementation before abstractions, the interface-injection alternative that handles most cases better, the \"actual everywhere\" anti-pattern, typealias actual for platform types, @ObjCName for clean Swift API surfaces, and Kotlin/Native memory considerations. Zero new dependencies.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-24",
+      "last_updated": "2026-09-11",
       "keywords": [
         "expect actual",
         "expect class",
@@ -1584,7 +1633,7 @@
       "path": "skills/kmp-expert",
       "description": "KMP Expert Orchestrator \u2014 maps all skills in this collection, their dependency order, and how to sequence them for any Kotlin Multiplatform project. Use this skill first to decide which other skill to invoke, in what order, for a given task. Covers: skill dependency graph, layer-by-layer build order, feature-slice assembly sequence, decision trees for the most common \"what do I use here?\" questions, and when to hand off to the project audit skill. This is a meta-skill; it delegates to domain skills for implementation and review, and it can turn confirmed audit findings into issue drafts or question drafts when the repo needs tracking. The long-term goal is to keep this skills collection aligned with the cleanest KMP architecture patterns possible.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-24",
+      "last_updated": "2026-09-27",
       "keywords": [
         "KMP expert",
         "orchestrator",
@@ -1807,6 +1856,40 @@
         "form submission"
       ],
       "scripts": []
+    },
+    {
+      "name": "kmp-github-issue-governance",
+      "path": "skills/kmp-github-issue-governance",
+      "description": "Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP repositories. Use when decomposing work into epics and sub-issues, preventing ticket spam or comment flooding, drafting bug reports and technical tasks, or transporting markdown payloads safely through the GitHub CLI without escaping corruption.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-27",
+      "keywords": [
+        "github issue",
+        "sub-issue",
+        "epic",
+        "ticket spam",
+        "comment flooding",
+        "gh cli",
+        "issue template",
+        "markdown corruption",
+        "in-place updates"
+      ],
+      "triggers": [
+        "github issue",
+        "sub-issue",
+        "epic",
+        "ticket spam",
+        "issue template",
+        "gh issue",
+        "comment flooding",
+        "markdown corruption",
+        "gh sub-issue",
+        "in-place update"
+      ],
+      "scripts": [
+        "gh_sub_issue.py",
+        "validate_issue_payload.py"
+      ]
     },
     {
       "name": "kmp-image-loading",
@@ -2773,6 +2856,39 @@
       "scripts": []
     },
     {
+      "name": "kmp-openrewrite",
+      "path": "skills/kmp-openrewrite",
+      "description": "Automated, compiler-accurate AST refactoring and migration engine for Kotlin Multiplatform and Gradle projects using OpenRewrite. Use when performing repo-wide dependency upgrades, version catalog (libs.versions.toml) updates, Gradle deprecation remediation, or automated framework migrations (e.g. Ktor 2 to 3, Coroutines, or Java to Kotlin brownfield upgrades) across dozens of multiplatform modules in a single step.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-09-15",
+      "keywords": [
+        "openrewrite",
+        "rewrite",
+        "ast refactoring",
+        "automated migration",
+        "gradle rewrite",
+        "version catalog migration",
+        "dependency bump",
+        "ktor migration",
+        "lossless semantic tree",
+        "multi-module refactor"
+      ],
+      "triggers": [
+        "openrewrite",
+        "rewrite",
+        "rewriteRun",
+        "rewriteDryRun",
+        "ast refactoring",
+        "automated migration",
+        "gradle rewrite",
+        "migrate build.gradle.kts",
+        "libs.versions.toml upgrade",
+        "ktor 3 migration",
+        "bulk dependency update"
+      ],
+      "scripts": []
+    },
+    {
       "name": "kmp-paging",
       "path": "skills/kmp-paging",
       "description": "Paging 3 in Kotlin Multiplatform \u2014 PagingSource, Pager, PagingData, and collectAsLazyPagingItems for cursor-based and offset-based list loading. Covers layer placement (PagingSource in :data, Pager in :presenter, LazyPagingItems in :ui), load-state handling, RemoteMediator for network+DB, Koin wiring, and testing PagingSource in isolation. Keeps PagingData out of UiState.",
@@ -2949,7 +3065,7 @@
       "path": "skills/kmp-project-docs-maintainer",
       "description": "Maintains downstream consumer-facing KMP project documentation only: README, GETTING_STARTED, INSTALL, RELEASING, docs/reference pages, onboarding guides, architecture notes, and architecture diagrams. Use this skill when project docs need to match the actual code, commands, config, folder layout, or app/library structure. Does NOT cover consumer release-note generation, per-skill changelogs, or skills-repo documentation.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-09-11",
       "keywords": [
         "project docs",
         "consumer docs",
@@ -3019,7 +3135,8 @@
         "check_skills_lock.py",
         "generate_skills_lock.py",
         "heal_docs.py",
-        "heal_project.py"
+        "heal_project.py",
+        "new_task.py"
       ]
     },
     {
@@ -3272,9 +3389,9 @@
     {
       "name": "kmp-roborazzi",
       "path": "skills/kmp-roborazzi",
-      "description": "Complete UI layer testing for KMP: semantic test tags on composables, Compose UI interaction tests in commonTest (runComposeUiTest, onNodeWithTag, performClick, assertIsDisplayed) that run on every target \u2014 JVM, Android instrumented, iOS simulator, Wasm \u2014 and Roborazzi screenshot tests that capture @Preview composables on JVM/Desktop for visual regression detection. Covers the full stack from testTag conventions to CI golden image diffs. Replaces kmp-testing-robot for UI regression testing.",
+      "description": "Complete UI layer testing for KMP: semantic test tags on composables, Compose UI interaction tests in commonTest (runComposeUiTest, onNodeWithTag, performClick, assertIsDisplayed) that run on every target \u2014 JVM, Android instrumented, iOS simulator, Wasm \u2014 and Roborazzi screenshot tests that capture @Preview composables on JVM/Desktop for visual regression detection. Covers the full stack from testTag conventions to CI golden image diffs, plus before/after screenshot evidence for pull request (PR) bodies built from committed goldens. Load when opening a PR that changes UI. Replaces kmp-testing-robot for UI regression testing.",
       "license": "Apache-2.0",
-      "last_updated": "2026-07-10",
+      "last_updated": "2026-09-27",
       "keywords": [
         "Roborazzi",
         "screenshot test",
@@ -3306,7 +3423,12 @@
         "position regression",
         "boundsInRoot",
         "fetchSemanticsNode",
-        "exact position diff"
+        "exact position diff",
+        "pull request",
+        "PR screenshots",
+        "before/after screenshots",
+        "visual evidence",
+        "gh pr create"
       ],
       "triggers": [
         "screenshot test",
@@ -3354,9 +3476,16 @@
         "test resizable panel",
         "test scrollbar",
         "boundsInRoot",
-        "layout stability test"
+        "layout stability test",
+        "open a PR",
+        "pull request",
+        "PR screenshots",
+        "before/after screenshots",
+        "visual evidence"
       ],
-      "scripts": []
+      "scripts": [
+        "pr_visual_evidence.py"
+      ]
     },
     {
       "name": "kmp-security",
@@ -3686,7 +3815,7 @@
     {
       "name": "kmp-token-saver",
       "path": "skills/kmp-token-saver",
-      "description": "Token-saving workflow for KMP agent work. Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and Headroom for tool/log/file/RAG compression when the host is already configured. Headroom stays optional until setup exists; do not block the task on it.",
+      "description": "Token-saving workflow for KMP agent work across all assistant runtimes (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Codex). Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and universal AGENTS.md guardrails for environments without Claude plugin runtimes. Headroom stays optional until setup exists; do not block the task on it.",
       "license": "Apache-2.0",
       "last_updated": "2026-07-13",
       "keywords": [

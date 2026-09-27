@@ -120,9 +120,15 @@ if [[ "$BEHIND" == "0" ]]; then
 else
   if $DRY_RUN; then
     echo "  [dry-run] would pull $BEHIND commit(s) from origin/main"
-  else
-    git -C "$SKILLS_SOURCE" pull origin main --ff-only --quiet
+  elif ! git -C "$SKILLS_SOURCE" symbolic-ref -q HEAD >/dev/null; then
+    # Detached HEAD = a pinned checkout (a release tag, or CI's PR merge ref) — deploy
+    # it as-is. Pulling would silently un-pin a tag, and on CI's shallow merge ref the
+    # --ff-only pull fails and `set -e` aborted the run before anything was deployed.
+    echo "  ℹ️   Source is a detached checkout — deploying it as-is (v$OLD_VERSION)"
+  elif git -C "$SKILLS_SOURCE" pull origin main --ff-only --quiet; then
     echo "  ✅  Pulled $BEHIND commit(s) from origin/main"
+  else
+    echo "  ⚠️  Could not fast-forward to origin/main — continuing with local skills (v$OLD_VERSION)"
   fi
 fi
 

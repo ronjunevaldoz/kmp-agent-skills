@@ -151,8 +151,9 @@ update this file — you must add it manually before releasing.
 
 ### 4. Add a keyword routing entry
 
-Open `skills/kmp-expert/SKILL.md` and add at least one invocation
-map row for the new skill. This is tested in CI.
+Open `skills/kmp-expert/references/skill-invocation-map.md` and add at least one
+invocation map row for the new skill, and list it in the `README.md` catalog. This is
+tested in CI. `agents/planner.md` reads these; it keeps no routing table of its own.
 
 ### 5. Run validation
 
@@ -189,7 +190,7 @@ python3 skills/kmp-audit/scripts/audit_skills_repo.py .
 # Skill issue scan — checks Testing sections, freshness, and required guidance
 python3 scripts/scan_skill_issues.py
 
-# Skill map coverage — keeps README, expert map, and planner routing synchronized
+# Skill map coverage — keeps README and the kmp-expert references synchronized
 python3 skills/kmp-expert/scripts/validate_skill_map.py --repo-root .
 
 # Keyword routing coverage — ensures every skill has at least one trigger

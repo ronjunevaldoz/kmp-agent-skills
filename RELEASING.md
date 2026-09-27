@@ -67,7 +67,7 @@ The script does the following automatically:
 1. **Verify git working tree is clean** — uncommitted changes abort the release
 2. **Run `audit_skills_repo.py`** — must return zero findings
 3. **Run `scan_skill_issues.py`** — must report zero issues
-4. **Run `validate_skill_map.py`** — README, expert map, and planner must match
+4. **Run `validate_skill_map.py`** — README and the kmp-expert references must match
 5. **Run `validate_keyword_routing.py`** — every skill must have routing coverage
 6. **Run pytest** — must be 100% passing
 7. **Bump the version** in `skills.json` (semver, based on the argument)

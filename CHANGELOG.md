@@ -2,6 +2,22 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.2.0] — 2026-09-27
+
+### Added
+
+- feat(skills): add motion decision framework and PRODUCT.md design context (#12)
+
+### Fixed
+
+- fix(expert): replace dead releases link in phase-5 handoff template (#7)
+
+### Other
+
+- refactor(agents): streamline agent naming and skill guidance (#8)
+
+---
+
 ## [v3.1.2] — 2026-09-27
 
 ### Fixed

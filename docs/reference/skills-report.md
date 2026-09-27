@@ -6,12 +6,13 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 
 | Skill | Lines | Last Updated | Status |
 |---|---|---|---|
-| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 494 | 2026-09-11 | ✅ |
+| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 496 | 2026-09-27 | ✅ |
 | [`kmp-library-publishing`](../../skills/kmp-library-publishing/) | 492 | 2026-07-31 | ✅ |
 | [`kmp-in-app-purchases`](../../skills/kmp-in-app-purchases/) | 490 | 2026-06-29 | ✅ |
 | [`kmp-mvi`](../../skills/kmp-mvi/) | 486 | 2026-08-24 | ✅ |
 | [`kmp-compose-slot-api`](../../skills/kmp-compose-slot-api/) | 483 | 2026-06-26 | ✅ |
 | [`kmp-clean-architecture`](../../skills/kmp-clean-architecture/) | 482 | 2026-08-11 | ✅ |
+| [`kmp-compose-design-system`](../../skills/kmp-compose-design-system/) | 481 | 2026-09-27 | ✅ |
 | [`kmp-ci-github-actions`](../../skills/kmp-ci-github-actions/) | 479 | 2026-09-27 | ✅ |
 | [`kmp-jni-pro`](../../skills/kmp-jni-pro/) | 478 | 2026-08-24 | ✅ |
 | [`kmp-audit`](../../skills/kmp-audit/) | 475 | 2026-09-11 | ✅ |
@@ -20,7 +21,7 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-code-quality`](../../skills/kmp-code-quality/) | 469 | 2026-08-24 | ✅ |
 | [`kmp-shared-resources`](../../skills/kmp-shared-resources/) | 469 | 2026-07-08 | ✅ |
 | [`kmp-navigation`](../../skills/kmp-navigation/) | 468 | 2026-06-29 | ✅ |
-| [`kmp-compose-design-system`](../../skills/kmp-compose-design-system/) | 466 | 2026-08-24 | ✅ |
+| [`kmp-compose-animation`](../../skills/kmp-compose-animation/) | 466 | 2026-09-27 | ✅ |
 | [`kmp-desktop-app`](../../skills/kmp-desktop-app/) | 463 | 2026-06-29 | ✅ |
 | [`kmp-sqldelight-setup`](../../skills/kmp-sqldelight-setup/) | 460 | 2026-07-09 | ✅ |
 | [`kmp-dependency-injection`](../../skills/kmp-dependency-injection/) | 453 | 2026-07-20 | ✅ |
@@ -31,7 +32,6 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-flavor-environment`](../../skills/kmp-flavor-environment/) | 437 | 2026-06-21 | ✅ |
 | [`kmp-api-mimicry`](../../skills/kmp-api-mimicry/) | 436 | 2026-08-23 | ✅ |
 | [`kmp-paging`](../../skills/kmp-paging/) | 432 | 2026-06-21 | ✅ |
-| [`kmp-expert`](../../skills/kmp-expert/) | 431 | 2026-09-27 | ✅ |
 | [`kmp-shadcn-compose`](../../skills/kmp-shadcn-compose/) | 426 | 2026-07-31 | ✅ |
 | [`kmp-expect-actual`](../../skills/kmp-expect-actual/) | 425 | 2026-09-11 | ✅ |
 | [`kmp-feature-scaffold`](../../skills/kmp-feature-scaffold/) | 421 | 2026-07-31 | ✅ |
@@ -41,7 +41,6 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-repository-pattern`](../../skills/kmp-repository-pattern/) | 403 | 2026-07-13 | ✅ |
 | [`kmp-shadcn-compose-layouts`](../../skills/kmp-shadcn-compose-layouts/) | 394 | 2026-08-04 | ✅ |
 | [`kmp-legal-docs`](../../skills/kmp-legal-docs/) | 393 | 2026-06-21 | ✅ |
-| [`kmp-compose-animation`](../../skills/kmp-compose-animation/) | 389 | 2026-06-21 | ✅ |
 | [`kmp-layout-system`](../../skills/kmp-layout-system/) | 387 | 2026-08-10 | ✅ |
 | [`kmp-migration`](../../skills/kmp-migration/) | 387 | 2026-07-19 | ✅ |
 | [`kmp-permissions`](../../skills/kmp-permissions/) | 386 | 2026-06-21 | ✅ |
@@ -56,7 +55,7 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-lessons`](../../skills/kmp-lessons/) | 356 | 2026-07-12 | ✅ |
 | [`kmp-deep-linking`](../../skills/kmp-deep-linking/) | 351 | 2026-06-21 | ✅ |
 | [`kmp-crash-reporting`](../../skills/kmp-crash-reporting/) | 350 | 2026-06-24 | ✅ |
-| [`kmp-compose-accessibility`](../../skills/kmp-compose-accessibility/) | 346 | 2026-08-24 | ✅ |
+| [`kmp-compose-accessibility`](../../skills/kmp-compose-accessibility/) | 347 | 2026-09-27 | ✅ |
 | [`kmp-unit-testing`](../../skills/kmp-unit-testing/) | 340 | 2026-08-22 | ✅ |
 | [`kmp-skill-harvester`](../../skills/kmp-skill-harvester/) | 337 | 2026-06-26 | ✅ |
 | [`kmp-feature-flags`](../../skills/kmp-feature-flags/) | 334 | 2026-06-21 | ✅ |
@@ -66,6 +65,7 @@ Generated 2026-09-27 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-docs-site`](../../skills/kmp-docs-site/) | 326 | 2026-07-11 | ✅ |
 | [`kmp-offline-first`](../../skills/kmp-offline-first/) | 324 | 2026-06-21 | ✅ |
 | [`kmp-image-loading`](../../skills/kmp-image-loading/) | 317 | 2026-06-21 | ✅ |
+| [`kmp-expert`](../../skills/kmp-expert/) | 316 | 2026-09-27 | ✅ |
 | [`kmp-delivery-lifecycle`](../../skills/kmp-delivery-lifecycle/) | 309 | 2026-09-27 | ✅ |
 | [`kmp-benchmark`](../../skills/kmp-benchmark/) | 301 | 2026-07-10 | ✅ |
 | [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 298 | 2026-09-27 | ✅ |

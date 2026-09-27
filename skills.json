@@ -1,5 +1,5 @@
 {
-  "version": "3.1.2",
+  "version": "3.2.0",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -600,7 +600,7 @@
       "path": "skills/kmp-compose-accessibility",
       "description": "Accessibility (a11y) for Kotlin Multiplatform Compose \u2014 semantic roles and mergeDescendants, contentDescription on interactive and image elements, screen reader traversal order, minimum touch target size, Roborazzi accessibility snapshot tests, reduced-motion support, and a Compose a11y audit checklist.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-24",
+      "last_updated": "2026-09-27",
       "keywords": [
         "accessibility",
         "a11y",
@@ -729,9 +729,9 @@
     {
       "name": "kmp-compose-animation",
       "path": "skills/kmp-compose-animation",
-      "description": "Compose Multiplatform animation patterns \u2014 AnimatedVisibility with enter/exit transitions, animateContentSize, Crossfade for screen-level transitions, animateFloatAsState / animateDpAsState for property animations, and shared element transitions (Compose 1.7+). Covers when to use each API and how to keep animations accessible with reduced-motion support.",
+      "description": "Compose Multiplatform animation patterns \u2014 AnimatedVisibility with enter/exit transitions, animateContentSize, Crossfade for screen-level transitions, animateFloatAsState / animateDpAsState for property animations, and shared element transitions (Compose 1.7+). Covers when to use each API, whether to animate at all, easing and duration choices with motion tokens, and how to keep animations accessible with reduced-motion support.",
       "license": "Apache-2.0",
-      "last_updated": "2026-06-21",
+      "last_updated": "2026-09-27",
       "keywords": [
         "animation",
         "AnimatedVisibility",
@@ -747,7 +747,12 @@
         "tween animation",
         "compose animation",
         "reduced motion",
-        "accessibility animation"
+        "accessibility animation",
+        "motion tokens",
+        "easing curve",
+        "animation duration",
+        "CubicBezierEasing",
+        "press feedback"
       ],
       "triggers": [
         "animation",
@@ -778,7 +783,16 @@
         "motion",
         "visual transition",
         "page transition",
-        "screen transition"
+        "screen transition",
+        "easing curve",
+        "animation duration",
+        "how long should this animate",
+        "should this animate",
+        "motion tokens",
+        "CubicBezierEasing",
+        "press feedback",
+        "animation feels slow",
+        "animation feels janky"
       ],
       "scripts": []
     },
@@ -787,7 +801,7 @@
       "path": "skills/kmp-compose-design-system",
       "description": "Scaffolds a fully owned Compose Multiplatform design system in :core:designsystem using the experimental Compose Styles API. Produces semantic design tokens, AppTheme, style accessors, sealed component variants, and core App* primitives without Material. The App prefix is derived from the project's name and can be customized.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-24",
+      "last_updated": "2026-09-27",
       "keywords": [
         "design system",
         "Compose Styles API",
@@ -821,7 +835,11 @@
         "type scale",
         "text overflow",
         "text truncation",
-        "i18n text expansion"
+        "i18n text expansion",
+        "PRODUCT.md",
+        "DESIGN.md",
+        "design context",
+        "motion tokens"
       ],
       "triggers": [
         "design system",
@@ -884,7 +902,13 @@
         "text hell",
         "line length",
         "i18n text expansion",
-        "translated string overflow"
+        "translated string overflow",
+        "PRODUCT.md",
+        "DESIGN.md",
+        "design context",
+        "product context",
+        "AppMotion",
+        "motion tokens"
       ],
       "scripts": [
         "derive_component_prefix.py",
@@ -1631,7 +1655,7 @@
     {
       "name": "kmp-expert",
       "path": "skills/kmp-expert",
-      "description": "KMP Expert Orchestrator \u2014 maps all skills in this collection, their dependency order, and how to sequence them for any Kotlin Multiplatform project. Use this skill first to decide which other skill to invoke, in what order, for a given task. Covers: skill dependency graph, layer-by-layer build order, feature-slice assembly sequence, decision trees for the most common \"what do I use here?\" questions, and when to hand off to the project audit skill. This is a meta-skill; it delegates to domain skills for implementation and review, and it can turn confirmed audit findings into issue drafts or question drafts when the repo needs tracking. The long-term goal is to keep this skills collection aligned with the cleanest KMP architecture patterns possible.",
+      "description": "Route Kotlin Multiplatform project or feature work to the smallest relevant skills and sequence them. Use for skill selection, build-order decisions, or adoption-roadmap routing; use the audit skill for project findings.",
       "license": "Apache-2.0",
       "last_updated": "2026-09-27",
       "keywords": [
@@ -3063,9 +3087,9 @@
     {
       "name": "kmp-project-docs-maintainer",
       "path": "skills/kmp-project-docs-maintainer",
-      "description": "Maintains downstream consumer-facing KMP project documentation only: README, GETTING_STARTED, INSTALL, RELEASING, docs/reference pages, onboarding guides, architecture notes, and architecture diagrams. Use this skill when project docs need to match the actual code, commands, config, folder layout, or app/library structure. Does NOT cover consumer release-note generation, per-skill changelogs, or skills-repo documentation.",
+      "description": "Maintains downstream consumer-facing KMP project documentation only: README, GETTING_STARTED, INSTALL, RELEASING, PRODUCT.md, docs/reference pages, onboarding guides, architecture notes, and architecture diagrams. Use this skill when project docs need to match the actual code, commands, config, folder layout, or app/library structure. Does NOT cover consumer release-note generation, per-skill changelogs, or skills-repo documentation.",
       "license": "Apache-2.0",
-      "last_updated": "2026-09-11",
+      "last_updated": "2026-09-27",
       "keywords": [
         "project docs",
         "consumer docs",

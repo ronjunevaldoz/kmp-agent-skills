@@ -2,6 +2,46 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.1.2] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): keep client-owned dirs and only the newest sync backup (#11)
+
+---
+
+## [v3.1.1] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): deploy from a detached or diverged skills source (#10)
+
+---
+
+## [v3.1.0] — 2026-09-27
+
+### Added
+
+- feat(roborazzi): add PR before/after evidence from committed goldens (#9)
+
+---
+
+## [v3.0.15] — 2026-09-26
+
+### Fixed
+
+- fix(commands): drop Co-Authored-By trailer from execute-ticket commit template
+
+---
+
+## [v3.0.14] — 2026-09-26
+
+### Fixed
+
+- fix(audit): skip skills-repo sources, align freshness thresholds
+
+---
+
 ## [v3.0.13] — 2026-09-18
 
 ### Added

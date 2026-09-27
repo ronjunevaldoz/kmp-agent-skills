@@ -51,7 +51,9 @@ First` section states the default approach, and the anti-patterns list what to a
 
 Before writing the direction:
 1. Check the touched screen or component files.
-2. Read the current KMP design-system docs or preview files if they exist.
+2. Read `PRODUCT.md` (users, operating context, principles) and the current KMP
+   design-system docs or preview files if they exist. Missing `PRODUCT.md` → list it under
+   open questions (`kmp-compose-design-system` → `references/design-context.md`).
 3. If `docs/reference/design-handoff.md` exists and still matches the live UI, use it as
    the default doc shape for the handoff.
 4. If the design reference is missing or stale, treat the live UI and existing Compose

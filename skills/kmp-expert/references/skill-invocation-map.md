@@ -37,6 +37,7 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "CI", "GitHub Actions", "run KMP tests" | `kmp-ci-github-actions` |
 | "github issue", "sub-issue", "epic", "ticket spam", "gh issue", "comment flooding", "issue template", "gh sub-issue", "in-place update", "markdown corruption" | `kmp-github-issue-governance` |
 | "definition of ready", "definition of done", "DoR", "DoD", "quality gate", "delivery lifecycle", "acceptance criteria", "pr readiness", "readiness checklist", "done checklist", "ui validation", "performance gate" | `kmp-delivery-lifecycle` |
+| "open a PR", "gh pr create", "PR with UI change", "PR screenshots", "before/after screenshots", "visual evidence" | `kmp-delivery-lifecycle` (Phase 3A.3 gate) then `kmp-roborazzi` (`scripts/pr_visual_evidence.py`) |
 | "android cli", "android-cli", "android init", "android skills add", "create AVD from terminal", "android run apk", "agent-first android", "android studio quail", "render compose preview cli", "build and run android app", "deploy to emulator", "run KMP android target" | `kmp-android-cli` |
 | "publish to Maven Central", "Maven publish", "release library", "release project", "cut release", "ship version", "versioning", "semantic versioning", "bump version", "vanniktech", "Sonatype", "git-cliff", "changelog", "GitHub Release", "release pipeline", "GPG signing" | `kmp-release` |
 | "dev/staging/prod", "BuildKonfig", "environment config" | `kmp-flavor-environment` |
@@ -82,7 +83,8 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "WorkManager", "background work", "background task", "BGTaskScheduler", "BGProcessingTask", "one-time work", "periodic work", "CoroutineWorker", "background sync" | `kmp-workmanager` |
 | "feature flags", "feature toggle", "remote config", "Firebase Remote Config", "A/B test", "experiment", "kill switch", "flag evaluation", "FeatureFlagProvider" | `kmp-feature-flags` |
 | "accessibility", "a11y", "TalkBack", "VoiceOver", "contentDescription", "semantic role", "screen reader", "touch target", "WCAG", "traversal order", "mergeDescendants" | `kmp-compose-accessibility` |
-| "animation", "AnimatedVisibility", "animateContentSize", "Crossfade", "AnimatedContent", "animateFloatAsState", "shared element", "enter transition", "exit transition", "reduced motion", "spring animation" | `kmp-compose-animation` |
+| "animation", "AnimatedVisibility", "animateContentSize", "Crossfade", "AnimatedContent", "animateFloatAsState", "shared element", "enter transition", "exit transition", "reduced motion", "spring animation", "easing curve", "animation duration", "should this animate", "motion tokens" | `kmp-compose-animation` |
+| "PRODUCT.md", "DESIGN.md", "design context", "product context before UI work" | `kmp-compose-design-system` (`references/design-context.md`) |
 | "offline first", "offline-first", "local first", "conflict resolution", "conflict handling", "background sync", "SyncManager", "SyncState" (opt-in — do NOT match on bare "sync", "cache", or "single source of truth"; those route to `repository-pattern`/`sqldelight-setup`) | `kmp-offline-first` |
 | "crash reporting", "crashlytics", "firebase crashes", "sentry", "non-fatal", "symbolication", "dSYM", "breadcrumb bridge", "crash handler", "breadcrumb crash" | `kmp-crash-reporting` |
 | "DataStore", "Preferences DataStore", "Proto DataStore", "save settings", "persist user prefs", "SharedPreferences migration", "createDataStore", "local key-value store" | `kmp-datastore` |

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Warns when a skill's last-updated date is more than 90 days old.
+# Warns when a skill's last-updated date is more than ~6 months old.
 # Run manually or as a scheduled CI check — not a blocking hook.
 # Usage: ./hooks/check-skill-freshness.sh [skills-dir]
 #   skills-dir  Optional override for the skills directory (default: <repo-root>/skills).
@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SKILLS_DIR="${1:-$REPO_ROOT/skills}"
 
-THRESHOLD_DAYS=90
+THRESHOLD_DAYS=182  # 6 months — keep in sync with STALE_MONTHS in scripts/scan_skill_issues.py
 TODAY=$(date +%s)
 STALE_COUNT=0
 

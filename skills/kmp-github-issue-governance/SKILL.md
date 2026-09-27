@@ -8,7 +8,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-14'
+  last-updated: '2026-09-27'
   keywords:
     - github issue
     - sub-issue
@@ -203,9 +203,13 @@ When providing proof across multiple platforms (e.g. Desktop Vulkan, Wasm WebGPU
 ### Media Inclusion Rules
 1. **Drag-and-Drop / CDN URLs (`user-attachments`)**:
    - In GitHub Web UI: Paste or drag images (`.png`, `.jpg`, `.webp`) or animated clips (`.gif`, `.mp4` < 10MB) into the markdown editor. GitHub generates persistent `https://github.com/user-attachments/assets/<uuid>` URLs.
-2. **Repository-Relative or Raw URLs**:
-   - For assets stored within repo documentation or design baselines, reference raw repository URLs:
-     `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/docs/evidence/screenshot.png`
+2. **Committed Assets — SHA-Pinned Blob URLs (agents: use this)**:
+   - `gh` and the REST API cannot upload attachments, so an agent cannot produce `user-attachments` URLs.
+     Link committed files by commit SHA instead — branch-pinned URLs break once the branch is deleted:
+     `https://github.com/<owner>/<repo>/blob/<sha>/<path>?raw=true`
+   - For UI PRs, generate the Before/After table from committed Roborazzi goldens with
+     `kmp-roborazzi/scripts/pr_visual_evidence.py` (recipe: `kmp-delivery-lifecycle` Phase 3A.3).
+   - Private repos: these images render only for signed-in members.
 3. **CLI Transport with Images**:
    - When using `gh pr create` or `gh issue create`, ensure image markdown tags (`![Alt](url)`) or HTML tags (`<img src="url" />`) reside inside your temporary `--body-file` to prevent shell stripping of quotes or brackets.
 
@@ -289,5 +293,6 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-09-27 | Media Inclusion Rules: replaced branch-pinned raw URLs with SHA-pinned `blob/<sha>/<path>?raw=true` links and pointed agents (which cannot upload attachments via `gh`) to `kmp-roborazzi/scripts/pr_visual_evidence.py`. |
 | 2026-09-15 | Added Visual & Verification Evidence Standards: Before vs After tables, collapsible `<details>` blocks for multi-platform captures, and shell-safe media inclusion rules. |
 | 2026-09-14 | Initial release — codified Epic vs Sub-Issue decision tree, comment throttling rules, shell-safe CLI transport via `--body-file`, pre-flight payload validation (`validate_issue_payload.py`), and native GraphQL sub-issue integration (`gh_sub_issue.py`). |

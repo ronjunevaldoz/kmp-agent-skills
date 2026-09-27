@@ -6,12 +6,13 @@ description: >
   assertIsDisplayed) that run on every target — JVM, Android instrumented, iOS
   simulator, Wasm — and Roborazzi screenshot tests that capture @Preview composables
   on JVM/Desktop for visual regression detection. Covers the full stack from testTag
-  conventions to CI golden image diffs. Replaces kmp-testing-robot for
-  UI regression testing.
+  conventions to CI golden image diffs, plus before/after screenshot evidence for
+  pull request (PR) bodies built from committed goldens. Load when opening a PR that
+  changes UI. Replaces kmp-testing-robot for UI regression testing.
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-07-10'
+  last-updated: '2026-09-27'
   keywords:
     - Roborazzi
     - screenshot test
@@ -44,6 +45,11 @@ metadata:
     - boundsInRoot
     - fetchSemanticsNode
     - exact position diff
+    - pull request
+    - PR screenshots
+    - before/after screenshots
+    - visual evidence
+    - gh pr create
 ---
 
 ## When to Use This Skill
@@ -54,6 +60,8 @@ Use when you need to:
 - Capture screenshot golden images from `@Preview` composables on JVM
 - Detect visual regressions automatically in CI
 - Wire the full UI testing stack: test tags → interaction tests → screenshot tests
+- Open a PR (or file a bug) that changes what users see — render the before/after table
+  from committed goldens with `scripts/pr_visual_evidence.py`
 
 **Trigger keywords:** screenshot test, Roborazzi, golden image, visual regression, preview screenshot,
 UI test JVM, screenshot diff, CI visual test, testTag, test tag, compose test rule, onNodeWithTag,
@@ -63,7 +71,8 @@ UI layout verification, canvas layout test, visual confirmation, test layout,
 test UI, test screen, UI testing, visual test, test this screen, test the layout,
 screenshot testing, visual regression testing, UI coverage, test composable,
 drag test, swipe test, performTouchInput, performMouseInput, test drag,
-test resizable panel, test scrollbar, boundsInRoot, layout stability test.
+test resizable panel, test scrollbar, boundsInRoot, layout stability test,
+open a PR, pull request, PR screenshots, before/after screenshots, visual evidence.
 
 **Freshness rule:** Roborazzi is actively developed — the Gradle plugin API and the
 `captureRoboImage` API change between minor versions. Recheck the GitHub releases page before
@@ -320,8 +329,37 @@ Full content: `references/step3b-bounds-sidecar.md`.
 
 Commit the `snapshots/` directory to git — this includes any `.bounds.json` sidecars
 written by `captureBoundsSnapshot`, since they live alongside the PNGs in the same
-directory. PRs that change UI produce image diffs *and* exact position/size diffs in the
-PR review — reviewers see before/after without running tests locally.
+directory. Changed PNGs and sidecars show as diffs in the PR's Files tab, but nothing
+lands in the PR description and new/removed snapshots get no before/after — use the
+script below for that.
+
+---
+
+## Opening a PR that changes UI
+
+Every PR (and bug issue) that changes what users see carries before/after evidence in its
+body. `gh` and the REST API cannot upload attachments, so link committed goldens by SHA:
+
+```bash
+./gradlew jvmTest -PrecordRoborazzi   # commit updated snapshots/ with the UI change
+git push                              # blob links 404 until both SHAs are on GitHub
+python3 scripts/pr_visual_evidence.py > /tmp/visual.md
+gh pr create --title "..." --body-file /tmp/body.md   # body.md includes visual.md
+```
+
+- **Before** = merge-base with `origin/main` (`--target` to change). Golden already stale at
+  the base? Make the branch's first commit a re-record on the base with no code change, and
+  pass `--base <that-sha>` so the table shows only this PR's change.
+- **Globs** default to `**/snapshots/**/*.png`; narrow with `--glob '**/src/desktopTest/snapshots/*.png'`.
+- **Output:** Before | After row per modified/renamed PNG, separate New and Removed sections,
+  `<details>` for lists over 3, width 360 portrait / 420 landscape, links
+  `https://github.com/<owner>/<repo>/blob/<sha>/<path>?raw=true`.
+- **No snapshot change:** one `No before/after: …` line — replace it with the reason
+  (e.g. "No before/after: server-only").
+- **Private repos:** images render only for signed-in members.
+
+Full gate: `kmp-delivery-lifecycle` Phase 3A. Optional auto-comment workflow:
+`kmp-ci-github-actions` → `references/pr-visual-evidence-workflow.md`.
 
 ---
 
@@ -423,6 +461,7 @@ When asked about UI testing, test tags, or visual regression for KMP, respond in
 
 | Date | Change |
 |---|---|
+| 2026-09-27 | Added "Opening a PR that changes UI" and `scripts/pr_visual_evidence.py` — renders a before/after table for the PR body from committed goldens (`git diff --name-status` base..head: M/R → pair, A → New, D → Removed), linking images as SHA-pinned `blob/<sha>/<path>?raw=true` URLs because `gh`/REST cannot upload attachments. Proven on a real KMP project PR. PR/pull-request keywords added so the skill loads at PR time; corrected the claim that committed goldens alone give reviewers before/after (they only show in the Files tab). |
 | 2026-08-04 | Split Step 2 (Compose UI Interaction Tests), Step 3b (Bounds Sidecar), and CI Integration out of SKILL.md into `references/*.md`, leaving pointer stubs plus a new References section. SKILL.md drops from 769 to 430 lines, clearing the agentskills.io 500-line recommendation. No content removed, only relocated. Part of the same backlog cleanup as `kmp-compose-design-system`/`-extended`/`kmp-mvi`/`kmp-feature-scaffold`/`kmp-code-quality`/`kmp-library-publishing`/`kmp-expert`/`kmp-navigation`/`kmp-legal-docs` (KI-008). |
 | 2026-07-10 | Added "Step 3b: Bounds Sidecar" — `captureBoundsSnapshot()` writes exact `fetchSemanticsNode().boundsInRoot` position/size to a `.bounds.json` file next to each golden PNG, so a position/size regression is a plain `git diff` on committed text instead of something an agent has to estimate from a pixel diff image. Proven with a standalone JSON-diff test (exact delta surfaced, zero noise for unchanged nodes) before writing this into the skill. Verified the real multiplatform-JVM `captureRoboImage` entry point (`onRoot().captureRoboImage(...)` inside `runDesktopComposeUiTest`) against Roborazzi's own `sample-compose-desktop-jvm` test, since it differs from the plain content-lambda form. Wired into `/kmp-record-design-baselines` (sidecars ride along in the existing `snapshots/` copy step) and `/kmp-audit-screenshots` (new Step 2b checks sidecar diffs before falling through to vision). Explicitly out of scope: pixel-based border-width/corner-radius detection — those values already exist exactly in `Style` source, so a regression there is a normal code diff. 2 new anti-patterns, 1 new Related Skills cross-reference. |
 | 2026-07-08 | Added a "Drag interaction test" pattern — `performTouchInput { swipe(...) }` / `performMouseInput { press(); moveTo(); release() }` for resizable panel dividers and custom scrollbar thumbs, asserting resulting state (pane width, clamp bounds, scroll offset) rather than intermediate frames. |

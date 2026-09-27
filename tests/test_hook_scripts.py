@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import datetime
 import json
 import subprocess
 import tempfile
 import unittest
-from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -81,7 +81,7 @@ class HookScriptTests(unittest.TestCase):
 
     def test_freshness_exits_0_when_all_skills_fresh(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            skills_dir = self._make_skill_dir(tmp, "kmp-foo", date.today().isoformat())
+            skills_dir = self._make_skill_dir(tmp, "kmp-foo", datetime.date.today().isoformat())
             result = subprocess.run(
                 ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
                 capture_output=True,
@@ -99,7 +99,7 @@ class HookScriptTests(unittest.TestCase):
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 1, (
-            "check-skill-freshness.sh should exit 1 when a skill is >90 days stale. "
+            "check-skill-freshness.sh should exit 1 when a skill is >6 months stale. "
             f"stdout: {result.stdout.decode()}"
         ))
         self.assertIn(b"STALE", result.stdout)
@@ -388,3 +388,4 @@ class PrePushHookTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

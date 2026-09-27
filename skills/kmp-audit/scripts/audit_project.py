@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import re
 import subprocess
 import sys
@@ -5073,8 +5074,23 @@ def _detect_missing_adaptive_coverage(root: Path) -> list[str]:
     return findings
 
 
+@functools.lru_cache(maxsize=None)
+def _is_skills_source_repo(root: Path) -> bool:
+    """True when auditing the kmp-agent-skills repo itself, not a consumer project.
+
+    - Its skills/ and agents/ are the source copies, never deployed in-repo.
+    - Its templates hold placeholders (versionCode = 1, GROUP_ID).
+    - Skill quality is covered by audit_skills_repo.py and scan_skill_issues.py.
+    """
+    return (root / "routing_rules.json").is_file() and (
+        root / "skills" / "kmp-expert" / "SKILL.md"
+    ).is_file()
+
+
 def _is_excluded(path: Path, root: Path) -> bool:
     parts = path.relative_to(root).parts
+    if parts and parts[0] in {"skills", "agents"} and _is_skills_source_repo(root):
+        return True
     return any(
         part in _EXCLUDED_DIRS or part.endswith(".cpp")  # excludes llama.cpp/, stable-diffusion.cpp/ submodules
         for part in parts

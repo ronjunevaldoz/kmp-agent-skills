@@ -8,7 +8,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-08-24'
+  last-updated: '2026-09-27'
   keywords:
     - design system
     - Compose Styles API
@@ -43,6 +43,10 @@ metadata:
     - text overflow
     - text truncation
     - i18n text expansion
+    - PRODUCT.md
+    - DESIGN.md
+    - design context
+    - motion tokens
 ---
 
 ## When to Use This Skill
@@ -75,7 +79,8 @@ dynamic theme, runtime theme switch, light dark switch, theme preference setting
 component prefix, custom prefix instead of App, rename App to project name,
 project-specific component names, COMPONENT_PREFIX, derive prefix from project name,
 golden ratio, type scale, typographic scale, text overflow, text truncation,
-text hell, line length, i18n text expansion, translated string overflow.
+text hell, line length, i18n text expansion, translated string overflow,
+PRODUCT.md, DESIGN.md, design context, product context, AppMotion, motion tokens.
 
 **Freshness rule:** `@ExperimentalStylesApi` is experimental (Android Jetpack Compose
 `1.12.0-alpha03` at last check) and the Styles API changes between releases — Material
@@ -134,12 +139,21 @@ Concrete KMP design-system mapping:
 
 Full content (the hard rule + template): `references/screen-layout-contract.md`.
 
+## Design Context — read before UI work
+
+Before designing or changing a screen, read `PRODUCT.md` (users, purpose, operating
+context, principles, accessibility) and `docs/design-system.md` (prefix, tokens,
+deviations). Missing `PRODUCT.md`? Ask at most three questions and write it; mark inferred
+facts. A root `DESIGN.md` (Google's portable format) is an export generated from
+`tokens/` — only when a DESIGN.md-aware tool needs it, never hand-maintained.
+Template and export rules: `references/design-context.md`.
+
 ## Overview
 
 ```
 Design system layers (top-down):
 
-  Tokens (AppColors, AppTypography, AppShapes, AppSpacing)
+  Tokens (AppColors, AppTypography, AppShapes, AppSpacing, AppMotion)
       ↓ consumed via StyleScope extensions
   Styles (sealed variant objects with Style values)
       ↓ merged via `then`
@@ -422,6 +436,7 @@ The `references/` directory contains project-facing documents the skill uses at 
 
 | File | Purpose | Usage |
 |---|---|---|
+| `references/design-context.md` | `PRODUCT.md` template, read-before-UI-work rule, and DESIGN.md export rules | Read before any screen work; copy the template to the project root as `PRODUCT.md` |
 | `references/design-system-template.md` | Living design system doc — tokens, component inventory, detekt overrides, audit log | Copy to `docs/design-system.md` in your project; fill in token values and prefix |
 | `references/compose-styles-api-reference.md` | Extracted ground truth from the 9 official Compose Styles API doc pages (API surface, do's/don'ts, performance benchmarks, limitations) | Audit generated Style code against this before applying `/update-design-system` or reviewing a PR that touches `styles/` or `components/` |
 | `references/step0-component-prefix.md`, `step1-module-setup.md`, `step2-design-tokens.md`, `step3-apptheme.md`, `step4-stylescope-extensions.md`, `step5-variant-systems.md`, `step6-core-components.md`, `component-previews.md`, `step8-usage-patterns.md`, `testing.md`, `detekt-rules.md`, `screen-layout-contract.md`, `typography-scale-and-text-resilience.md`, `changelog.md` | This skill's own implementation content, split out of `SKILL.md` for progressive disclosure | Load the specific file named in the pointer left under the matching heading in `SKILL.md` |

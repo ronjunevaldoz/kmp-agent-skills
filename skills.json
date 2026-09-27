@@ -1,5 +1,5 @@
 {
-  "version": "3.0.13",
+  "version": "3.1.2",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -295,9 +295,9 @@
     {
       "name": "kmp-ci-github-actions",
       "path": "skills/kmp-ci-github-actions",
-      "description": "Sets up GitHub Actions CI for a Kotlin Multiplatform (KMP) project. Produces two workflow files: ci.yml (lint, Android tests, iOS tests, Desktop JVM tests, Web JS + WasmJs tests, Gradle cache) and release.yml (XCFramework build + upload artifact). All target platforms are covered. Assumes AGP 9+ and the project structure from kmp-feature-scaffold.",
+      "description": "Sets up GitHub Actions CI for a Kotlin Multiplatform (KMP) project. Produces two workflow files: ci.yml (lint, Android tests, iOS tests, Desktop JVM tests, Web JS + WasmJs tests, Gradle cache) and release.yml (XCFramework build + upload artifact). All target platforms are covered. Assumes AGP 9+ and the project structure from kmp-feature-scaffold. Optional third workflow comments before/after screenshot tables on pull requests (PR) from committed snapshot goldens.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-22",
+      "last_updated": "2026-09-27",
       "keywords": [
         "GitHub Actions",
         "CI/CD",
@@ -311,7 +311,9 @@
         "JS",
         "WasmJs",
         "XCFramework",
-        "Gradle cache"
+        "Gradle cache",
+        "pull request comment",
+        "PR screenshots"
       ],
       "triggers": [
         "set up CI",
@@ -341,7 +343,9 @@
         "act local runner",
         "koverVerify",
         "test coverage CI",
-        "coverage gate"
+        "coverage gate",
+        "PR screenshot comment",
+        "before/after comment"
       ],
       "scripts": []
     },
@@ -1399,9 +1403,9 @@
     {
       "name": "kmp-delivery-lifecycle",
       "path": "skills/kmp-delivery-lifecycle",
-      "description": "Enforce Definition of Ready (DoR), Definition of Done (DoD), and quality verification gates for Kotlin Multiplatform engineering. Use before picking up a task or feature to verify prerequisites, during implementation to validate UI and performance constraints, and before opening or merging Pull Requests to guarantee release-quality standards.",
+      "description": "Enforce Definition of Ready (DoR), Definition of Done (DoD), and quality verification gates for Kotlin Multiplatform engineering. Use before picking up a task or feature to verify prerequisites, during implementation to validate UI and performance constraints, and before opening or merging Pull Requests to guarantee release-quality standards. Load when opening a PR (gh pr create) that changes UI: it owns the before/after screenshot evidence rule for PR bodies and bug issues.",
       "license": "Apache-2.0",
-      "last_updated": "2026-09-18",
+      "last_updated": "2026-09-27",
       "keywords": [
         "definition of ready",
         "definition of done",
@@ -1413,7 +1417,12 @@
         "performance validation",
         "ui validation",
         "pr readiness",
-        "verification checklist"
+        "verification checklist",
+        "pull request",
+        "open a PR",
+        "gh pr create",
+        "before/after screenshots",
+        "visual evidence"
       ],
       "triggers": [
         "definition of ready",
@@ -1427,7 +1436,12 @@
         "readiness checklist",
         "done checklist",
         "ui validation",
-        "performance gate"
+        "performance gate",
+        "open a PR",
+        "pull request",
+        "gh pr create",
+        "before/after screenshots",
+        "visual evidence"
       ],
       "scripts": []
     },
@@ -1619,7 +1633,7 @@
       "path": "skills/kmp-expert",
       "description": "KMP Expert Orchestrator \u2014 maps all skills in this collection, their dependency order, and how to sequence them for any Kotlin Multiplatform project. Use this skill first to decide which other skill to invoke, in what order, for a given task. Covers: skill dependency graph, layer-by-layer build order, feature-slice assembly sequence, decision trees for the most common \"what do I use here?\" questions, and when to hand off to the project audit skill. This is a meta-skill; it delegates to domain skills for implementation and review, and it can turn confirmed audit findings into issue drafts or question drafts when the repo needs tracking. The long-term goal is to keep this skills collection aligned with the cleanest KMP architecture patterns possible.",
       "license": "Apache-2.0",
-      "last_updated": "2026-08-24",
+      "last_updated": "2026-09-27",
       "keywords": [
         "KMP expert",
         "orchestrator",
@@ -1848,7 +1862,7 @@
       "path": "skills/kmp-github-issue-governance",
       "description": "Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP repositories. Use when decomposing work into epics and sub-issues, preventing ticket spam or comment flooding, drafting bug reports and technical tasks, or transporting markdown payloads safely through the GitHub CLI without escaping corruption.",
       "license": "Apache-2.0",
-      "last_updated": "2026-09-14",
+      "last_updated": "2026-09-27",
       "keywords": [
         "github issue",
         "sub-issue",
@@ -3375,9 +3389,9 @@
     {
       "name": "kmp-roborazzi",
       "path": "skills/kmp-roborazzi",
-      "description": "Complete UI layer testing for KMP: semantic test tags on composables, Compose UI interaction tests in commonTest (runComposeUiTest, onNodeWithTag, performClick, assertIsDisplayed) that run on every target \u2014 JVM, Android instrumented, iOS simulator, Wasm \u2014 and Roborazzi screenshot tests that capture @Preview composables on JVM/Desktop for visual regression detection. Covers the full stack from testTag conventions to CI golden image diffs. Replaces kmp-testing-robot for UI regression testing.",
+      "description": "Complete UI layer testing for KMP: semantic test tags on composables, Compose UI interaction tests in commonTest (runComposeUiTest, onNodeWithTag, performClick, assertIsDisplayed) that run on every target \u2014 JVM, Android instrumented, iOS simulator, Wasm \u2014 and Roborazzi screenshot tests that capture @Preview composables on JVM/Desktop for visual regression detection. Covers the full stack from testTag conventions to CI golden image diffs, plus before/after screenshot evidence for pull request (PR) bodies built from committed goldens. Load when opening a PR that changes UI. Replaces kmp-testing-robot for UI regression testing.",
       "license": "Apache-2.0",
-      "last_updated": "2026-07-10",
+      "last_updated": "2026-09-27",
       "keywords": [
         "Roborazzi",
         "screenshot test",
@@ -3409,7 +3423,12 @@
         "position regression",
         "boundsInRoot",
         "fetchSemanticsNode",
-        "exact position diff"
+        "exact position diff",
+        "pull request",
+        "PR screenshots",
+        "before/after screenshots",
+        "visual evidence",
+        "gh pr create"
       ],
       "triggers": [
         "screenshot test",
@@ -3457,9 +3476,16 @@
         "test resizable panel",
         "test scrollbar",
         "boundsInRoot",
-        "layout stability test"
+        "layout stability test",
+        "open a PR",
+        "pull request",
+        "PR screenshots",
+        "before/after screenshots",
+        "visual evidence"
       ],
-      "scripts": []
+      "scripts": [
+        "pr_visual_evidence.py"
+      ]
     },
     {
       "name": "kmp-security",

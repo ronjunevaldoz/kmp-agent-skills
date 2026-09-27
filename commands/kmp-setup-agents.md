@@ -1,3 +1,8 @@
+---
+description: "Initialize `.agents/` in an existing KMP project so the team gets agent-driven workflows without running the full scaffold."
+argument-hint: "[arguments]"
+---
+
 # /kmp-setup-agents $ARGUMENTS
 
 **KMP Agent Skills** — initialize `.agents/` in an existing KMP project so the team

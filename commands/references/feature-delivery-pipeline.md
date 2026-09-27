@@ -1,3 +1,7 @@
+---
+description: "Shared plan/implement/validate/review pipeline referenced by /kmp-execute-ticket and /kmp-implement-feature. Not a standalone command."
+---
+
 # Feature Delivery Pipeline
 
 Use this shared pipeline after the command-specific intake and before its wrap-up steps.

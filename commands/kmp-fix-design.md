@@ -1,3 +1,7 @@
+---
+description: "Scans an existing KMP project for design-system usage violations, fixes them file-by-file with per-file confirmation, then re-runs Roborazzi screenshot tests and uses Claude vision to verify each fix looks correct before moving on."
+---
+
 # /kmp-fix-design
 
 Scans an existing KMP project for design-system usage violations, fixes them

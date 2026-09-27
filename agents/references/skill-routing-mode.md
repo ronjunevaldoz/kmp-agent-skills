@@ -1,3 +1,8 @@
+---
+name: ref-skill-routing-mode
+description: "Mode reference loaded by a role agent: KMP Agent Skills \u2014 Router. Not a standalone plugin agent."
+---
+
 # KMP Agent Skills — Router
 
 Part of the **KMP Agent Skills pipeline**. Decides which skill to invoke and in what

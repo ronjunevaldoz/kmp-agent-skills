@@ -1,3 +1,8 @@
+---
+description: "Take a ticket from GitHub Issues (or any tracker) and ship a complete KMP feature implementation: branched, layered, Koin-wired, tested, and committed."
+argument-hint: "[arguments]"
+---
+
 # /kmp-execute-ticket $ARGUMENTS
 
 **KMP Agent Skills** — take a ticket from GitHub Issues (or any tracker) and ship a

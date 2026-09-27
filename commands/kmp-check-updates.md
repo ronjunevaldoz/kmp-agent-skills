@@ -1,3 +1,7 @@
+---
+description: "Check whether the local skills collection is behind `origin/main` on github.com/ronjunevaldoz/kmp-agent-skills."
+---
+
 # /kmp-check-updates
 
 **KMP Agent Skills** — check whether the local skills collection is behind

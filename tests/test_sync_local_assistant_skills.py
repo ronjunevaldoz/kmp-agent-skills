@@ -72,6 +72,24 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             self.assertFalse(old_backup.exists(), "old backup not pruned")
             self.assertEqual(len(list((home / ".codex").glob("skills-backup-kmp-agent-skills-*"))), 1)
 
+    def test_skips_claude_targets_when_plugin_installed(self) -> None:
+        # With the Claude Code plugin installed, syncing ~/.claude too would list every skill twice.
+        with tempfile.TemporaryDirectory() as tmp:
+            source = self._fake_source(tmp)
+            home = Path(tmp) / "home"
+            (home / ".claude" / "plugins").mkdir(parents=True)
+            (home / ".claude" / "plugins" / "installed_plugins.json").write_text(json.dumps(
+                {"version": 2, "plugins": {"kmp-agent-skills@kmp-agent-skills": [{"scope": "user"}]}}))
+            result = subprocess.run(
+                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn(".claude/skills", result.stdout)
+        self.assertNotIn(".claude/commands", result.stdout)
+        self.assertIn(".codex/skills", result.stdout)
+        self.assertIn("plugin installed", result.stdout)
+
     def test_missing_source_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             empty = Path(tmp) / "not-a-skills-repo"

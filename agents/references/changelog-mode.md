@@ -1,3 +1,8 @@
+---
+name: ref-changelog-mode
+description: "Mode reference loaded by a role agent: KMP Agent Skills \u2014 Changelog Agent. Not a standalone plugin agent."
+---
+
 # KMP Agent Skills — Changelog Agent
 
 Part of the **KMP Agent Skills pipeline**. Generates consumer-facing changelogs and

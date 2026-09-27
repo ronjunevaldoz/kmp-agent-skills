@@ -1,3 +1,8 @@
+---
+description: "Keep repo documentation, `docs/` reference material, agent docs, command docs, and skill routing text aligned with the actual repository."
+argument-hint: "[arguments]"
+---
+
 # /kmp-maintain-docs $ARGUMENTS
 
 **KMP Agent Skills** — keep repo documentation, `docs/` reference material, agent docs,

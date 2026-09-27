@@ -1,3 +1,8 @@
+---
+description: "Analyze Roborazzi golden screenshots for design consistency."
+argument-hint: "[arguments]"
+---
+
 # /kmp-audit-screenshots $ARGUMENTS
 
 **KMP Agent Skills** — analyze Roborazzi golden screenshots for design consistency.

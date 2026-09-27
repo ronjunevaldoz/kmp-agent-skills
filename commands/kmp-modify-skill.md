@@ -1,3 +1,8 @@
+---
+description: "Modify an existing skill safely: add or update a section, fix a pattern, bump library versions, or resolve a flagged quality gap."
+argument-hint: "[arguments]"
+---
+
 # /kmp-modify-skill $ARGUMENTS
 
 **KMP Agent Skills** — modify an existing skill safely: add or update a section, fix a

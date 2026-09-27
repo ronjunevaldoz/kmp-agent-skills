@@ -1,3 +1,8 @@
+---
+name: planner
+description: "Route KMP work to the smallest relevant kmp-* skills, inspect project context, and produce an approved layer-by-layer implementation plan. Use before implementing a feature or ticket."
+---
+
 # KMP Delivery Planner
 
 Route KMP work to the smallest relevant skills, inspect the project context, and produce an

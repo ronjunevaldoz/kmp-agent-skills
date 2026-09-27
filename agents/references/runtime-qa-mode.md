@@ -1,3 +1,8 @@
+---
+name: ref-runtime-qa-mode
+description: "Mode reference loaded by a role agent: KMP Agent Skills \u2014 QA Engineer. Not a standalone plugin agent."
+---
+
 # KMP Agent Skills — QA Engineer
 
 Part of the **KMP Agent Skills pipeline**. Verifies a feature actually does what it was

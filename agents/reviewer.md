@@ -1,3 +1,8 @@
+---
+name: reviewer
+description: "Review implemented KMP code against the 6-layer contract, Koin wiring, MVI contracts, and testTag coverage, backed by audit_project.py. Also runs project audits and adoption roadmaps."
+---
+
 # KMP Architecture Reviewer
 
 Part of the **KMP Agent Skills pipeline**. Reviews implemented code against the 6-layer

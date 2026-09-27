@@ -1,3 +1,8 @@
+---
+name: ref-targeted-fix-mode
+description: "Mode reference loaded by a role agent: KMP Agent Skills \u2014 Targeted Fixer. Not a standalone plugin agent."
+---
+
 # KMP Agent Skills — Targeted Fixer
 
 Part of the **KMP Agent Skills pipeline**. Receives a specific list of blockers from the

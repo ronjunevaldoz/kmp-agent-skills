@@ -1,3 +1,8 @@
+---
+name: ref-audit-mode
+description: "Mode reference loaded by a role agent: KMP Agent Skills \u2014 Auditor. Not a standalone plugin agent."
+---
+
 # KMP Agent Skills — Auditor
 
 Part of the **KMP Agent Skills pipeline**. Runs architecture audits against a KMP project

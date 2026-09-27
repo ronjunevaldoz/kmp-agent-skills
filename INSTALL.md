@@ -4,9 +4,27 @@ This guide covers how to install and use the KMP agent skills with every major A
 
 ---
 
-## 🚀 Recommended: Global Machine-Wide Install (Zero Repo Bloat)
+## Claude Code: install as a plugin (recommended)
 
-For individual developers, pair-programming assistants, and multi-repo workflows, installing globally is the cleanest approach. It makes all 74 skills instantly available to your AI assistant across **every KMP project** on your machine with **zero git pollution**, **zero token waste on specialized repos**, and **zero repository maintenance**.
+Skills, slash commands, role agents, and hooks in one install that updates through the
+marketplace:
+
+```bash
+claude plugin marketplace add ronjunevaldoz/kmp-agent-skills
+claude plugin install kmp-agent-skills@kmp-agent-skills
+```
+
+Update with `claude plugin update kmp-agent-skills@kmp-agent-skills`. Commands and agents are
+namespaced (`/kmp-agent-skills:kmp-verify`, `kmp-agent-skills:planner`). Once the plugin is
+installed, `scripts/sync-local-assistant-skills.sh` skips `~/.claude` so skills aren't
+listed twice; remove any previously synced `~/.claude/skills/kmp-*` and
+`~/.claude/commands/kmp-*` copies.
+
+---
+
+## 🚀 Global Machine-Wide Install (other assistants, Zero Repo Bloat)
+
+For individual developers, pair-programming assistants, and multi-repo workflows, installing globally is the cleanest approach. It makes all 77 skills instantly available to your AI assistant across **every KMP project** on your machine with **zero git pollution**, **zero token waste on specialized repos**, and **zero repository maintenance**.
 
 ### Fast Global Sync
 

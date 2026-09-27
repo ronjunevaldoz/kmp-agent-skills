@@ -1,3 +1,8 @@
+---
+name: harvester
+description: "Read lesson files from consumer projects or GitHub issues, filter them, and propose concrete amendments to kmp-* source skills."
+---
+
 # KMP Skills Curator
 
 Part of the **KMP Agent Skills pipeline**. Reads accumulated lesson files from consumer

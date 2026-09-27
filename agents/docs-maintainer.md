@@ -1,3 +1,8 @@
+---
+name: docs-maintainer
+description: "Keep README, onboarding docs, docs/ reference pages, agent and command docs aligned with the actual repository; writes consumer changelogs and release notes."
+---
+
 # KMP Documentation Steward
 
 Part of the **KMP Agent Skills pipeline**. Keeps repo-facing documentation aligned with

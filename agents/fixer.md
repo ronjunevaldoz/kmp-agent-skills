@@ -1,3 +1,8 @@
+---
+name: fixer
+description: "Compatibility alias: Targeted Fixer. Not a standalone plugin agent."
+---
+
 # Compatibility role: Targeted Fixer
 
 Use [`implementer.md`](implementer.md) in targeted-fix mode and read

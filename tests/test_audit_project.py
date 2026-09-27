@@ -4319,6 +4319,19 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             findings = audit_scripts._detect_agent_setup(root)
             self.assertTrue(any(".agents/skills/ missing or empty" in f for f in findings))
 
+    def test_plugin_install_does_not_require_vendored_skills_or_commands(self) -> None:
+        # Installed as a Claude Code plugin, skills and commands ship with the plugin, so the
+        # plugin's own edit hook must not demand a vendored .agents/skills/ on every edit.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "settings.gradle.kts").write_text('rootProject.name = "demo"\n', encoding="utf-8")
+            without = audit_scripts._detect_agent_setup(root)
+            with mock.patch.dict("os.environ", {"CLAUDE_PLUGIN_ROOT": "/plugin"}):
+                with_plugin = audit_scripts._detect_agent_setup(root)
+            for needle in (".agents/skills/ missing", ".agents/commands/ missing"):
+                self.assertTrue(any(needle in f for f in without), needle)
+                self.assertFalse(any(needle in f for f in with_plugin), needle)
+
     def test_warns_redundant_when_claude_skills_mirror_matches_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -1,3 +1,8 @@
+---
+description: "Update `kmp-agent-skills` to the latest release across global assistant bundles or consumer projects."
+argument-hint: "[arguments]"
+---
+
 # /kmp-update-skills $ARGUMENTS
 
 Update `kmp-agent-skills` to the latest release across global assistant bundles or consumer projects.

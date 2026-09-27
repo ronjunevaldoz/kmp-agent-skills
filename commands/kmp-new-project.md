@@ -1,3 +1,8 @@
+---
+description: "Scaffold a complete KMP project from a natural language description."
+argument-hint: "[arguments]"
+---
+
 # /kmp-new-project $ARGUMENTS
 
 **KMP Agent Skills** — scaffold a complete KMP project from a natural language description.

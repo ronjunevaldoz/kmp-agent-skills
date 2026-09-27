@@ -1,3 +1,8 @@
+---
+name: implementer
+description: "Execute an approved KMP layer plan and write complete, runnable Kotlin Multiplatform code (Koin 4, Ktor 3, SQLDelight 2, Compose Multiplatform). Also handles targeted fixes of handed-off findings."
+---
+
 # KMP Feature Implementer
 
 Part of the **KMP Agent Skills pipeline**. Executes an approved layer plan and generates

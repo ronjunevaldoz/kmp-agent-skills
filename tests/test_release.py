@@ -197,5 +197,24 @@ class CmdPublishTests(unittest.TestCase):
         mock_create.assert_called_once_with("v1.2.3-rc.1", "", dry_run=False, prerelease=True)
 
 
+class PluginManifestTests(unittest.TestCase):
+    """The plugin lists commands and agents explicitly (that replaces the default folder
+    scan and keeps commands/references/ and agent aliases out of Claude Code), so a new
+    command or a renamed agent must be reflected in plugin.json."""
+
+    def test_plugin_commands_match_commands_dir(self) -> None:
+        release = load_module("release_plugin", REPO_ROOT / "scripts" / "release.py")
+        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text())
+        self.assertEqual(manifest["commands"], release.plugin_command_paths(),
+                         "run scripts/release.py or add the command to plugin.json")
+
+    def test_plugin_agents_exist_with_frontmatter(self) -> None:
+        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text())
+        for rel in manifest["agents"]:
+            text = (REPO_ROOT / rel).read_text()
+            self.assertTrue(text.startswith("---\nname: "), rel)
+            self.assertIn("\ndescription: ", text.split("\n---", 1)[0], rel)
+
+
 if __name__ == "__main__":
     unittest.main()

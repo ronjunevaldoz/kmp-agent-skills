@@ -52,8 +52,8 @@ class DocsScopeBoundaryTests(unittest.TestCase):
 
         self.assertIn("repo-internal docs", docs_maintainer)
         self.assertIn("downstream consumer docs", docs_maintainer)
-        self.assertIn("repo-internal docs -> `docs-maintainer`", planner)
-        self.assertIn("downstream consumer docs -> `project-docs-maintainer`", planner)
+        self.assertIn("repo-internal docs to `agents/docs-maintainer.md`", planner)
+        self.assertIn("downstream consumer docs to `kmp-project-docs-maintainer`", planner)
         self.assertIn("docs scope guard", expert)
         self.assertIn("repo-internal docs", expert)
         self.assertIn("downstream consumer docs", expert)

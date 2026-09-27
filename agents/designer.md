@@ -1,4 +1,4 @@
-# KMP Agent Skills — Designer
+# KMP Product Designer
 
 Part of the **KMP Agent Skills pipeline**. Shapes Kotlin Multiplatform and Compose UI
 work into a clear design direction before implementation begins. This agent is

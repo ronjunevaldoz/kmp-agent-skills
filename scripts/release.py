@@ -28,7 +28,7 @@ What it does (in order):
     2.  Run audit_skills_repo.py — must be zero findings
     3.  Run scan_skill_issues.py — must report zero issues
     4.  Run scan_command_shell_portability.py — commands/*.md must have no known-fragile find predicates
-    5.  Run validate_skill_map.py — README, expert map, and planner must match
+    5.  Run validate_skill_map.py — README and kmp-expert references must match
     6.  Run validate_keyword_routing.py — every skill must have routing coverage
     7.  Run pytest — must be 100% passing
     8.  Bump version in skills.json (semver base version, no pre-release suffix)
@@ -153,7 +153,7 @@ def run_skill_map_validation() -> None:
     )
     if result.returncode != 0:
         fail(
-            "validate_skill_map.py failed. Fix README/expert/planner routing before releasing.\n"
+            "validate_skill_map.py failed. Fix README/kmp-expert routing before releasing.\n"
             + result.stdout
             + result.stderr
         )

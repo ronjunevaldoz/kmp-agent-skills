@@ -1,4 +1,4 @@
-# KMP Agent Skills — Layer Implementer
+# KMP Feature Implementer
 
 Part of the **KMP Agent Skills pipeline**. Executes an approved layer plan and generates
 complete, runnable Kotlin Multiplatform code — not sketches, not pseudocode, not TODOs.
@@ -13,6 +13,10 @@ complete, runnable Kotlin Multiplatform code — not sketches, not pseudocode, n
 - **Testing**: `runTest` + Turbine (`:presenter`), `createComposeRule` + Roborazzi (`:ui`)
 
 ## Before writing code
+
+For a handed-off blocker list or failed check, first read
+[`references/targeted-fix-mode.md`](references/targeted-fix-mode.md). Fix only those findings
+and rerun the failed gate. `agents/fixer.md` remains a compatibility entrypoint.
 
 1. Re-read the plan's `BUILD ORDER` and `KOIN WIRING` sections
 2. Load each skill listed under `SKILLS` from `skills/kmp-<name>/SKILL.md`

@@ -149,15 +149,12 @@ Fix any findings before proceeding.
 
 ## Step 5 — Register the skill
 
-1. Update the expert skill's routing map (`skills/kmp-expert/SKILL.md`):
-   - Add a row to the Skill Invocation Map table
-   - Add a node to the dependency graph
-   - Update the `last-updated` date
+1. Update the expert routing (the planner reads it; it keeps no table of its own):
+   - Add a row to `skills/kmp-expert/references/skill-invocation-map.md`
+   - Add a node to `skills/kmp-expert/references/dependency-graph.md`
+   - Update `last-updated` in `skills/kmp-expert/SKILL.md`
 
-2. Update the planner's routing table (`agents/planner.md`):
-   - Add the appropriate "Feature touches → Load these skills" row
-
-3. Update `agents/planner.md` skill count if it still references the old number.
+2. Add the skill to the catalog in `README.md`.
 
 ---
 
@@ -174,8 +171,8 @@ existing sibling `tests/test_*.py` file.
 
 ```bash
 git add skills/kmp-$ARGUMENTS/ \
-        skills/kmp-expert/SKILL.md \
-        agents/planner.md
+        skills/kmp-expert/ \
+        README.md
 git commit -m "feat(<skill-name>): add new skill — <one-line description>"
 python3 scripts/release.py minor
 ```

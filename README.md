@@ -233,6 +233,27 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 
 ---
 
+## Agent roles
+
+Agents are role-based coordinators; skills are reusable capabilities. The core workflow uses
+seven roles, loading detailed procedures only when needed:
+
+| Role | Entry point | Owns |
+|---|---|---|
+| Delivery planner | [`agents/planner.md`](agents/planner.md) | Select skills and sequence work |
+| Feature implementer | [`agents/implementer.md`](agents/implementer.md) | Implement approved plans and targeted fixes |
+| Verification engineer | [`agents/validator.md`](agents/validator.md) | Build/test gates and behavior verification |
+| Architecture reviewer | [`agents/reviewer.md`](agents/reviewer.md) | Focused review, audit, and adoption roadmap |
+| Documentation steward | [`agents/docs-maintainer.md`](agents/docs-maintainer.md) | Repository docs and release notes |
+| Product designer | [`agents/designer.md`](agents/designer.md) | UI design direction and handoff |
+| Skills curator | [`agents/harvester.md`](agents/harvester.md) | Review lessons and propose skill updates |
+
+Existing paths (`router`, `fixer`, `qa-engineer`, `auditor`, and `changelog`) remain as short
+compatibility entrypoints. Skill IDs and their `kmp-` namespace are unchanged so installed
+invocations, routing, and lockfiles continue to work.
+
+---
+
 ## Commands
 
 All commands are `kmp-` prefixed so they don't collide with your own command namespace.

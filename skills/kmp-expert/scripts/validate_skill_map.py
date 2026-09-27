@@ -5,17 +5,6 @@ import re
 import sys
 from pathlib import Path
 
-
-SKILL_NAME_RE = re.compile(r"kmp-[a-z0-9-]+")
-
-# Meta-skills that should not appear in the planner routing table because they
-# are repo-management tools, not feature-building guides.
-SKIP_PLANNER = {
-    "kmp-audit",   # code quality tool loaded by run-audit, not planner
-    "kmp-expert",  # the routing meta-skill itself
-}
-
-
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -33,12 +22,8 @@ def validate_skill_map(repo_root: Path) -> list[str]:
     readme_text = read_text(readme_path)
     expert_text = read_text(expert_path)
 
-    # A skill only needing an invocation-map mention (not a full layer-table row) can
-    # live entirely inside a references/*.md pointer section (e.g. Skill Invocation Map
-    # once it outgrew the line cap) — concatenate those in too, or a skill mentioned
-    # only there reads as "missing from expert" when it isn't. Found real:
-    # kmp-token-saver had no layer-table row, only an invocation-map mention, and that
-    # mention moved to references/skill-invocation-map.md the moment the map was split.
+    # The invocation map and detailed routing tables are canonical references so the
+    # planner agent does not duplicate the entire skill catalog.
     expert_references_dir = expert_path.parent / "references"
     expert_search_text = expert_text + "\n" + "\n".join(
         read_text(p) for p in sorted(expert_references_dir.glob("*.md"))
@@ -80,34 +65,6 @@ def validate_skill_map(repo_root: Path) -> list[str]:
         if count_phrase not in standards_text:
             errors.append(f"agentskills-io-standards.md is missing the current count phrase {count_phrase!r} — a skill-count summary line has likely gone stale")
 
-    # Found real: agents/planner.md said "Our 66 skills cover distinct concerns" while
-    # the repo had 69 — three releases stale, because this check only ever covered
-    # README.md and agentskills-io-standards.md. planner.md wasn't in scope even though
-    # it has its own hand-typed count-mention, the exact class of bug this whole
-    # mechanism exists to catch.
-    planner_path = repo_root / "agents" / "planner.md"
-    if planner_path.exists():
-        planner_text = read_text(planner_path)
-        if count_phrase not in planner_text:
-            errors.append(f"agents/planner.md is missing the current count phrase {count_phrase!r} — a skill-count summary line has likely gone stale")
-
-    # Check that every skill has at least one routing row in agents/planner.md.
-    # The planner uses short names (e.g. "logging") stripped of the
-    # "kmp-" prefix; non-standard prefixes (e.g. "jni-kotlin-pro")
-    # are kept as-is.
-    planner_path = repo_root / "agents" / "planner.md"
-    if planner_path.exists():
-        planner_text = read_text(planner_path)
-        missing_in_planner: list[str] = []
-        for name in sorted(skill_names - SKIP_PLANNER):
-            short = name.removeprefix("kmp-")
-            if short not in planner_text and name not in planner_text:
-                missing_in_planner.append(name)
-        if missing_in_planner:
-            errors.append("missing from planner routing table: " + ", ".join(missing_in_planner))
-    else:
-        errors.append("agents/planner.md not found — cannot validate planner routing")
-
     return errors
 
 
@@ -131,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     skill_count = len({p.parent for p in (args.repo_root / "skills").glob("*/SKILL.md") if p.is_file()})
-    print(f"OK: {skill_count} skills indexed in README, expert map, and planner routing table")
+    print(f"OK: {skill_count} skills indexed in README and expert references")
     return 0
 
 

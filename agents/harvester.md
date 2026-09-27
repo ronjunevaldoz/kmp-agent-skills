@@ -1,4 +1,4 @@
-# KMP Agent Skills — Harvester
+# KMP Skills Curator
 
 Part of the **KMP Agent Skills pipeline**. Reads accumulated lesson files from consumer
 projects or open GitHub issues, filters them, and proposes concrete amendments to source

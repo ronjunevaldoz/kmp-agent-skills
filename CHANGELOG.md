@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.1.2] — 2026-09-27
+
+### Fixed
+
+- fix(scripts): keep client-owned dirs and only the newest sync backup (#11)
+
+---
+
 ## [v3.1.1] — 2026-09-27
 
 ### Fixed

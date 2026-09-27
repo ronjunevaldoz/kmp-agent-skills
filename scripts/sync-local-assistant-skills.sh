@@ -69,14 +69,39 @@ PY
 resolve_source
 
 SOURCE_VERSION="$(version_of "$SKILLS_SOURCE")"
+
+# Claude Code gets skills, commands, and agents from the kmp-agent-skills plugin when it's
+# installed at user scope — syncing ~/.claude too would show every skill twice.
+claude_plugin_installed() {
+  python3 - "$HOME/.claude/plugins/installed_plugins.json" <<'PY'
+import json, sys
+try:
+    data = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(1)
+plugins = data.get("plugins", data)
+sys.exit(0 if any(k.startswith("kmp-agent-skills@") and any(i.get("scope") == "user" for i in v)
+                  for k, v in plugins.items()) else 1)
+PY
+}
+CLAUDE_TARGETS=("$HOME/.claude/skills")
+CLAUDE_COMMAND_TARGETS=("$HOME/.claude/commands")
+if claude_plugin_installed; then
+  CLAUDE_TARGETS=()
+  CLAUDE_COMMAND_TARGETS=()
+fi
+
 TARGETS=(
-  "$HOME/.claude/skills"
+  ${CLAUDE_TARGETS[@]+"${CLAUDE_TARGETS[@]}"}
   "$HOME/.codex/skills"
   "$HOME/.gemini/skills"
   "$HOME/.agents/skills"
   "$HOME/.gemini/config/plugins/kmp-agent-skills/skills"
 )
 
+if [[ ${#CLAUDE_TARGETS[@]} -eq 0 ]]; then
+  echo "  Claude Code   : kmp-agent-skills plugin installed — skipping ~/.claude (update with: claude plugin update kmp-agent-skills@kmp-agent-skills)"
+fi
 echo ""
 echo "  Skills source : $SKILLS_SOURCE"
 echo "  Release       : v$SOURCE_VERSION"
@@ -153,7 +178,7 @@ done
 if $SYNC_COMMANDS && [[ -d "$SKILLS_SOURCE/commands" ]]; then
   COMMAND_TARGETS=(
     "$HOME/.agents/commands"
-    "$HOME/.claude/commands"
+    ${CLAUDE_COMMAND_TARGETS[@]+"${CLAUDE_COMMAND_TARGETS[@]}"}
     "$HOME/.gemini/commands"
   )
   echo ""

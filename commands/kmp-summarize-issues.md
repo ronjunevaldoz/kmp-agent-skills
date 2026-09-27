@@ -1,3 +1,7 @@
+---
+description: "Scan all skills for quality gaps and generate a numbered list of actionable fix prompts you can paste directly into the chat to trigger each fix."
+---
+
 # /kmp-summarize-issues
 
 **KMP Agent Skills** — scan all skills for quality gaps and generate a numbered list

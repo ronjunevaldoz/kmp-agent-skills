@@ -1,3 +1,7 @@
+---
+description: "Wire the provided hooks into your project so the pipeline enforces architecture rules automatically, without requiring you to remember to run them."
+---
+
 # /kmp-setup-hooks
 
 **KMP Agent Skills** — wire the provided hooks into your project so the pipeline
@@ -83,7 +87,7 @@ Add to your Claude Code `settings.json` (open via **Claude Code → Settings →
         "hooks": [
           {
             "type": "command",
-            "command": "<path-to-skills-repo>/hooks/validate-architecture.sh \"$CLAUDE_TOOL_INPUT_FILE_PATH\""
+            "command": "<path-to-skills-repo>/hooks/validate-architecture.sh"
           }
         ]
       }
@@ -321,7 +325,7 @@ unnoticed until `audit_project.py`'s agent-setup drift check catches it after th
         "hooks": [
           {
             "type": "command",
-            "command": "<path-to-skills-repo>/hooks/block-edit-vendored-skills.sh \"$CLAUDE_TOOL_INPUT_FILE_PATH\""
+            "command": "<path-to-skills-repo>/hooks/block-edit-vendored-skills.sh"
           }
         ]
       }

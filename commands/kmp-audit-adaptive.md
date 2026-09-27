@@ -1,3 +1,8 @@
+---
+description: "Check every screen for adaptive layout coverage gaps and redundant title violations across Compact (phone), Medium (tablet), and Expanded (desktop)."
+argument-hint: "[arguments]"
+---
+
 # /kmp-audit-adaptive $ARGUMENTS
 
 **KMP Agent Skills** — check every screen for adaptive layout coverage gaps and

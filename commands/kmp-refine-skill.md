@@ -1,3 +1,8 @@
+---
+description: "Refine a *project-owned* skill (one your own project authored under its own `skills/<name>/`) against agentskills.io's real qualitative best practices."
+argument-hint: "[arguments]"
+---
+
 # /kmp-refine-skill $ARGUMENTS
 
 **KMP Agent Skills** — refine a *project-owned* skill (one your own project authored

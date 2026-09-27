@@ -1,3 +1,7 @@
+---
+description: "Runs a visual-only audit of your app's Roborazzi screenshots using Claude vision."
+---
+
 # /kmp-audit-design-visual
 
 Runs a visual-only audit of your app's Roborazzi screenshots using Claude vision.

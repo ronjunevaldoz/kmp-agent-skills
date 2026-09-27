@@ -1,3 +1,8 @@
+---
+description: "Generate consumer-facing release notes and update per-skill `## Changelog` sections."
+argument-hint: "[arguments]"
+---
+
 # /kmp-release-notes $ARGUMENTS
 
 **KMP Agent Skills** — generate consumer-facing release notes and update per-skill

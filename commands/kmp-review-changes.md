@@ -1,3 +1,7 @@
+---
+description: "Review everything in the current working tree against the 6-layer contract, Koin wiring rules, MVI contracts, and testTag coverage."
+---
+
 # /kmp-review-changes
 
 **KMP Agent Skills** — review everything in the current working tree against the

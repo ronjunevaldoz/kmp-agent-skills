@@ -1,3 +1,8 @@
+---
+description: "Scan a consumer KMP project for positive patterns and propose skill improvements to upstream back into kmp-agent-skills."
+argument-hint: "[arguments]"
+---
+
 # /kmp-harvest-lessons $ARGUMENTS
 
 **KMP Agent Skills** — scan a consumer KMP project for positive patterns and propose

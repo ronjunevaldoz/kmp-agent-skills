@@ -303,8 +303,24 @@ All commands are `kmp-` prefixed so they don't collide with your own command nam
 
 ## Installation
 
-### 🚀 Recommended: Global Machine-Wide Install (Zero Git Bloat)
-Install once to make all 77 skills available across all your KMP projects (Claude Code, Gemini CLI, Codex, Cursor):
+### Claude Code: install as a plugin (recommended)
+
+Skills, slash commands, role agents, and hooks in one install that updates through the
+marketplace:
+
+```bash
+claude plugin marketplace add ronjunevaldoz/kmp-agent-skills
+claude plugin install kmp-agent-skills@kmp-agent-skills
+```
+
+Update with `claude plugin update kmp-agent-skills@kmp-agent-skills`. Commands and agents are
+namespaced (`/kmp-agent-skills:kmp-verify`, `kmp-agent-skills:planner`). Once the plugin is
+installed, `scripts/sync-local-assistant-skills.sh` skips `~/.claude` so skills aren't
+listed twice; remove any previously synced `~/.claude/skills/kmp-*` and
+`~/.claude/commands/kmp-*` copies.
+
+### 🚀 Global Machine-Wide Install (Codex, Gemini CLI, Cursor, and other agents)
+Install once to make all 77 skills available across all your KMP projects:
 
 ```bash
 # Sync latest released skills globally (~/.claude, ~/.gemini, ~/.codex, ~/.agents)

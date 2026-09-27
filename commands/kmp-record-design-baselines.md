@@ -1,3 +1,7 @@
+---
+description: "Records Roborazzi golden screenshot baselines for the design system and all feature screens."
+---
+
 # /kmp-record-design-baselines
 
 Records Roborazzi golden screenshot baselines for the design system and all

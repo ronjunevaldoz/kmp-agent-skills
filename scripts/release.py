@@ -68,6 +68,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent
 SKILLS_JSON = REPO_ROOT / "skills.json"
 PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
+MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 PLAN_MD = REPO_ROOT / "PLAN.md"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 SKILLS_DIR = REPO_ROOT / "skills"
@@ -294,8 +295,30 @@ def update_plugin_json(new_version: str) -> None:
         return
     manifest = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
     manifest["version"] = new_version
+    # An explicit `commands` list replaces the default scan (keeps commands/references/
+    # out of the slash menu), so every new command must be registered here.
+    manifest["commands"] = plugin_command_paths()
     PLUGIN_JSON.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     ok(f".claude-plugin/plugin.json updated — version {new_version}")
+
+    if MARKETPLACE_JSON.exists():
+        market = json.loads(MARKETPLACE_JSON.read_text(encoding="utf-8"))
+        skill_count = len(list((REPO_ROOT / "skills").glob("*/SKILL.md")))
+        for entry in market.get("plugins", []):
+            if entry.get("name") == manifest["name"]:
+                entry["version"] = new_version
+                entry["description"] = (
+                    f"{skill_count} Kotlin Multiplatform agent skills, {len(manifest['commands'])} "
+                    f"slash commands, and {len(manifest.get('agents', []))} role agents covering the "
+                    "full KMP stack: architecture, MVI, networking, persistence, design systems, "
+                    "testing, and release."
+                )
+        MARKETPLACE_JSON.write_text(json.dumps(market, indent=2) + "\n", encoding="utf-8")
+        ok(".claude-plugin/marketplace.json updated — counts and version")
+
+
+def plugin_command_paths() -> list[str]:
+    return [f"./commands/{p.name}" for p in sorted((REPO_ROOT / "commands").glob("*.md"))]
 
 
 def update_skills_report() -> None:
@@ -523,7 +546,7 @@ def git_commit_and_tag(
         return
 
     run([
-        "git", "add", "skills.json", ".claude-plugin/plugin.json",
+        "git", "add", "skills.json", ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json",
         "PLAN.md", "CHANGELOG.md", "docs/reference/skills-report.md",
     ])
     run(["git", "commit", "-m", msg])

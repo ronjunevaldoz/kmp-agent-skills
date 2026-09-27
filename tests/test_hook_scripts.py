@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -231,7 +232,38 @@ class HookScriptTests(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0)
 
+    def test_validate_arch_reads_hook_stdin_and_skips_non_gradle_project(self) -> None:
+        # Real plugin bug: hooks.json passed $CLAUDE_TOOL_INPUT_FILE_PATH, which Claude Code
+        # never sets (hook input is JSON on stdin), and the audit root defaulted to the
+        # plugin's own folder instead of $CLAUDE_PROJECT_DIR.
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "CLAUDE_PROJECT_DIR": tmp}
+            skipped = subprocess.run(
+                ["bash", str(HOOKS_DIR / "validate-architecture.sh")],
+                input=json.dumps({"tool_input": {"file_path": "src/Foo.kt"}}).encode(),
+                capture_output=True, env=env,
+            )
+            self.assertEqual((skipped.returncode, skipped.stdout), (0, b""),
+                             "non-Gradle project must not be audited")
+
+            (Path(tmp) / "settings.gradle.kts").write_text('rootProject.name = "demo"\n')
+            non_kotlin = subprocess.run(
+                ["bash", str(HOOKS_DIR / "validate-architecture.sh")],
+                input=json.dumps({"tool_input": {"file_path": "notes.txt"}}).encode(),
+                capture_output=True, env=env,
+            )
+            self.assertEqual((non_kotlin.returncode, non_kotlin.stdout), (0, b""),
+                             "stdin file_path must drive the extension filter")
+
     # --- block-edit-vendored-skills.sh ---
+
+    def test_blocks_mirror_edit_from_hook_stdin(self) -> None:
+        payload = json.dumps({"tool_input": {"file_path": "/p/.claude/skills/kmp-mvi/SKILL.md"}})
+        result = subprocess.run(
+            ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh")],
+            input=payload.encode(), capture_output=True,
+        )
+        self.assertEqual(result.returncode, 2, result.stderr.decode())
 
     def test_blocks_edit_under_each_mirror_path(self) -> None:
         mirror_paths = [

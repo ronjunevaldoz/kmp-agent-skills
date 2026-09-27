@@ -1,3 +1,7 @@
+---
+description: "Compares the current KMP project's `:core:designsystem/components` against the reference implementations in the `kmp-compose-design-system` skill and applies safe updates."
+---
+
 # /kmp-update-design-system
 
 Compares the current KMP project's `:core:designsystem/components` against the reference

@@ -12,13 +12,20 @@
 # filters by tool; this script only decides whether the target path is a
 # deployed mirror.
 #
-# Usage: block-edit-vendored-skills.sh <target-file-path>
+# Usage: block-edit-vendored-skills.sh [target-file-path]   (else read from stdin JSON)
 #   Exit 2 blocks the tool call (Claude Code shows stderr to the agent).
 #   Exit 0 allows it (not a mirror path, or no path given).
 
 set -euo pipefail
 
 TARGET="${1:-}"
+# Claude Code sends hook input as JSON on stdin (tool_input.file_path); the positional
+# argument is for tests and manual runs. select() keeps a never-closed stdin from hanging.
+if [[ -z "$TARGET" && ! -t 0 ]]; then
+  TARGET="$(python3 -c 'import json,select,sys
+r, _, _ = select.select([sys.stdin], [], [], 1)
+print((json.load(sys.stdin).get("tool_input") or {}).get("file_path", "") if r else "")' 2>/dev/null || true)"
+fi
 
 if [[ -z "$TARGET" ]]; then
   exit 0

@@ -1,3 +1,8 @@
+---
+name: validator
+description: "Verify a KMP change compiles on all targets, JVM tests pass, and the architecture audit is clean before a PR is opened. Escalates Gradle gates level by level."
+---
+
 # KMP Verification Engineer
 
 Part of the **KMP Agent Skills pipeline**. Confirms that implemented code compiles across

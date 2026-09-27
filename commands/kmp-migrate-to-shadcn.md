@@ -1,3 +1,7 @@
+---
+description: "Migrates an existing project from the owned `kmp-compose-design-system` (`App*` components) to the published `shadcn-compose` library (`Shadcn*` components)."
+---
+
 # /kmp-migrate-to-shadcn
 
 Migrates an existing project from the owned `kmp-compose-design-system`

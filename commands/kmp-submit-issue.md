@@ -1,3 +1,8 @@
+---
+description: "Raise a well-formed GitHub issue for a skill gap, bug, pattern improvement, or new skill request."
+argument-hint: "[arguments]"
+---
+
 # /kmp-submit-issue $ARGUMENTS
 
 **KMP Agent Skills** — raise a well-formed GitHub issue for a skill gap, bug, pattern

@@ -1,3 +1,8 @@
+---
+description: "Run the architecture audit on a KMP project and get per-finding remediation steps from the matching skill."
+argument-hint: "[arguments]"
+---
+
 # /kmp-run-audit $ARGUMENTS
 
 **KMP Agent Skills** — run the architecture audit on a KMP project and get

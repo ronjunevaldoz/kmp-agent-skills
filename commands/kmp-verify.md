@@ -1,3 +1,8 @@
+---
+description: "Verify that a KMP change is correct by running the full validation pipeline: architecture audit, style, static analysis, unit tests, and Roborazzi screenshot regression."
+argument-hint: "[arguments]"
+---
+
 # /kmp-verify $ARGUMENTS
 
 **KMP Agent Skills** — verify that a KMP change is correct by running the full

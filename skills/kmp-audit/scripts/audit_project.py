@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import functools
+import os
 import re
 import subprocess
 import sys
@@ -343,11 +344,16 @@ def _detect_agent_setup(root: Path) -> list[str]:
     if legacy_claude_dir.exists() and (legacy_claude_dir / "AGENTS.md").exists() and _git_ignored(root, ".claude/AGENTS.md"):
         findings.append("agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — migrate to committed AGENTS.md")
 
+    # Running from the installed Claude Code plugin: skills and commands ship with the
+    # plugin, so a missing vendored .agents/skills/ or .agents/commands/ is not a finding.
+    from_plugin = bool(os.environ.get("CLAUDE_PLUGIN_ROOT"))
+
     commands_dir = root / ".agents" / "commands"
     if not commands_dir.exists() and legacy_claude_dir.exists():
         commands_dir = legacy_claude_dir / "commands"
     if not commands_dir.exists() or not any(commands_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .agents/commands/ missing — consumer commands not installed")
+        if not from_plugin:
+            findings.append("agent-setup [MEDIUM]: .agents/commands/ missing — consumer commands not installed")
     elif commands_dir == legacy_claude_dir / "commands" and _git_ignored(root, ".claude/commands"):
         findings.append("agent-setup [MEDIUM]: legacy .claude/commands/ exists but is gitignored — migrate commands to .agents/commands/")
 
@@ -355,7 +361,8 @@ def _detect_agent_setup(root: Path) -> list[str]:
     if not deployed_skills_dir.exists() and legacy_claude_dir.exists():
         deployed_skills_dir = legacy_claude_dir / "skills"
     if not deployed_skills_dir.exists() or not any(deployed_skills_dir.iterdir()):
-        findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — skills not deployed")
+        if not from_plugin:
+            findings.append("agent-setup [MEDIUM]: .agents/skills/ missing or empty — skills not deployed")
     elif legacy_claude_dir.exists() and agents_skills_dir.exists():
         legacy_skills_dir = legacy_claude_dir / "skills"
         if legacy_skills_dir.exists() and any(legacy_skills_dir.iterdir()):

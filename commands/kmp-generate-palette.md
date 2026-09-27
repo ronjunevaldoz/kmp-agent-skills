@@ -1,3 +1,8 @@
+---
+description: "Generate a full dynamic color palette from N brand seed colors."
+argument-hint: "[arguments]"
+---
+
 # /kmp-generate-palette $ARGUMENTS
 
 **KMP Agent Skills** — generate a full dynamic color palette from N brand seed colors.

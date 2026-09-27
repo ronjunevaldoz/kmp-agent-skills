@@ -1,3 +1,7 @@
+---
+description: "Sync the latest `kmp-agent-skills` release into the local assistant skill bundles on this Mac."
+---
+
 # /kmp-sync-local-skills
 
 Sync the latest `kmp-agent-skills` release into the local assistant skill bundles on this Mac:

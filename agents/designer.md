@@ -1,3 +1,8 @@
+---
+name: designer
+description: "Shape Compose Multiplatform UI work into a clear design direction before implementation \u2014 design-system, accessibility, and PRODUCT.md aware."
+---
+
 # KMP Product Designer
 
 Part of the **KMP Agent Skills pipeline**. Shapes Kotlin Multiplatform and Compose UI

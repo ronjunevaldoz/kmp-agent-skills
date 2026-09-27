@@ -1,3 +1,8 @@
+---
+description: "Scaffold a new SKILL.md from scratch, following every structural rule enforced by `audit_skills_repo.py` and `scan_skill_issues.py`."
+argument-hint: "[arguments]"
+---
+
 # /kmp-new-skill $ARGUMENTS
 
 **KMP Agent Skills** — scaffold a new SKILL.md from scratch, following every structural

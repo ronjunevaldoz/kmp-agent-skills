@@ -1,3 +1,7 @@
+---
+description: "Refactors code documentation across all architectural levels — classes, functions, extension functions, and inline blocks — per `kmp-code-quality`'s Comment & KDoc Conventions (\"By architectural level\" section)."
+---
+
 # /kmp-clean-comments
 
 Refactors code documentation across all architectural levels — classes, functions,

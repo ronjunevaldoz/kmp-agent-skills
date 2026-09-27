@@ -1,3 +1,8 @@
+---
+description: "Compile a raster image or SVG into a Kotlin `ImageVector`, replacing pixel assets and hand-written vector paths."
+argument-hint: "[arguments]"
+---
+
 # /kmp-vectorize $ARGUMENTS
 
 **KMP Agent Skills** — compile a raster image or SVG into a Kotlin `ImageVector`,

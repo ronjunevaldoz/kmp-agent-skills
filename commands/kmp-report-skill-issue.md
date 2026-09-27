@@ -1,3 +1,8 @@
+---
+description: "File a bug, improvement request, or feature request against the `ronjunevaldoz/kmp-agent-skills` repo directly from your current session."
+argument-hint: "[arguments]"
+---
+
 # /kmp-report-skill-issue $ARGUMENTS
 
 **KMP Agent Skills** — file a bug, improvement request, or feature request against the

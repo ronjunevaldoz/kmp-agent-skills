@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.1.0] — 2026-09-27
+
+### Added
+
+- feat(roborazzi): add PR before/after evidence from committed goldens (#9)
+
+---
+
 ## [v3.0.15] — 2026-09-26
 
 ### Fixed

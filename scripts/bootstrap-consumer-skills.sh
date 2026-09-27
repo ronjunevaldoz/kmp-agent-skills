@@ -38,8 +38,11 @@ echo "⏳  $TARGET is empty or missing — bootstrapping $REPO..." >&2
 # (same env vars update-consumer-skills.sh's own auto-detect already checks).
 SOURCE="${KMP_AGENT_SKILLS_SOURCE:-${KMM_AGENT_SKILLS_SOURCE:-}}"
 if [[ -n "$SOURCE" ]] && [[ -d "$SOURCE/scripts" ]]; then
-  bash "$SOURCE/scripts/update-consumer-skills.sh" --source "$SOURCE" --agent-dir "$TARGET" >&2
-  echo "✅  Bootstrapped $TARGET from $SOURCE" >&2
+  if bash "$SOURCE/scripts/update-consumer-skills.sh" --source "$SOURCE" --agent-dir "$TARGET" >&2; then
+    echo "✅  Bootstrapped $TARGET from $SOURCE" >&2
+  else
+    echo "⚠️  Bootstrap from $SOURCE failed — run '/kmp-update-skills' manually." >&2
+  fi
   exit 0
 fi
 

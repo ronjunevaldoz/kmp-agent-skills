@@ -292,6 +292,41 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
             self.assertIn("[dry-run]", result.stdout)
 
+    def _git(self, cwd: Path, *args: str) -> None:
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=cwd, check=True, capture_output=True,
+        )
+
+    def test_source_diverged_from_origin_main_still_deploys(self) -> None:
+        # Real CI bug: PR runs check out a detached merge ref that has diverged from
+        # origin/main. `pull --ff-only` failed and `set -e` aborted before deploying, so
+        # every PR's bootstrap test failed while push-to-main runs passed.
+        for detached in (True, False):
+            with self.subTest(detached=detached), tempfile.TemporaryDirectory() as tmp:
+                tmp_root = Path(tmp)
+                source, project, origin = tmp_root / "source", tmp_root / "project", tmp_root / "origin.git"
+                project.mkdir()
+                self._minimal_source(source)
+                self._write(project, "settings.gradle.kts", 'rootProject.name = "DemoApp"\n')
+                self._git(source, "init", "-q", "-b", "main")
+                self._git(source, "add", "-A")
+                self._git(source, "commit", "-qm", "base")
+                self._git(source, "clone", "-q", "--bare", str(source), str(origin))
+                self._git(source, "remote", "add", "origin", str(origin))
+                self._git(source, "commit", "-q", "--allow-empty", "-m", "upstream")
+                self._git(source, "push", "-q", "origin", "main")
+                self._git(source, "reset", "-q", "--hard", "HEAD~1")
+                self._git(source, "commit", "-q", "--allow-empty", "-m", "local")  # diverged
+                if detached:
+                    self._git(source, "checkout", "-q", "--detach")
+
+                result = self._run_update(source, project)
+
+                self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+                self.assertTrue((project / ".agents/skills/shared-skill/SKILL.md").is_file())
+                self.assertIn("detached checkout" if detached else "Could not fast-forward", result.stdout)
+
     def test_setup_agents_scaffolds_root_sources_and_syncs_project_skill(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_root = Path(tmp)

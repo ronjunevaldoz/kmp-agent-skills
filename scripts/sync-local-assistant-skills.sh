@@ -104,10 +104,16 @@ for target in "${TARGETS[@]}"; do
     backup_dir="${target}-backup-kmp-agent-skills-$(date +%Y%m%d%H%M%S)"
     cp -a "$target" "$backup_dir"
     echo "  Backed up existing install to $backup_dir"
+    # Keep only the newest backup — one per sync used to pile up forever.
+    for old_backup in "$target"-backup-kmp-agent-skills-*; do
+      if [[ "$old_backup" != "$backup_dir" ]]; then rm -rf "$old_backup"; fi
+    done
   fi
 
-  rsync -a --delete --exclude '.git' --exclude '.DS_Store' --exclude '.pytest_cache' \
-    --exclude '.kmp-agent-skills-version' \
+  # '/.*' protects top-level hidden entries the client owns (Codex's .system bundled
+  # skills, a .git, the version marker) — --delete used to wipe ~/.codex/skills/.system
+  # on every sync. skills/ ships no top-level dotfiles, so nothing of ours is skipped.
+  rsync -a --delete --exclude '/.*' --exclude '.DS_Store' --exclude '.pytest_cache' \
     "$SKILLS_SOURCE/skills/" "$target/"
 
   # A global (non-git) install otherwise has no record of what version it's on,

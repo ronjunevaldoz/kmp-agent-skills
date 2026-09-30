@@ -12,7 +12,7 @@ Every file in `docs/` is one of three kinds. Classify before acting.
 | Kind | Test question | Lifetime | Location |
 |---|---|---|---|
 | **Reference** | "How does this work?" | Permanent — update in place | `docs/` root or `docs/reference/` |
-| **Task** | "What are we doing right now?" | Temporary — active while work runs | `docs/tasks/<parent>/` → `docs/tasks/<parent>/archive/` when done |
+| **Task** | "What are we doing right now?" | Temporary — active while work runs | `docs/tasks/<parent>/`, deleted when done |
 | **Non-doc** | "Is this a fixture, spec, or generated file?" | Belongs elsewhere entirely | `tests/fixtures/`, `api/`, `spec/`, project root |
 
 ### docs/ root vs docs/reference/
@@ -133,7 +133,7 @@ Keep these lanes short-lived and promote stable guidance out of them into
 ### Decision lane (ADR)
 
 A fourth case that doesn't fit either Reference's "update in place" or Task's
-"archive when done" — an Architecture Decision Record. Verified against the
+"delete when done" — an Architecture Decision Record. Verified against the
 real, widely-adopted pattern (Michael Nygard, 2011; rated ADOPT on
 ThoughtWorks' Technology Radar): **one decision per file, roughly one page,
 immutable once accepted.**
@@ -197,22 +197,22 @@ When a later decision changes this one, don't edit this file's body — write
 | `MIRROR_MAP.md` (from `kmp-api-mimicry`) | Reference (root) | Keep at `docs/MIRROR_MAP.md`, not project root — a permanent, update-in-place registry of mimicked API primitives; split by Reference API into `docs/reference/mirror-map-<reference>.md` once past the 150-line limit below |
 | `auth-flow-internals.md` | Reference (reference/) | Move to `docs/reference/` — subsystem deep-dive |
 | `reference/*.md` | Reference (reference/) | Keep in `docs/reference/` |
-| `known-blockers.md` | Task | Rename to `docs/tasks/<parent>/01-known-blockers-todo.md`; archive when resolved |
-| `milestone-tracker.md` | Task | Rename + move to `docs/tasks/<parent>/01-milestone-tracker-doing.md` or `docs/mvp/`; archive when milestone ships |
-| `q3-gap-plan.md` | Task | Rename + move to `docs/tasks/<parent>/01-q3-gap-plan-todo.md` or `docs/mvp/`; archive when plan completes |
+| `known-blockers.md` | Task | Rename to `docs/tasks/<parent>/01-known-blockers-todo.md`; delete when resolved |
+| `milestone-tracker.md` | Task | Rename + move to `docs/tasks/<parent>/01-milestone-tracker-doing.md` or `docs/mvp/`; delete when milestone ships |
+| `q3-gap-plan.md` | Task | Rename + move to `docs/tasks/<parent>/01-q3-gap-plan-todo.md` or `docs/mvp/`; delete when plan completes |
 | `0-bug.md` | Task lane | Keep active bug thread here; add a folder only if multiple bug files are needed |
-| `0-mvp/` | Task lane | Keep active MVP plan here; archive or promote when stable |
+| `0-mvp/` | Task lane | Keep active MVP plan here; promote stable guidance, then delete |
 | `tasks.md` | Task (entrypoint) | Keep at `docs/tasks.md` |
 | `fixtures/*.json` | Non-doc | Move to `tests/fixtures/` or `src/test/resources/` |
 | `openapi.json` | Non-doc | Move to `api/` or `spec/` at project root |
 | `decision-log.md` (one growing file) | Decision lane, done wrong | Split into `docs/decisions/0001-slug.md` per decision; stop appending to one file |
-| `0001-use-sqldelight-for-persistence.md` | Decision lane | Keep at `docs/decisions/` — immutable once `Accepted`, never archived |
+| `0001-use-sqldelight-for-persistence.md` | Decision lane | Keep at `docs/decisions/` — immutable once `Accepted`, never deleted |
 
 ### Ambiguity test
 
 **Will this still be useful and accurate six months from now without edits?**
 - Yes → Reference.
-- No → Task. Archive when done.
+- No → Task. Delete when done.
 - Neither → Non-doc. Move it out of `docs/`.
 
 A decision record is the one case that looks like it fails this test (a
@@ -233,8 +233,8 @@ When cleaning a messy `docs/`, always follow this order to avoid breaking refere
    grep -r "filename-without-extension" docs/ README.md
    ```
 3. **Update references first** — rewrite all links to point at the new location before moving the file.
-4. **Move or archive** — rename to `<NN>-<slug>-<status>.md` under its parent folder if needed, then move to the correct location.
-5. **Consolidate task content** — if a task-kind file exists outside `docs/tasks/`, extract its active content into `docs/tasks.md` or a numbered task note, then archive the original.
+4. **Move or delete** — rename to `<NN>-<slug>-<status>.md` under its parent folder if needed, then move to the correct location; delete finished task files.
+5. **Consolidate task content** — if a task-kind file exists outside `docs/tasks/`, extract its active content into `docs/tasks.md` or a numbered task note, then delete the original.
 6. **Move non-docs out** — relocate fixtures, specs, and generated files to their proper homes outside `docs/`.
 7. **Validate** — run the hygiene check and verify no links are broken.
 
@@ -249,10 +249,10 @@ If a task-kind file (blockers, gap plan, milestone tracker) exists at the `docs/
    `docs/tasks/<parent>/01-slug-todo.md` (numbering starts at `01` and resets per parent
    folder; the date goes inside the file content, not the filename — see Naming
    Convention below).
-3. Archive the original file once done: `docs/tasks/<parent>/archive/01-slug-done.md`.
-4. Leave a backlink in `docs/tasks.md` pointing to the archived entry.
+3. Delete the original file once moved. When the numbered task is done, promote its
+   durable guidance, then delete it and its `docs/tasks.md` row.
 
-For completed task-kind files, archive rather than delete. The history is evidence.
+Git history is the evidence; a finished plan does not need to stay in the tree.
 
 If the project uses `docs/mvp/` or `docs/bugs/`, keep those lanes as the active
 working surface and use `docs/tasks.md` as the index that links into them.
@@ -261,14 +261,13 @@ working surface and use `docs/tasks.md` as the index that links into them.
 
 ## Delete vs Archive
 
-Git history already preserves every version of every file — archiving isn't what makes a
-file recoverable, `git log`/`git show` does that regardless. Archiving is for one specific
-case: a human should be able to stumble on the old content again *without* going to git
-history. Ask which case applies:
+Git history already preserves every version of every file, so deleting loses nothing that
+`git log`/`git show` can't bring back. Archive folders only grow: every finished plan stays in
+the tree, in search results, and in what agents scan. Delete by default. Ask which case applies:
 
 | Case | Action | Why |
 |---|---|---|
-| Task-kind file, work is done (bug fixed, milestone shipped, plan completed) | Rename its status suffix to `-done` and archive (`docs/tasks/<parent>/archive/`, `docs/lessons/archive/`) | Future readers browsing `docs/` may want the resolution history without digging through git log |
+| Task-kind file, work is done (bug fixed, milestone shipped, plan completed) | Promote durable guidance, then delete; fix anything that cites it | The plan's outcome lives in the code and in promoted docs; the plan itself is history, which git keeps |
 | Reference doc now fully superseded, zero unique information left | Delete | Nothing left to browse to — keeping it around just recreates the clutter this checklist exists to prevent; git history covers "what did this used to say" |
 | Non-doc file after it's been moved to its real home (`tests/fixtures/`, `api/`, project root) | Delete the `docs/` copy | The file lives on at its new path; leaving a stale copy in `docs/` is drift, not history |
 | File superseded by a rename (old path, content unchanged) | Delete old path | `git mv`/rename already carries the history forward; a leftover old-named file is a duplicate, not an archive |
@@ -323,12 +322,12 @@ title, as the file's own record of when it started:
 ```
 
 **Rename the file when status changes** — `01-add-auth-doing.md` becomes
-`01-add-auth-blocked.md` if it stalls, then `01-add-auth-done.md` when finished. A
-`-done` file still sitting in the active (non-archive) parent folder is a hygiene
-violation — move it to `docs/tasks/<parent>/archive/` in the same rename.
+`01-add-auth-blocked.md` if it stalls. When it is finished, promote durable guidance
+and delete the file; a `-done` file left in its parent folder is a hygiene violation.
+Legacy `archive/` folders are ignored by the tooling; delete them when convenient.
 
 The audit script (`audit_skills_repo.py --docs-hygiene-only`) validates the
-`<NN>-<slug>-<status>.md` shape, flags a `-done` file still outside `archive/`, flags a
+`<NN>-<slug>-<status>.md` shape, flags a `-done` file that was not deleted, flags a
 task file with no `**Date:**` line in its content, and flags an active task file with
 no matching row in `docs/tasks.md`'s Task Log table — the index has to name every
 active file, or a reader can't trust it as a substitute for opening each one.
@@ -339,20 +338,20 @@ active file, or a reader can't trust it as a substitute for opening each one.
 
 | Rule | Limit | Action |
 |---|---|---|
-| Any `docs/` file (outside `archive/`) | 150 lines | Split or archive completed sections |
+| Any `docs/` file (outside legacy `archive/`) | 150 lines | Split it or delete completed sections |
 | Root-level named doc (`README.md`, `KNOWN_ISSUES.md`, etc. — see `_ROOT_DOCS_WITH_SIZE_LIMIT` in `audit_skills_repo.py`; `CHANGELOG.md` is exempt, it's auto-generated and append-only) | 500 lines | Split least-central sections into `docs/reference/*.md`, leave a pointer — same pattern as an oversized `SKILL.md` |
 | `CHANGELOG.md`'s `## [Unreleased]` section entry count | 20 entries | Cut a release (`git-cliff --tag vX.Y.Z --output CHANGELOG.md`, see `kmp-release`) so it flushes into a dated version section instead of growing forever |
 | Unprocessed lessons in `docs/lessons/` | 20 files | Harvest via `kmp-skill-harvester` |
-| Lesson file age without harvest | 30 days | Harvest or archive |
-| Task file with a `-done` filename suffix still in active `docs/tasks/<parent>/` | 0 | Move to `docs/tasks/<parent>/archive/` immediately |
-| Task file in `doing` or `blocked` state older than 14 days without update | 0 | Update progress, demote to blocked/todo, or complete and archive |
-| Task file with 100% completed checkboxes (`[x]`) not marked `-done` | 0 | Rename to `-done` and move to `docs/tasks/<parent>/archive/` |
+| Lesson file age without harvest | 30 days | Harvest, then delete |
+| Task file with a `-done` filename suffix still in `docs/tasks/<parent>/` | 0 | Promote durable guidance, then delete it |
+| Task file in `doing` or `blocked` state older than 14 days without update | 0 | Update progress, demote to blocked/todo, or complete and delete |
+| Task file with 100% completed checkboxes (`[x]`) | 0 | Promote durable guidance, then delete it |
 | Task filename not matching `<NN>-<slug>-<status>.md` (status: todo/doing/blocked/done) | 0 | Rename to match the task naming convention |
 | Task file missing a `**Date:**` line in its content | 0 | Add the date line — filenames no longer carry a date prefix |
 | Active task file not mentioned in `docs/tasks.md` | 0 | Add a Task Log row — the index must name every active task so status is readable without opening each file |
 | Non-doc file (`.json`, `.yaml`, `.py`, `.zip`, etc.) anywhere inside `docs/` | 0 | Move to purpose-specific directory (`tests/fixtures/`, `api/`, `spec/`) |
 | Asset/image file outside `docs/assets/` or `docs/images/` | 0 | Move to `docs/assets/` or `docs/images/` |
-| Non-canonical top-level directory in `docs/` (only `reference`, `tasks`, `decisions`, `lessons`, `bugs`, `mvp`, `archive`, `audits`, `assets`, `images` allowed) | 0 | Move under `docs/reference/`, `docs/tasks/`, or `docs/archive/` |
+| Non-canonical top-level directory in `docs/` (only `reference`, `tasks`, `decisions`, `lessons`, `bugs`, `mvp`, `archive`, `audits`, `assets`, `images` allowed) | 0 | Move under `docs/reference/` or `docs/tasks/`, or delete it |
 | Snake_case filename in `docs/` | 0 | Rename to kebab-case |
 | Reference doc (`docs/` root or `docs/reference/`) with no inbound links anywhere in the repo | 0 | Review — link it from wherever introduces the topic, or delete per Delete vs Archive above if it's genuinely stale |
 | Decision record filename not matching `NNNN-slug.md` (4-digit, sequential) | 0 | Rename to match the ADR naming convention |
@@ -363,7 +362,7 @@ active file, or a reader can't trust it as a substitute for opening each one.
 ```
 docs/lessons/YYYY-MM-DD-slug.md
     ↓  harvested + skill amended
-docs/lessons/archive/YYYY-MM-DD-slug.md
+deleted (git history keeps it)
 ```
 
 ### Running the hygiene check
@@ -389,7 +388,7 @@ and does not implement these hygiene checks — don't reach for it here.
 
 | Concern | `heal_docs.py` Auto-Remediation | `audit_skills_repo.py` Audit Gate |
 |---|---|---|
-| **Completed Tasks** | Automatically renames to `-done.md` and archives to `docs/tasks/<parent>/archive/` | Blocks commits if `-done` or 100% completed tasks remain active |
+| **Completed Tasks** | Deletes `-done` and 100%-checked task files, then lists files that still cite them (you fix those) | Blocks commits if `-done` or 100% completed tasks remain |
 | **Snake_case Files** | Automatically converts to kebab-case and rewrites internal markdown links | Flags snake_case filenames in `docs/` |
 | **Task Progress Tracker** | Recomputes checkbox metrics and regenerates `docs/tasks.md` | Blocks commits if active tasks are missing from `docs/tasks.md` |
 | **Sitemap Synchronization** | Regenerates `docs/README.md` category/status navigation table | N/A (serves as agent entry point) |

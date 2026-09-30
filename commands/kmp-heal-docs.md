@@ -1,6 +1,6 @@
 ---
 name: kmp-heal-docs
-description: Self-heal project documentation sitemap (docs/README.md), verify link hygiene, and archive stale task plans.
+description: Self-heal project documentation sitemap (docs/README.md), verify link hygiene, and delete finished task plans.
 ---
 
 # Self-Heal Project Documentation
@@ -13,6 +13,7 @@ python3 .agents/skills/kmp-project-docs-maintainer/scripts/heal_docs.py || pytho
 
 This command:
 1. Rebuilds the high-density sitemap table in `docs/README.md`.
-2. Archives finished tasks from `docs/tasks/*.md` into `docs/tasks/archive/`.
+2. Deletes finished tasks (`-done` or every box checked) from `docs/tasks/<parent>/` and lists any
+   file that still cites them, so you can fix those links. Git history keeps the old plans.
 3. Verifies zero broken relative links.
 4. Prevents AI agents from performing expensive recursive scans.

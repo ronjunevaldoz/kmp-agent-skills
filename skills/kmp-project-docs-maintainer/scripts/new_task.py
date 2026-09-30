@@ -24,6 +24,7 @@ def create_task(repo_root: Path, parent: str, slug: str) -> Path:
     # Determine next sequence number
     existing_nums = []
     task_num_re = re.compile(r"^(\d{2})-")
+    # Legacy archive/ folders still count so old numbers are not reused.
     for search_dir in (parent_dir, parent_dir / "archive"):
         if search_dir.exists():
             for f in search_dir.glob("*.md"):

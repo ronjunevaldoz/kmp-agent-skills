@@ -76,12 +76,12 @@ this repo's own docs:
 - **Task** — "what are we doing right now?" A one-off audit, gap analysis, or migration
   report. Goes in `docs/tasks/<parent>/<NN>-<slug>-<status>.md`, never at repo root
   (status is one of `todo`/`doing`/`blocked`/`done`, the date lives inside the file
-  content — see `docs-hygiene.md`'s Naming Convention). Rename the status suffix to
-  `-done` and move to `docs/tasks/<parent>/archive/` the moment its findings are actioned
-  or the work ships. Never delete a Task doc — archive it; the history is evidence.
+  content — see `docs-hygiene.md`'s Naming Convention). Once its findings are actioned
+  or the work ships, promote durable guidance, then delete it and fix anything that cites
+  it; git history is the evidence.
 - **Permanent registry, resolved-stays** — `KNOWN_ISSUES.md` is its own third case:
   resolved issues stay in place marked resolved, because they explain why a rule exists.
-  Don't archive these into `docs/tasks/`.
+  Don't move these into `docs/tasks/`.
 
 If a Task-kind doc (an audit report, a diagnose-only snapshot, a gap-analysis) is about
 to be written, write it directly to `docs/tasks/`, not repo root — don't create it at

@@ -1332,7 +1332,7 @@ def _detect_undocumented_public_api(root: Path) -> list[str]:
 # meaning. Regex-detectable with low false-positive risk — unlike "buried lead" or
 # "table vs paragraph", which need real judgment, a hedge phrase is either present
 # or it isn't. Scoped to root-level named docs + docs/ this skill actually owns;
-# archived task notes are frozen history, not something this rule should churn.
+# legacy archive/ folders are frozen history, not something this rule should churn.
 
 _HEDGE_PHRASES = [
     "in order to",

@@ -5,7 +5,7 @@
 """heal_project.py — Comprehensive Project Health, Hooks, Tech Debt, and Topology Doctor
 
 Automates:
-  1. Documentation Healing: Rebuilds docs/README.md sitemap and archives completed tasks.
+  1. Documentation Healing: Rebuilds docs/README.md sitemap and deletes completed tasks.
   2. Tech Debt & Scattered Comments Healing: Scans and classifies actionable vs orphan TODOs.
   3. Git Hooks Healing: Verifies and installs .git/hooks/pre-commit.
   4. Scripts & Tools Hygiene: Ensures executable permissions (chmod +x) on scripts/ and tools/.

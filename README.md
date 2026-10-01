@@ -284,7 +284,7 @@ All commands are `kmp-` prefixed so they don't collide with your own command nam
 | `/kmp-check-updates` | Check for a newer version of kmp-agent-skills |
 | `/kmp-report-skill-issue` | File a structured skill bug report |
 | `/kmp-refine-skill <name>` | Refine a project-owned skill against agentskills.io's real qualitative best practices (description phrasing, gotchas, scoping) |
-| `/kmp-heal-docs [path]` | Self-heal project documentation sitemap (`docs/README.md`), verify link hygiene, and archive stale tasks |
+| `/kmp-heal-docs [path]` | Self-heal project documentation sitemap (`docs/README.md`), verify link hygiene, and delete finished tasks |
 
 ### Repo-internal commands
 

@@ -12,7 +12,7 @@ python3 .agents/skills/kmp-project-docs-maintainer/scripts/heal_project.py || py
 ```
 
 ## What it Heals:
-1. **Documentation**: Generates high-density `docs/README.md` sitemap table and archives completed tasks.
+1. **Documentation**: Generates high-density `docs/README.md` sitemap table and deletes completed tasks.
 2. **Git Hooks**: Installs and syncs `.git/hooks/pre-commit` from `hooks/`.
 3. **Executable Permissions**: Ensures `chmod +x` across all `scripts/`, `tools/`, and `hooks/`.
 4. **Skills Lockfile**: Regenerates `.agents/skills.lock` with upstream version provenance.

@@ -11,7 +11,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-11'
+  last-updated: '2026-10-01'
   keywords:
     - investigation narration comment
     - state the finding not the investigation
@@ -410,6 +410,7 @@ Ask before converting findings to issue drafts. Keep implementation advice minim
 
 | Date | Change |
 |---|---|
+| 2026-10-01 | Docs-hygiene findings for finished tasks and lessons now say to promote durable guidance and delete the file, instead of moving it to an `archive/` folder (matches `kmp-project-docs-maintainer`'s new delete-when-done policy). Legacy `archive/` folders are still skipped. Updated 2 tests. |
 | 2026-09-11 | Added expect/actual vs platform-exclusive file naming check under Section 4 (Multiplatform code) — distinguish `Name.<platform>.kt` (reserved strictly for `actual` declarations matching an `expect`) from standard `Name.kt` (platform-exclusive files, target entry points, DI modules). Clarify that coexistence of both styles across a codebase is intentional and must not be flagged as a naming divergence. |
 | 2026-08-30 | Added `_check_changelog_unreleased_backlog` to `audit_skills_repo.py` — user asked whether docs healing scoped `CHANGELOG.md`'s growth, and it deliberately doesn't (`kmp-project-docs-maintainer`'s scope explicitly excludes release notes). Real gap found in that investigation: `git-cliff`'s `## [Unreleased]` section (`kmp-release`'s own convention) only flushes into a dated version section on an actual `--tag` release run, and nothing previously flagged a project that just never cuts one — it silently accumulates forever. Flags once `[Unreleased]` exceeds 20 bullet entries, static filename/heading scan only, no git dependency, consistent with every other check in this file. Wired into both `--docs-hygiene-only` and the full audit. 4 new tests. |
 | 2026-08-24 | Cross-referenced the new `/kmp-refine-skill` command from the "Project-owned custom skill" finding — `_detect_project_skill_standards` only checks mechanical validity (frontmatter, line cap); the new command owns the qualitative pass (description phrasing, gotchas quality, scoping) re-verified against the real, current agentskills.io best-practices docs. |

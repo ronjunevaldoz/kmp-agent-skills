@@ -10,7 +10,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-27'
+  last-updated: '2026-10-01'
   references:
     - references/docs-hygiene.md
   keywords:
@@ -181,8 +181,7 @@ Use the active lanes like this:
 - `docs/mvp/0-mvp/0-phase/tasks/0-task.md` and `1-task.md` — individual task notes
 - `docs/bugs/0-bug.md` — the active bug note for a single tracked issue
 
-If the project needs chronological task history as well, keep `docs/tasks/` as the
-archive lane for dated phase notes and pointers, but do not force every active doc there.
+`docs/tasks/` holds active work only. Finished tasks are deleted; git history is the record.
 
 ### Reference Doc Starter Templates
 
@@ -215,12 +214,12 @@ Rules:
   planning hierarchy instead of flat task notes
 - use `docs/bugs/0-bug.md` for a single active bug thread; only create `docs/bugs/0-bug/`
   when that bug needs multiple related files
-- when a task is complete, rename its status suffix to `-done` and move it into
-  `docs/tasks/<parent>/archive/`, keeping a short index line or backlink in `docs/tasks.md`
+- when a task is complete, promote any durable guidance, then delete the task file and its
+  `docs/tasks.md` row; git history keeps the old plan
 - use the `<NN>-<slug>-<status>.md` convention (see `docs-hygiene.md`'s Naming Convention
   section) — status lives in the filename, the date lives inside the file content
-- if a note is still needed for current work, keep it in `docs/tasks/<parent>/`; if it is
-  done but still relevant to search, move it to `docs/tasks/<parent>/archive/`
+- if a note is still needed for current work, keep it in `docs/tasks/<parent>/`; once it is
+  done, delete it
 - if a note contains durable design or operating guidance, promote that guidance into
   `docs/architecture.md`, `docs/deployment.md`, or `docs/reference/` instead of leaving
   it only in task logs
@@ -287,13 +286,10 @@ When creating a new downstream project, start `docs/tasks.md` with this structur
 | [01-plan](tasks/my-feature/01-plan-doing.md) | doing | my-feature |
 | [02-build](tasks/my-feature/02-build-todo.md) | todo | my-feature |
 
-## Archive Index
-
-- [my-feature](tasks/my-feature/archive/)
 ```
 
 A table, not a bullet list — the whole point is reading every active task's status in
-one place without opening each file. Every active (non-archive) task file under
+one place without opening each file. Every task file under
 `docs/tasks/<parent>/` needs a row here; `kmp-audit`'s `--docs-hygiene-only` flags a
 task file with no matching row (see `docs-hygiene.md`'s Hygiene Limits). Update the
 row's **Status** column and the link's target filename together — the filename is the
@@ -310,12 +306,12 @@ one parent folder per feature/project, e.g. `tasks/my-feature/01-plan-doing.md`.
 Keep the slug focused on the phase or decision, not the whole feature name — the parent
 folder already carries that.
 
-### 2c) Promote or archive
+### 2c) Promote, then delete
 
 When a task is finished:
-- rename its status suffix to `-done` and move it to `docs/tasks/<parent>/archive/`
 - promote stable guidance into `architecture.md`, `deployment.md`, or `reference/`
-- leave a backlink in `docs/tasks.md` so the current work page still points to the history
+- delete the task file and its `docs/tasks.md` row; git history keeps the plan
+- remove or reword code comments and docs that cite the deleted file, so no link dangles
 - keep `doing`/`blocked` tasks in the active task trail until they either stabilize or are discarded
 
 ### 3) Validate
@@ -338,8 +334,7 @@ Use this validation matrix for project docs:
 |---|---|
 | README mentions a module or command | The referenced file or command exists |
 | `docs/tasks/` updates | `docs/tasks.md` links to the dated record and the dated record has a date-stamped filename |
-| `docs/tasks/archive/` updates | Completed notes retain date-stamped filenames and `docs/tasks.md` still points to them |
-| Task history becomes dense | The oldest active notes move to `docs/tasks/archive/` and durable guidance moves to architecture/reference docs |
+| A task finishes | Its durable guidance is promoted, the file is deleted, and nothing still links to it |
 | Dev/Beta/Stable fix lanes | Lane markers stay visible until a fix is promoted into durable docs |
 | `docs/reference*` updates | Links resolve and match the code or configuration it documents |
 | Onboarding docs change | The setup steps match the current project workflow |
@@ -477,6 +472,7 @@ Consumer projects follow a clean 3-tier README hierarchy documented in `referenc
 
 | Date | Change |
 |---|---|
+| 2026-10-01 | Finished tasks are deleted, not archived. Archive folders only grew (one real project reached 85 archived plans, 10x its reference docs) and moving a plan broke every comment citing its path. Now: promote durable guidance, delete the task file and its `docs/tasks.md` row, and fix whatever cites it; git history is the record. Lessons are deleted after harvesting. ADRs are unchanged. `heal_docs.py` deletes `-done` and 100%-checked tasks instead of moving them, and lists files that still reference them. Legacy `archive/` folders stay ignored. |
 | 2026-09-27 | Added `PRODUCT.md` to the maintained docs and the change checklist — design work now reads it before any screen change (`kmp-compose-design-system` → `references/design-context.md`). |
 | 2026-09-11 | Updated docs hygiene rules: documented recursive non-doc file checks, asset/image isolation to `docs/assets/` or `docs/images/`, canonical top-level `docs/` subdirectories enforcement, and archive historical task exemption. |
 | 2026-08-29 | Trimmed `SKILL.md` under 500 lines per agentskills.io progressive disclosure. Moved KDoc vs Ground-Truth Docs Boundary and Code Examples & Linking Policy tables into `references/docs-hygiene.md`. Tightened Writing Style bullets and Vibe-to-Plan Template steps. |

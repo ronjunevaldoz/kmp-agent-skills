@@ -3,7 +3,8 @@
 
 Automates:
   1. Safe cleanup: auto-renames snake_case files to kebab-case and updates inbound links.
-  2. Safe cleanup: auto-archives completed tasks (*-done or 100% checked) to docs/tasks/<parent>/archive/.
+  2. Safe cleanup: deletes completed tasks (*-done or 100% checked) from docs/tasks/<parent>/
+     and reports any file that still references them. Git history is the archive.
   3. Sitemap synchronization in docs/README.md (extracts title, category, status, and summaries).
   4. Task index synchronization in docs/tasks.md with verified checkbox progress metrics.
 """
@@ -12,10 +13,13 @@ import argparse
 import datetime
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 _SNAKE_CASE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9]*(_[A-Za-z0-9]+)+$")
+_SKIP_DIRS = {".git", ".gradle", "build", "node_modules"}
+_TEXT_SUFFIXES = {".md", ".kt", ".kts", ".py", ".sh", ".swift", ".ts", ".js", ".json", ".toml", ".yml", ".yaml", ".txt"}
 
 
 def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
@@ -106,52 +110,59 @@ def auto_rename_kebab(docs_dir: Path, repo_root: Path, dry_run: bool = False) ->
     return renamed
 
 
-def auto_archive_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[str]:
-    """Auto-archives completed tasks (*-done.md or 100% checked) to docs/tasks/<parent>/archive/."""
+def delete_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[Path]:
+    """Deletes completed tasks (*-done.md or 100% checked) from docs/tasks/<parent>/.
+
+    Git history keeps the old plan. Legacy archive/ folders are left alone.
+    """
     tasks_dir = docs_dir / "tasks"
     if not tasks_dir.exists():
         return []
 
-    archived = []
-    task_status_re = re.compile(r"^(\d{2}-[a-z0-9-]+)-(todo|doing|blocked|done)$")
-
+    deleted = []
     for parent_dir in sorted(p for p in tasks_dir.iterdir() if p.is_dir()):
         if parent_dir.name == "archive":
             continue
-        archive_dir = parent_dir / "archive"
         for md in sorted(parent_dir.glob("*.md")):
-            if not md.is_file():
-                continue
             content = md.read_text(encoding="utf-8", errors="ignore")
             total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
             checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
-            is_100_percent = total_boxes > 0 and checked_boxes == total_boxes
-            is_done_suffix = md.stem.endswith("-done")
-
-            if is_done_suffix or is_100_percent:
-                stem = md.stem
-                m = task_status_re.match(stem)
-                if m:
-                    base_prefix = m.group(1)
-                    target_name = f"{base_prefix}-done.md"
-                else:
-                    target_name = md.name if is_done_suffix else f"{stem}-done.md"
-
-                target_path = archive_dir / target_name
-                archived.append(f"{md.relative_to(repo_root)} -> {target_path.relative_to(repo_root)}")
-
+            if md.stem.endswith("-done") or (total_boxes > 0 and checked_boxes == total_boxes):
+                deleted.append(md)
+                print(f"  🗑️ {'Would delete' if dry_run else 'Deleted'}: {md.relative_to(repo_root)}")
                 if not dry_run:
-                    archive_dir.mkdir(parents=True, exist_ok=True)
-                    updated_content = re.sub(
-                        r"(\*\*Status:\*\*\s*)(todo|doing|blocked)",
-                        r"\1done",
-                        content,
-                    )
-                    target_path.write_text(updated_content, encoding="utf-8")
-                    if md != target_path:
-                        md.unlink()
-                    print(f"  📦 Archived: {md.name} -> tasks/{parent_dir.name}/archive/{target_name}")
-    return archived
+                    md.unlink()
+    return deleted
+
+
+def find_references(repo_root: Path, names: list[str]) -> dict[str, list[str]]:
+    """Maps each file name to the repo files that still mention it."""
+    refs: dict[str, list[str]] = {}
+    for name in names:
+        try:
+            out = subprocess.run(
+                ["git", "grep", "-l", "-F", name],
+                cwd=repo_root, capture_output=True, text=True, check=False,
+            )
+            # 0 = matches, 1 = none; anything else means not a git repo.
+            if out.returncode not in (0, 1):
+                raise OSError(out.stderr)
+            hits = out.stdout.splitlines()
+        except OSError:
+            hits = []
+            for f in repo_root.rglob("*"):
+                if _SKIP_DIRS.intersection(f.relative_to(repo_root).parts) or f.suffix not in _TEXT_SUFFIXES or not f.is_file():
+                    continue
+                try:
+                    if name in f.read_text(encoding="utf-8", errors="ignore"):
+                        hits.append(str(f.relative_to(repo_root)))
+                except OSError:
+                    pass
+        # docs/README.md and docs/tasks.md are regenerated below, so their stale rows go away.
+        hits = [h for h in hits if h not in ("docs/README.md", "docs/tasks.md")]
+        if hits:
+            refs[name] = sorted(hits)
+    return refs
 
 
 def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
@@ -163,14 +174,20 @@ def heal_docs(repo_root: Path, dry_run: bool = False) -> int:
     print(f"\n🩺 Self-Healing Documentation Scan: {repo_root.name}")
     print(f"{'='*60}")
     
-    # 1. Safe auto-cleanups (snake_case normalization and archiving completed tasks)
+    # 1. Safe auto-cleanups (snake_case normalization and deleting completed tasks)
     renamed = auto_rename_kebab(docs_dir, repo_root, dry_run)
     if renamed:
         print(f"  ✨ Normalized {len(renamed)} file(s) to kebab-case")
 
-    archived = auto_archive_done_tasks(docs_dir, repo_root, dry_run)
-    if archived:
-        print(f"  📦 Auto-archived {len(archived)} completed task(s)")
+    deleted = delete_done_tasks(docs_dir, repo_root, dry_run)
+    if deleted:
+        verb = "Would delete" if dry_run else "Deleted"
+        print(f"  🗑️ {verb} {len(deleted)} completed task(s); git history keeps them")
+        refs = find_references(repo_root, [md.name for md in deleted])
+        if refs:
+            print("  ⚠️  Still referenced (fix or remove these links; `git log -- <path>` recovers a deleted plan):")
+            for name, files in refs.items():
+                print(f"    • {name}: {', '.join(files)}")
 
     # 2. Scan all markdown files in docs/ (ignoring README.md itself)
     doc_entries = []

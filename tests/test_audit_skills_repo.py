@@ -592,7 +592,7 @@ class TaskFileConventionTests(unittest.TestCase):
             )
             findings: list[str] = []
             audit_repo_scripts._check_docs_hygiene(root, findings)
-            self.assertTrue(any("has 100% completed items" in f and "rename to -done" in f for f in findings))
+            self.assertTrue(any("has 100% completed items" in f and "delete it" in f for f in findings))
 
     def test_flags_filename_not_matching_convention(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -617,10 +617,11 @@ class TaskFileConventionTests(unittest.TestCase):
             findings: list[str] = []
             audit_repo_scripts._check_docs_hygiene(root, findings)
             self.assertTrue(any(
-                "01-add-auth-done.md" in f and "archive" in f for f in findings
+                "01-add-auth-done.md" in f and "delete it" in f for f in findings
             ))
+            self.assertFalse(any("archive" in f for f in findings))
 
-    def test_does_not_flag_done_file_inside_archive(self) -> None:
+    def test_does_not_flag_done_file_inside_legacy_archive(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_task(

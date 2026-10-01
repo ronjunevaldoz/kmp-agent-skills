@@ -138,7 +138,7 @@ _DECISION_STATUS_RE = re.compile(
 # (or the resolved-stays-for-reference KNOWN_ISSUES.md registry). Anything else at
 # root is either a new permanent doc that needs adding here deliberately, or a
 # Task-kind doc (an audit report, gap analysis, migration snapshot) that belongs
-# in docs/tasks/ — never at repo root, archived to docs/tasks/archive/ when done.
+# in docs/tasks/ — never at repo root, and deleted once done (git history keeps it).
 _PERMANENT_ROOT_DOCS = {
     "AGENTS", "CHANGELOG", "CLAUDE", "CONTRIBUTING", "FUNDING",
     "GETTING_STARTED", "INSTALL", "KNOWN_ISSUES", "PLAN", "README", "RELEASING",
@@ -178,8 +178,8 @@ def _check_stale_task_docs_at_root(root: Path, findings: list[str]) -> None:
             findings.append(
                 f"docs-hygiene: root-level {f.name} looks like a Task-kind doc "
                 f"(one-off audit/report/gap-analysis) — move to "
-                f"docs/tasks/<parent>/01-slug-todo.md, and rename to "
-                f"docs/tasks/<parent>/archive/01-slug-done.md once actioned. "
+                f"docs/tasks/<parent>/01-slug-todo.md, and delete it once actioned "
+                f"(promote durable findings first). "
                 f"If this is a genuinely new permanent doc, add its name to "
                 f"_PERMANENT_ROOT_DOCS in audit_skills_repo.py."
             )
@@ -317,7 +317,7 @@ def _check_commonmain_jvm_apis(root: Path, findings: list[str]) -> None:
 
 
 def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
-    """Flag bloated, stale, or un-archived docs/ files in a consumer project."""
+    """Flag bloated, stale, or finished-but-not-deleted docs/ files in a consumer project."""
     docs_dir = root / "docs"
     if not docs_dir.exists():
         return
@@ -331,7 +331,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
         if d.is_dir() and d.name not in _CANONICAL_DOCS_SUBDIRS:
             findings.append(
                 f"docs hygiene: docs/{d.name}/ is not a canonical docs subdirectory "
-                f"— move under docs/reference/, docs/tasks/, or docs/archive/"
+                f"— move under docs/reference/ or docs/tasks/, or delete it"
             )
 
     # 1. Any docs/ file (outside archive/) exceeding the line limit
@@ -342,7 +342,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
         if lines > DOCS_MAX_LINES:
             findings.append(
                 f"docs hygiene: {md.relative_to(root)} is {lines} lines "
-                f"(limit {DOCS_MAX_LINES}) — split or archive completed sections"
+                f"(limit {DOCS_MAX_LINES}) — split it or delete completed sections"
             )
 
     # 2. Lessons older than LESSON_STALE_DAYS still in active lessons dir
@@ -365,7 +365,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
         for path, age in stale:
             findings.append(
                 f"docs hygiene: {path} is {age} days old and not yet harvested "
-                "— run kmp-skill-harvester or archive"
+                "— run kmp-skill-harvester, then delete it"
             )
 
         # 3. Too many unprocessed lessons
@@ -373,7 +373,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
         if total > LESSON_BACKLOG_LIMIT:
             findings.append(
                 f"docs hygiene: {total} lesson files in docs/lessons/ "
-                f"(limit {LESSON_BACKLOG_LIMIT}) — harvest and archive processed lessons"
+                f"(limit {LESSON_BACKLOG_LIMIT}) — harvest, then delete processed lessons"
             )
 
     # 4. Task files: docs/tasks/<parent>/<NN>-<slug>-<status>.md — status lives in the
@@ -406,7 +406,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                 if m.group(1) == "done":
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} is marked done "
-                        f"— move to {parent_dir.relative_to(root)}/archive/"
+                        "— promote durable guidance, then delete it (git history keeps it)"
                     )
                 content = md.read_text(encoding="utf-8", errors="ignore")
                 date_match = _TASK_DATE_RE.search(content)
@@ -428,7 +428,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                         elif status == "blocked" and age > TASK_BLOCKED_STALE_DAYS:
                             findings.append(
                                 f"docs hygiene: {md.relative_to(root)} has been in 'blocked' state for {age} days "
-                                f"(limit {TASK_BLOCKED_STALE_DAYS} days) — resolve blocker or archive"
+                                f"(limit {TASK_BLOCKED_STALE_DAYS} days) — resolve the blocker or delete the task"
                             )
                     except ValueError:
                         pass
@@ -439,7 +439,7 @@ def _check_docs_hygiene(root: Path, findings: list[str]) -> None:
                 if total_boxes > 0 and checked_boxes == total_boxes and m.group(1) != "done":
                     findings.append(
                         f"docs hygiene: {md.relative_to(root)} has 100% completed items ({checked_boxes}/{total_boxes}) "
-                        f"— rename to -done and move to {parent_dir.relative_to(root)}/archive/"
+                        "— promote durable guidance, then delete it (git history keeps it)"
                     )
 
                 if md.name not in tasks_index_text:

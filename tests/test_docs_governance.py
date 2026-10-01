@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import io
 import json
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -312,46 +314,53 @@ class HealDocsTests(unittest.TestCase):
             self.assertIn("`doing`", tasks_md)
             self.assertIn("`auth`", tasks_md)
 
-    def test_auto_archives_task_with_done_suffix(self) -> None:
+    def test_deletes_done_and_fully_checked_tasks_and_reports_references(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             docs = root / "docs"
             tasks_dir = docs / "tasks" / "auth"
             tasks_dir.mkdir(parents=True)
 
-            task_file = tasks_dir / "01-login-done.md"
-            task_file.write_text(
-                "# Login Flow\n\n**Status:** done\n**Date:** 2026-09-11\n\n- [x] All done\n",
+            done = tasks_dir / "01-login-done.md"
+            done.write_text("# Login Flow\n\n**Date:** 2026-09-11\n", encoding="utf-8")
+            checked = tasks_dir / "02-biometric-doing.md"
+            checked.write_text(
+                "# Biometric Flow\n\n**Date:** 2026-09-11\n\n- [x] Step 1\n- [x] Step 2\n",
                 encoding="utf-8",
             )
+            active = tasks_dir / "03-logout-doing.md"
+            active.write_text("# Logout\n\n- [x] Step 1\n- [ ] Step 2\n", encoding="utf-8")
+            src = root / "src" / "Login.kt"
+            src.parent.mkdir()
+            src.write_text("// See docs/tasks/auth/01-login-done.md\n", encoding="utf-8")
 
-            heal_docs.heal_docs(root, dry_run=False)
+            out = io.StringIO()
+            with redirect_stdout(out):
+                heal_docs.heal_docs(root, dry_run=False)
 
-            self.assertFalse(task_file.exists())
-            archived = tasks_dir / "archive" / "01-login-done.md"
-            self.assertTrue(archived.exists())
-            self.assertIn("tasks/auth/archive/01-login-done.md", (docs / "README.md").read_text(encoding="utf-8"))
+            self.assertFalse(done.exists())
+            self.assertFalse(checked.exists())
+            self.assertTrue(active.exists())
+            self.assertFalse((tasks_dir / "archive").exists())
+            tasks_md = (docs / "tasks.md").read_text(encoding="utf-8")
+            self.assertNotIn("01-login-done.md", tasks_md)
+            self.assertNotIn("02-biometric-doing.md", tasks_md)
+            self.assertIn("03-logout-doing.md", tasks_md)
+            self.assertIn("01-login-done.md: src/Login.kt", out.getvalue())
+            self.assertEqual("// See docs/tasks/auth/01-login-done.md\n", src.read_text(encoding="utf-8"))
 
-    def test_auto_archives_task_with_100_percent_checkboxes(self) -> None:
+    def test_dry_run_keeps_done_tasks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            docs = root / "docs"
-            tasks_dir = docs / "tasks" / "auth"
+            tasks_dir = root / "docs" / "tasks" / "auth"
             tasks_dir.mkdir(parents=True)
+            done = tasks_dir / "01-login-done.md"
+            done.write_text("# Login Flow\n", encoding="utf-8")
 
-            task_file = tasks_dir / "02-biometric-doing.md"
-            task_file.write_text(
-                "# Biometric Flow\n\n**Status:** doing\n**Date:** 2026-09-11\n\n- [x] Step 1\n- [x] Step 2\n",
-                encoding="utf-8",
-            )
+            with redirect_stdout(io.StringIO()):
+                heal_docs.heal_docs(root, dry_run=True)
 
-            heal_docs.heal_docs(root, dry_run=False)
-
-            self.assertFalse(task_file.exists())
-            archived = tasks_dir / "archive" / "02-biometric-done.md"
-            self.assertTrue(archived.exists())
-            content = archived.read_text(encoding="utf-8")
-            self.assertIn("**Status:** done", content)
+            self.assertTrue(done.exists())
 
     def test_auto_renames_snake_case_and_updates_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

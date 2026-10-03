@@ -87,6 +87,39 @@ All tests pass.
         self.assertEqual(errors, [])
 
 
+class TestDeferredItems(unittest.TestCase):
+
+    def test_flags_deferred_bullets_without_an_issue(self) -> None:
+        body = """Adds multi-touch on Android.
+
+**Not in this PR.**
+- iOS and web still send a single pointer.
+- Tooltips stay hover-only (#142).
+
+**Tests.**
+- `TouchInputTest` covers edges.
+"""
+        errors = validate_payload_module.check_deferred_items(body)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("iOS and web", errors[0])
+
+    def test_accepts_cross_repo_links_and_issue_urls(self) -> None:
+        body = """## Follow-ups
+- Studio mapping: owner/studio#251
+- Harness: https://github.com/owner/core/issues/323
+"""
+        self.assertEqual(validate_payload_module.check_deferred_items(body), [])
+
+    def test_ignores_bullets_outside_deferred_sections(self) -> None:
+        body = "## Summary\n- Moves the view.\n- Renames it.\n"
+        self.assertEqual(validate_payload_module.check_deferred_items(body), [])
+
+    def test_only_runs_in_pr_mode(self) -> None:
+        body = "## Follow-ups\n- Untracked item.\n"
+        self.assertEqual(validate_payload_module.validate_payload(body), [])
+        self.assertEqual(len(validate_payload_module.validate_payload(body, pr=True)), 1)
+
+
 class TestSkillMetadata(unittest.TestCase):
 
     def test_skill_files_exist(self) -> None:

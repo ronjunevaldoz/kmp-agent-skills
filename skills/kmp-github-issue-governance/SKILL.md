@@ -3,12 +3,13 @@ name: kmp-github-issue-governance
 description: >
   Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP
   repositories. Use when decomposing work into epics and sub-issues, preventing ticket
-  spam or comment flooding, drafting bug reports and technical tasks, or transporting
-  markdown payloads safely through the GitHub CLI without escaping corruption.
+  spam or comment flooding, drafting bug reports and technical tasks, tracking work a PR
+  defers, labelling issues so they can be prioritised, or transporting markdown payloads
+  safely through the GitHub CLI without escaping corruption.
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-27'
+  last-updated: '2026-10-03'
   keywords:
     - github issue
     - sub-issue
@@ -19,6 +20,9 @@ metadata:
     - issue template
     - markdown corruption
     - in-place updates
+    - deferred work
+    - triage labels
+    - priority
 ---
 
 # GitHub Issue & Sub-Issue Governance
@@ -31,6 +35,8 @@ Use this skill when:
 - Posting status or progress reports to GitHub issues without spamming tickets with repetitive comments
 - Safely transmitting multi-line markdown with code blocks, backticks, or tables via GitHub CLI (`gh`)
 - Preventing shell-stripping bugs and raw `\n\n` escape artifacts in public issue bodies
+- Opening or merging a PR that defers work, or closing an issue
+- Labelling issues so a backlog can be ordered by priority
 
 **Trigger keywords:** github issue, sub-issue, epic, ticket spam, issue template, gh issue, comment flooding, markdown corruption, gh sub-issue, in-place update.
 
@@ -94,6 +100,46 @@ Never create or merge tickets without an explicit release destination:
      ```
 3. **Commit SemVer Parity**:
    - The conventional commit prefix must reflect the targeted milestone version change (`fix:` for patch releases, `feat:` for minor features, `BREAKING CHANGE:` for major releases).
+
+### Deferred Work Becomes an Issue (Mandatory)
+
+A PR body's "Not in this PR", "Follow-ups" or "Known limits" list is not tracking; it disappears
+once the PR merges. Before opening or merging a PR:
+
+1. Every deferred bullet links the issue that tracks it (`#123`, `owner/repo#123`, or an issue URL),
+   or is cut from the body. File the issue first.
+2. Check it: `gh pr view <n> --json body --jq .body | python3 scripts/validate_issue_payload.py - --pr`.
+3. A verification-only remainder (a device or emulator check) stays the issue's last unchecked
+   "Done when" bullet with an owner, or becomes its own issue.
+
+### Closing an Issue
+
+Close only when every "Done when" bullet holds **on the default branch**, not in a PR description.
+A PR that says it deleted a file, verified on a device, or shipped a half "earlier" is a claim;
+check the tree or the linked PR. Reopen an issue closed with an unmet bullet, saying which one.
+
+### Triage Labels (Mandatory)
+
+Milestones say *when*; labels say *what first*. Every open issue carries exactly one of each:
+
+| Axis | Labels | Meaning |
+|---|---|---|
+| Type | `bug`, `enhancement`, `task`, `documentation` | Defect, new capability, internal work, docs |
+| Priority | `priority: P0` … `priority: P3` | P0 broken release or data loss; P1 blocks the milestone or a user flow; P2 should land this milestone; P3 when convenient |
+| Area | `area: <name>` | One per subsystem, named after the repo's modules (`area: render`, `area: input`) |
+
+Create the taxonomy once per repository (idempotent):
+
+```bash
+for l in "priority: P0|b60205" "priority: P1|d93f0b" "priority: P2|fbca04" "priority: P3|c5def5" "task|ededed"; do
+  gh label create "${l%%|*}" --color "${l##*|}" --force
+done
+gh label create "area: render" --color 1d76db --force   # one per subsystem
+```
+
+File with all three: `gh issue create ... --label bug --label "priority: P1" --label "area: render"`.
+Order work by milestone, then priority, then dependency. Find gaps with
+`gh issue list --state open --search "-label:\"priority: P0\" -label:\"priority: P1\" -label:\"priority: P2\" -label:\"priority: P3\""`.
 
 ---
 
@@ -225,6 +271,8 @@ This skill bundles two scripts in `scripts/`:
    - Verifies required section headings against issue templates
    ```bash
    python3 scripts/validate_issue_payload.py /tmp/payload.md --template task
+   # PR body: every deferred item must link its issue
+   gh pr view 42 --json body --jq .body | python3 scripts/validate_issue_payload.py - --pr
    ```
 
 2. **`gh_sub_issue.py`**: Native GitHub Sub-Issues GraphQL CLI helper:
@@ -253,6 +301,9 @@ This skill bundles two scripts in `scripts/`:
 | Appending micro-status comments every time a test passes or fails | Update checkboxes in the issue description or edit the pinned status comment in place |
 | Filing an Epic for a single-PR task | Use `feature_request.yml`; reserve Epics strictly for multi-PR milestones |
 | Leaving sub-issues unlinked in issue descriptions | Use `gh_sub_issue.py add <parent> <child>` so GitHub's native progress bar tracks completion |
+| Listing "Not in this PR" items with no issue | File each, link it, and run `validate_issue_payload.py - --pr` |
+| Closing an issue because the PR says it's done | Check every "Done when" bullet on the default branch first |
+| Filing issues with a milestone but no labels | Add one type, one `priority: P*` and one `area:` label |
 | Submitting markdown with literal `\n\n` text | Run `validate_issue_payload.py` to ensure newlines are real byte linebreaks, not escaped strings |
 
 **Freshness rule:** recheck GitHub GraphQL API schemas for Sub-Issues (`addSubIssue`, `removeSubIssue`) before modifying mutation queries, as GitHub evolves project and issue GraphQL endpoints.
@@ -275,8 +326,8 @@ Validate this skill with short payload validation and CLI argument checks:
 
 1. Identify the unit of work (Epic, Standalone Feature, or Sub-Issue).
 2. Write the markdown payload to a local temporary file.
-3. Run `validate_issue_payload.py` to confirm syntax and section completeness.
-4. Output the exact `gh` command using `--body-file`.
+3. Run `validate_issue_payload.py` to confirm syntax and section completeness (`--pr` for PR bodies).
+4. Output the exact `gh` command using `--body-file`, with a milestone and type, priority and area labels.
 
 Keep it terse and factual.
 
@@ -293,6 +344,7 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | Deferred work must link an issue (`validate_issue_payload.py --pr` checks it), issues close only when "Done when" holds on the default branch, and every open issue carries a type, `priority: P0`–`P3` and `area:` label. |
 | 2026-09-27 | Media Inclusion Rules: replaced branch-pinned raw URLs with SHA-pinned `blob/<sha>/<path>?raw=true` links and pointed agents (which cannot upload attachments via `gh`) to `kmp-roborazzi/scripts/pr_visual_evidence.py`. |
 | 2026-09-15 | Added Visual & Verification Evidence Standards: Before vs After tables, collapsible `<details>` blocks for multi-platform captures, and shell-safe media inclusion rules. |
 | 2026-09-14 | Initial release — codified Epic vs Sub-Issue decision tree, comment throttling rules, shell-safe CLI transport via `--body-file`, pre-flight payload validation (`validate_issue_payload.py`), and native GraphQL sub-issue integration (`gh_sub_issue.py`). |

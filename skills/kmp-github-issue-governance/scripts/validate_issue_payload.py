@@ -8,11 +8,12 @@ Checks:
 1. Escaped newline corruption (literal '\\n\\n' in text).
 2. Unclosed code blocks (```) or unclosed inline backticks (`).
 3. Required section headings based on issue template type.
+4. With --pr: deferred work ("Not in this PR", "Follow-up", ...) that links no issue.
 
 Usage:
   python3 validate_issue_payload.py /path/to/payload.md
   python3 validate_issue_payload.py /path/to/payload.md --template task
-  cat payload.md | python3 validate_issue_payload.py -
+  gh pr view 42 --json body --jq .body | python3 validate_issue_payload.py - --pr
 """
 from __future__ import annotations
 
@@ -78,13 +79,43 @@ def check_template_sections(content: str, template: str) -> list[str]:
     return errors
 
 
-def validate_payload(content: str, template: str | None = None) -> list[str]:
+# A heading or bold lead-in that opens a list of work the PR leaves for later.
+DEFERRED_HEADING = re.compile(
+    r"^\s*(?:#{1,6}\s+|\*\*)?\s*(?:not in this pr|follow[- ]?ups?|out of scope|known limits?"
+    r"|left for later|deferred|still to do|not done)\b",
+    re.IGNORECASE,
+)
+ISSUE_LINK = re.compile(r"(?:[\w.-]+/[\w.-]+)?#\d+|/issues/\d+")
+
+
+def check_deferred_items(content: str) -> list[str]:
+    """Every bullet under a deferred-work heading must link the issue that tracks it."""
+    errors = []
+    in_deferred = False
+    for line in content.splitlines():
+        if DEFERRED_HEADING.match(line):
+            in_deferred = True
+            continue
+        if not in_deferred:
+            continue
+        stripped = line.strip()
+        if stripped.startswith("#") or (stripped.startswith("**") and not stripped.startswith("- ")):
+            in_deferred = False
+            continue
+        if re.match(r"^[-*]\s+", stripped) and not ISSUE_LINK.search(stripped):
+            errors.append(f"Deferred item links no issue: {stripped[:100]}")
+    return errors
+
+
+def validate_payload(content: str, template: str | None = None, pr: bool = False) -> list[str]:
     """Run all validation checks and return list of errors."""
     errors = []
     errors.extend(check_escaped_newlines(content))
     errors.extend(check_markdown_fences(content))
     if template:
         errors.extend(check_template_sections(content, template))
+    if pr:
+        errors.extend(check_deferred_items(content))
     return errors
 
 
@@ -98,6 +129,11 @@ def main() -> int:
         choices=["epic", "task", "bug", "feature"],
         help="Optional issue template schema to validate sections against",
     )
+    parser.add_argument(
+        "--pr",
+        action="store_true",
+        help="Treat the payload as a PR body: deferred work must link its tracking issue",
+    )
     args = parser.parse_args()
 
     if args.file == "-":
@@ -109,7 +145,7 @@ def main() -> int:
             return 1
         content = path.read_text(encoding="utf-8")
 
-    errors = validate_payload(content, args.template)
+    errors = validate_payload(content, args.template, args.pr)
 
     if errors:
         print("❌ Payload validation failed:", file=sys.stderr)

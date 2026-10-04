@@ -12,8 +12,17 @@ Every file in `docs/` is one of three kinds. Classify before acting.
 | Kind | Test question | Lifetime | Location |
 |---|---|---|---|
 | **Reference** | "How does this work?" | Permanent — update in place | `docs/` root or `docs/reference/` |
-| **Task** | "What are we doing right now?" | Temporary — active while work runs | `docs/tasks/<parent>/`, deleted when done |
+| **Task** | "What are we doing right now?" | Temporary — active while work runs | The issue tracker; `docs/tasks/<parent>/` only without one, deleted when done |
 | **Non-doc** | "Is this a fixture, spec, or generated file?" | Belongs elsewhere entirely | `tests/fixtures/`, `api/`, `spec/`, project root |
+
+### Issue tracker first
+
+When the project tracks work in an issue tracker (GitHub Issues, Linear, Jira), every Task-kind
+doc lives there, never in `docs/`: plans, phases, task checklists, bug threads, audits with their
+findings, handoffs, and design proposals waiting for approval. `docs/` keeps only Reference and
+Decision docs. A tracker issue closes with the work and is searchable without cluttering the
+tree; a task file in `docs/` goes stale the moment the work moves on. The Task lane under
+`docs/tasks/` is for projects without a tracker.
 
 ### docs/ root vs docs/reference/
 
@@ -117,7 +126,8 @@ least one inbound link, or `kmp-audit` flags it as orphaned.
 
 ### Active work lanes
 
-Use these lanes when the project keeps planning or bug history in nested folders:
+Only for a project without an issue tracker. Use these lanes when it keeps planning or bug
+history in nested folders:
 
 | Lane | Purpose | Example location |
 |---|---|---|
@@ -130,6 +140,42 @@ Use these lanes when the project keeps planning or bug history in nested folders
 Keep these lanes short-lived and promote stable guidance out of them into
 `docs/architecture.md`, `docs/deployment.md`, or `docs/reference/`.
 
+#### `docs/tasks.md` template
+
+Start `docs/tasks.md` with this structure:
+
+```markdown
+# Tasks
+
+## Current Objective
+
+## Active Phase
+
+## Open Questions
+
+## Fix Lanes
+
+- Dev:
+- Beta:
+- Stable:
+
+## Task Log
+
+| Task | Status | Parent |
+|---|---|---|
+| [01-plan](tasks/my-feature/01-plan-doing.md) | doing | my-feature |
+| [02-build](tasks/my-feature/02-build-todo.md) | todo | my-feature |
+
+```
+
+A table, not a bullet list — the whole point is reading every active task's status in
+one place without opening each file. Every task file under
+`docs/tasks/<parent>/` needs a row here; `kmp-audit`'s `--docs-hygiene-only` flags a
+task file with no matching row (see Hygiene Limits below). Update the
+row's **Status** column and the link's target filename together — the filename is the
+source of truth for status (per the naming convention), this table is just a rolled-up
+index of it, not a second place to track status independently.
+
 ### Decision lane (ADR)
 
 A fourth case that doesn't fit either Reference's "update in place" or Task's
@@ -138,6 +184,10 @@ real, widely-adopted pattern (Michael Nygard, 2011; rated ADOPT on
 ThoughtWorks' Technology Radar): **one decision per file, roughly one page,
 immutable once accepted.**
 
+- **When to write one**: only for a standing rule a later change could break without
+  noticing — a boundary, an invariant, a deliberate omission and what would bring it back.
+  Ask "would a contributor a year from now need this rule to avoid undoing the choice?" If
+  the answer is no, it is a Task (tracker issue) or Reference (README, KDoc), not an ADR.
 - **Location**: `docs/decisions/NNNN-slug.md` — 4-digit, globally sequential
   across the whole project (not per-parent like `docs/tasks/`; ADRs are meant
   to be found by number in a flat directory listing).
@@ -154,7 +204,10 @@ immutable once accepted.**
   committed to and why it changed.
 - **Not for**: implementation plans (that's the Task lane), full design
   specs, or operational runbooks — an ADR records the *choice*, not the *plan
-  to execute it* or *how to operate it*.
+  to execute it* or *how to operate it*. Nor for API shapes: interfaces and
+  signatures belong in the module README and KDoc, and an ADR that restates
+  them drifts from the code. With a tracker, a proposal is discussed on the
+  issue and the ADR lands already `Accepted`, holding only the rules.
 - One real anti-pattern this corrects: a single growing `decision-log.md`
   that every decision gets appended to. That's a Task-shaped habit (one file,
   edited forever) applied to Reference-shaped content — split it into one

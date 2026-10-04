@@ -2,6 +2,20 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.2.1] — 2026-10-04
+
+### Added
+
+- feat(issue-governance): track deferred work, verify closures, label for priority (#16)
+- feat(plugin): make kmp-agent-skills a clean Claude Code plugin (#13)
+
+### Fixed
+
+- fix(docs-maintainer): put work in the issue tracker and write decision records only for standing rules (#17)
+- fix(docs-maintainer): delete finished tasks instead of archiving them (#14)
+
+---
+
 ## [v3.2.0] — 2026-09-27
 
 ### Added

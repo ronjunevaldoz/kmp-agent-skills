@@ -10,7 +10,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-01'
+  last-updated: '2026-10-04'
   references:
     - references/docs-hygiene.md
   keywords:
@@ -125,11 +125,24 @@ a 62-category tiered detector (em dashes, hollow intensifiers, promotional infla
 `npx skills add conorbronsdon/avoid-ai-writing` for a `docs/`/README prose pass; this
 skill's own `_detect_hedging_language` stays scoped to its narrower phrase list.
 
+### Where Work Lives: Issue Tracker First
+
+If the project tracks work in an issue tracker (GitHub Issues, Linear, Jira), plans, task
+checklists, bug threads, audits, handoffs, and design proposals go there, not into `docs/`.
+`docs/` then holds only durable docs: README-linked reference, `docs/reference/`, and
+decision records. Skip `docs/tasks.md`, `docs/tasks/`, `docs/mvp/`, and `docs/bugs/` entirely;
+they exist for projects without a tracker. Before writing anything under `docs/`, ask: does
+this stay true after the work finishes? If not, it is an issue or an issue comment.
+
+Write a decision record only for a standing rule a later change could break without noticing,
+holding the rules alone. API shapes go in the module README and KDoc (see
+`references/docs-hygiene.md` → Decision lane).
+
 ### Default Docs Topology
 
 If a downstream project does not already have a clear docs layout, use this structure as
 the default. Keep the top-level docs visible, then branch active work into purpose-built
-folders:
+folders. With an issue tracker, drop `tasks.md`, `mvp/`, and `bugs/` and keep the rest:
 
 ```text
 docs/
@@ -191,7 +204,8 @@ Templates" section.
 
 ### Fix Maturity Lanes
 
-Use one of these lanes for every fix note in `docs/tasks/`:
+Without an issue tracker, use one of these lanes for every fix note in `docs/tasks/` (with a
+tracker, use issue labels for the same lanes):
 
 | Lane | Meaning | Where it lives |
 |---|---|---|
@@ -256,45 +270,15 @@ Keep the docs narrow and accurate:
 - remove references to deleted files, commands, or options
 - if the user asks to "write a doc in docs", classify it first:
   - durable project guidance → `docs/architecture.md`, `docs/deployment.md`, or `docs/reference/`
-  - current planning / MVP work → `docs/tasks.md` or `docs/mvp/0-mvp/0-phase/`
-  - active bug tracking → `docs/bugs/0-bug.md` (or a `docs/bugs/0-bug/` folder only if the bug lane needs multiple files)
+  - current planning / MVP work → an issue when the project has a tracker; otherwise `docs/tasks.md` or `docs/mvp/0-mvp/0-phase/`
+  - active bug tracking → an issue when the project has a tracker; otherwise `docs/bugs/0-bug.md` (or a `docs/bugs/0-bug/` folder only if the bug lane needs multiple files)
+  - a design proposal awaiting approval → a comment on the tracking issue, never a `Proposed` doc in the repo
   - if the path is ambiguous, choose the narrowest durable home and explain the placement
 
 ### 2a) Use the default task template
 
-When creating a new downstream project, start `docs/tasks.md` with this structure:
-
-```markdown
-# Tasks
-
-## Current Objective
-
-## Active Phase
-
-## Open Questions
-
-## Fix Lanes
-
-- Dev:
-- Beta:
-- Stable:
-
-## Task Log
-
-| Task | Status | Parent |
-|---|---|---|
-| [01-plan](tasks/my-feature/01-plan-doing.md) | doing | my-feature |
-| [02-build](tasks/my-feature/02-build-todo.md) | todo | my-feature |
-
-```
-
-A table, not a bullet list — the whole point is reading every active task's status in
-one place without opening each file. Every task file under
-`docs/tasks/<parent>/` needs a row here; `kmp-audit`'s `--docs-hygiene-only` flags a
-task file with no matching row (see `docs-hygiene.md`'s Hygiene Limits). Update the
-row's **Status** column and the link's target filename together — the filename is the
-source of truth for status (per the naming convention), this table is just a rolled-up
-index of it, not a second place to track status independently.
+Only for a project without an issue tracker: start `docs/tasks.md` from the template in
+`references/docs-hygiene.md` → Active work lanes. Its Task Log is a table, one row per task file.
 
 ### 2b) Use `<NN>-<slug>-<status>.md` task filenames
 
@@ -333,6 +317,8 @@ Use this validation matrix for project docs:
 | Case | Expected |
 |---|---|
 | README mentions a module or command | The referenced file or command exists |
+| Project has an issue tracker | No plan, task, bug, audit, or proposal file under `docs/`; each lives in an issue |
+| A decision record is added | It states a standing rule and its consequences, and restates no API shapes |
 | `docs/tasks/` updates | `docs/tasks.md` links to the dated record and the dated record has a date-stamped filename |
 | A task finishes | Its durable guidance is promoted, the file is deleted, and nothing still links to it |
 | Dev/Beta/Stable fix lanes | Lane markers stay visible until a fix is promoted into durable docs |
@@ -472,6 +458,7 @@ Consumer projects follow a clean 3-tier README hierarchy documented in `referenc
 
 | Date | Change |
 |---|---|
+| 2026-10-04 | Issue tracker first: with GitHub Issues (or another tracker), plans, tasks, bugs, audits, handoffs, and design proposals live in issues, and `docs/` holds only reference and decision docs; `docs/tasks/`, `docs/mvp/`, and `docs/bugs/` are for projects without a tracker. Decision records gained a "when to write one" test (a standing rule a later change could break unnoticed) and must not restate API shapes. A real consumer wrote a `Proposed` design doc whose API tables duplicated the module README, KDoc, and PR body, while its own milestone skill already said design discussion belongs in issues. |
 | 2026-10-01 | Finished tasks are deleted, not archived. Archive folders only grew (one real project reached 85 archived plans, 10x its reference docs) and moving a plan broke every comment citing its path. Now: promote durable guidance, delete the task file and its `docs/tasks.md` row, and fix whatever cites it; git history is the record. Lessons are deleted after harvesting. ADRs are unchanged. `heal_docs.py` deletes `-done` and 100%-checked tasks instead of moving them, and lists files that still reference them. Legacy `archive/` folders stay ignored. |
 | 2026-09-27 | Added `PRODUCT.md` to the maintained docs and the change checklist — design work now reads it before any screen change (`kmp-compose-design-system` → `references/design-context.md`). |
 | 2026-09-11 | Updated docs hygiene rules: documented recursive non-doc file checks, asset/image isolation to `docs/assets/` or `docs/images/`, canonical top-level `docs/` subdirectories enforcement, and archive historical task exemption. |

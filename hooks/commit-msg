@@ -26,6 +26,17 @@ if echo "$MSG" | grep -qiE "^Co-Authored-By:"; then
   exit 1
 fi
 
+# Nor a "🤖 Generated with [Claude Code](...)" footer line some agent runtimes append
+# (a whole line; prose that mentions the phrase is fine).
+AI_FOOTER='^[^[:alnum:]]*generated (with|by) \[?([[:alnum:]_.-]+ )?(claude|anthropic|copilot|chatgpt|openai|codex|gemini)[[:alnum:]_ .-]*\]?(\([^)]*\))?[^[:alnum:]]*$'
+if echo "$MSG" | grep -qiE "$AI_FOOTER"; then
+  echo "" >&2
+  echo "  ❌  Commit rejected — no AI attribution footer (\"Generated with ...\")." >&2
+  echo "  Remove the footer line and re-commit." >&2
+  echo "" >&2
+  exit 1
+fi
+
 # Conventional Commit pattern
 PATTERN="^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\([a-z0-9][a-z0-9 _-]*\))?: .{3,}"
 

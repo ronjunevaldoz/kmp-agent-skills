@@ -161,6 +161,7 @@ Closes #<number>
 
 Prefixes: `feat` / `fix` / `refactor` / `test` / `chore` per Conventional Commits.
 No `Co-Authored-By` trailer — commits are not attributed to the AI agent, even if the runtime suggests one.
+The same goes for the PR body below: no "🤖 Generated with Claude Code" footer.
 
 ---
 

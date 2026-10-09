@@ -141,7 +141,7 @@ Body:    (shown above)
 Submit? [yes / edit / cancel]
 ```
 
-On **yes**:
+On **yes** (the body ends with its content: no "🤖 Generated with Claude Code" footer or AI `Co-authored-by` line):
 
 ```bash
 gh issue create \

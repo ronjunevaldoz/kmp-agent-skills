@@ -86,7 +86,7 @@ Follow the Clean KMP Feature Pipeline:
 ./gradlew :feature:<name>:ui:recordRoborazziDesktop
 
 # 3. Verify architecture health (Zero God Classes / Smells)
-python3 scripts/audit_project.py .
+python3 .agents/skills/kmp-audit/scripts/audit_project.py .
 ```
 
 ---

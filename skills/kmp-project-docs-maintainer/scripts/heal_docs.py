@@ -70,7 +70,7 @@ def extract_doc_info(file_path: Path, repo_root: Path) -> dict:
     return {
         "title": title,
         "path": str(rel_path),
-        "rel_from_docs": str(file_path.relative_to(repo_root / "docs")),
+        "rel_from_docs": file_path.relative_to(repo_root / "docs").as_posix(),
         "category": category,
         "status": status,
         "summary": summary
@@ -110,10 +110,22 @@ def auto_rename_kebab(docs_dir: Path, repo_root: Path, dry_run: bool = False) ->
     return renamed
 
 
+def _committed_unchanged(path: Path, repo_root: Path) -> bool:
+    """True when HEAD holds this exact file, so deleting it loses nothing git can't restore."""
+    try:
+        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", "--", str(path)], cwd=repo_root, capture_output=True)
+        unchanged = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", str(path)], cwd=repo_root, capture_output=True)
+    except OSError:
+        return False
+    return tracked.returncode == 0 and unchanged.returncode == 0
+
+
 def delete_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) -> list[Path]:
     """Deletes completed tasks (*-done.md or 100% checked) from docs/tasks/<parent>/.
 
-    Git history keeps the old plan. Legacy archive/ folders are left alone.
+    Only a task whose exact content is committed is deleted, so git history keeps it. An
+    untracked or edited one is reported instead: the docs-hygiene commit gate rejects finished
+    tasks, so that version may never have reached git. Legacy archive/ folders are left alone.
     """
     tasks_dir = docs_dir / "tasks"
     if not tasks_dir.exists():
@@ -127,11 +139,16 @@ def delete_done_tasks(docs_dir: Path, repo_root: Path, dry_run: bool = False) ->
             content = md.read_text(encoding="utf-8", errors="ignore")
             total_boxes = len(re.findall(r"^\s*-\s*\[[ xX]\]", content, re.MULTILINE))
             checked_boxes = len(re.findall(r"^\s*-\s*\[[xX]\]", content, re.MULTILINE))
-            if md.stem.endswith("-done") or (total_boxes > 0 and checked_boxes == total_boxes):
-                deleted.append(md)
-                print(f"  🗑️ {'Would delete' if dry_run else 'Deleted'}: {md.relative_to(repo_root)}")
-                if not dry_run:
-                    md.unlink()
+            if not (md.stem.endswith("-done") or (total_boxes > 0 and checked_boxes == total_boxes)):
+                continue
+            if not _committed_unchanged(md, repo_root):
+                print(f"  ⚠️  Kept {md.relative_to(repo_root)}: finished, but this version isn't committed"
+                      " — promote anything durable, then delete it yourself")
+                continue
+            deleted.append(md)
+            print(f"  🗑️ {'Would delete' if dry_run else 'Deleted'}: {md.relative_to(repo_root)}")
+            if not dry_run:
+                md.unlink()
     return deleted
 
 
@@ -140,22 +157,21 @@ def find_references(repo_root: Path, names: list[str]) -> dict[str, list[str]]:
     refs: dict[str, list[str]] = {}
     for name in names:
         try:
-            out = subprocess.run(
-                ["git", "grep", "-l", "-F", name],
-                cwd=repo_root, capture_output=True, text=True, check=False,
-            )
-            # 0 = matches, 1 = none; anything else means not a git repo.
-            if out.returncode not in (0, 1):
-                raise OSError(out.stderr)
-            hits = out.stdout.splitlines()
+            out = subprocess.run(["git", "grep", "-l", "-F", name], cwd=repo_root, capture_output=True, text=True)
         except OSError:
+            out = None
+        # 0 = matches, 1 = none; anything else means not a git repo.
+        if out is not None and out.returncode in (0, 1):
+            hits = out.stdout.splitlines()
+        else:
             hits = []
             for f in repo_root.rglob("*"):
-                if _SKIP_DIRS.intersection(f.relative_to(repo_root).parts) or f.suffix not in _TEXT_SUFFIXES or not f.is_file():
+                rel = f.relative_to(repo_root)
+                if _SKIP_DIRS.intersection(rel.parts) or f.suffix not in _TEXT_SUFFIXES or not f.is_file():
                     continue
                 try:
                     if name in f.read_text(encoding="utf-8", errors="ignore"):
-                        hits.append(str(f.relative_to(repo_root)))
+                        hits.append(rel.as_posix())
                 except OSError:
                     pass
         # docs/README.md and docs/tasks.md are regenerated below, so their stale rows go away.

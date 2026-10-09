@@ -10,7 +10,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-04'
+  last-updated: '2026-10-09'
   references:
     - references/docs-hygiene.md
   keywords:
@@ -458,6 +458,7 @@ Consumer projects follow a clean 3-tier README hierarchy documented in `referenc
 
 | Date | Change |
 |---|---|
+| 2026-10-09 | `heal_docs.py` deletes a finished task only when its exact content is committed; an untracked or edited one is kept and reported. The commit gate rejects finished tasks, so that version could be missing from git, and `/kmp-new-task` ran the heal silently. `new_task.py` now finds `heal_docs.py` next to itself (so the index syncs from the plugin or any install) and no longer hides its output. Sitemap links use forward slashes on Windows. |
 | 2026-10-04 | Issue tracker first: with GitHub Issues (or another tracker), plans, tasks, bugs, audits, handoffs, and design proposals live in issues, and `docs/` holds only reference and decision docs; `docs/tasks/`, `docs/mvp/`, and `docs/bugs/` are for projects without a tracker. Decision records gained a "when to write one" test (a standing rule a later change could break unnoticed) and must not restate API shapes. A real consumer wrote a `Proposed` design doc whose API tables duplicated the module README, KDoc, and PR body, while its own milestone skill already said design discussion belongs in issues. |
 | 2026-10-01 | Finished tasks are deleted, not archived. Archive folders only grew (one real project reached 85 archived plans, 10x its reference docs) and moving a plan broke every comment citing its path. Now: promote durable guidance, delete the task file and its `docs/tasks.md` row, and fix whatever cites it; git history is the record. Lessons are deleted after harvesting. ADRs are unchanged. `heal_docs.py` deletes `-done` and 100%-checked tasks instead of moving them, and lists files that still reference them. Legacy `archive/` folders stay ignored. |
 | 2026-09-27 | Added `PRODUCT.md` to the maintained docs and the change checklist — design work now reads it before any screen change (`kmp-compose-design-system` → `references/design-context.md`). |

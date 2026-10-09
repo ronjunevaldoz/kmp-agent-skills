@@ -285,6 +285,13 @@ heal_docs = load_module(
 )
 
 
+def _commit_all(root: Path) -> None:
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"]
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    subprocess.run([*git, "commit", "-qm", "init"], cwd=root, check=True)
+
+
 class HealDocsTests(unittest.TestCase):
     def test_heal_docs_syncs_sitemap_and_task_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -333,6 +340,7 @@ class HealDocsTests(unittest.TestCase):
             src = root / "src" / "Login.kt"
             src.parent.mkdir()
             src.write_text("// See docs/tasks/auth/01-login-done.md\n", encoding="utf-8")
+            _commit_all(root)
 
             out = io.StringIO()
             with redirect_stdout(out):
@@ -357,10 +365,35 @@ class HealDocsTests(unittest.TestCase):
             done = tasks_dir / "01-login-done.md"
             done.write_text("# Login Flow\n", encoding="utf-8")
 
+            _commit_all(root)
+
             with redirect_stdout(io.StringIO()):
                 heal_docs.heal_docs(root, dry_run=True)
 
             self.assertTrue(done.exists())
+
+    def test_keeps_finished_task_whose_content_is_not_committed(self) -> None:
+        # The commit gate rejects finished tasks, so the finished version can be missing from
+        # git; deleting it would lose the only copy.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tasks_dir = root / "docs" / "tasks" / "auth"
+            tasks_dir.mkdir(parents=True)
+            edited = tasks_dir / "01-login-doing.md"
+            edited.write_text("# Login\n\n- [x] Step 1\n- [ ] Step 2\n", encoding="utf-8")
+            _commit_all(root)
+            edited.write_text("# Login\n\nNotes.\n\n- [x] Step 1\n- [x] Step 2\n", encoding="utf-8")
+            untracked = tasks_dir / "02-logout-done.md"
+            untracked.write_text("# Logout\n", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                heal_docs.heal_docs(root, dry_run=False)
+
+            self.assertTrue(edited.exists())
+            self.assertTrue(untracked.exists())
+            self.assertIn("Kept docs/tasks/auth/01-login-doing.md", out.getvalue().replace("\\", "/"))
+            self.assertIn("Kept docs/tasks/auth/02-logout-done.md", out.getvalue().replace("\\", "/"))
 
     def test_auto_renames_snake_case_and_updates_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -437,6 +470,10 @@ class NewTaskTests(unittest.TestCase):
             # Create second task in same parent
             t2 = new_task.create_task(root, "auth", "biometric-login")
             self.assertEqual(t2.name, "02-biometric-login-todo.md")
+
+            # heal_docs.py is found next to new_task.py, not inside the project, so the
+            # index syncs wherever the skill is installed.
+            self.assertIn("02-biometric-login-todo.md", (root / "docs" / "tasks.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

@@ -63,12 +63,12 @@ Brief description of the task requirements and objective.
     print(f"✅ Created task: {task_path.relative_to(repo_root)}")
     
     # Run heal_docs to auto-sync docs/tasks.md if script exists
-    heal_script = repo_root / "skills" / "kmp-project-docs-maintainer" / "scripts" / "heal_docs.py"
-    if not heal_script.exists():
-        heal_script = repo_root / ".agents" / "skills" / "kmp-project-docs-maintainer" / "scripts" / "heal_docs.py"
+    # Ships next to this script, wherever the skill is installed (plugin, .agents/skills, ...).
+    heal_script = Path(__file__).with_name("heal_docs.py")
     if heal_script.exists():
         import subprocess
-        subprocess.run([sys.executable, str(heal_script), "--project", str(repo_root)], check=False, stdout=subprocess.DEVNULL)
+        # Not silenced: healing may delete finished tasks, and it lists what it removed.
+        subprocess.run([sys.executable, str(heal_script), "--project", str(repo_root)], check=False)
         
     return task_path
 

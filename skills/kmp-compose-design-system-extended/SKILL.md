@@ -135,7 +135,7 @@ doesn't flag correctly-exempt components as gaps:
 | `AppIconButton` | ✅ Wired | Interactive leaf control — `rememberUpdatedStyleState` + `styleable` |
 | `AppAvatar` | ✅ Wired | Static leaf control — `style` escape hatch for one-off overrides (e.g. status ring) |
 | `AppIcon`, `AppLabel`, `AppSeparator` | ⚠️ Not yet wired | Simple data+param leaf controls; a `style` escape hatch would still be valid — candidates for a future pass |
-| `AppSpinner` | ✅ Correctly exempt | Infinite rotation animation — Styles API does not support infinite animations (see `references/compose-styles-api-reference.md` §10); uses `rememberInfiniteTransition` instead, as documented in its own docstring |
+| `AppSpinner` | ✅ Correctly exempt | Infinite rotation animation — Styles API does not support infinite animations (see the base skill's `references/compose-styles-api-reference.md` §10); uses `rememberInfiniteTransition` instead, as documented in its own docstring |
 | `AppSkeleton`, `AppProgress` | ⚠️ Not yet wired | Same infinite-animation constraint may apply to the shimmer/indeterminate variants — verify per-variant before wiring |
 | `AppCheckbox`, `AppRadioButton`, `AppSwitch` | ⚠️ Not yet wired | Custom Canvas-drawn glyphs (checkmark, dot, thumb) sit outside the Style property set (no arbitrary path-drawing property) — per Styles-vs-Modifiers guidance this is legitimately Modifier/Canvas territory; only the container chrome (background/border color per checked/enabled state) is a real Style candidate, not yet extracted |
 | `AppSlider` | ✅ Correctly exempt | Continuous drag value, not a discrete interaction state — doesn't fit the StyleState model |

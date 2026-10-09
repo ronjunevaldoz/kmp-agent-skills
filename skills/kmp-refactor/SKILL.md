@@ -197,7 +197,7 @@ independent checks before calling it complete:
 ## Common Anti-Patterns
 
 - **Regex-renaming Kotlin source** — running a repo-wide sed across `.kt` files to
-  rename a class. Even this skill's own `scripts/refactor_rename.py` only protects
+  rename a class. Even this repo's `scripts/refactor_rename.py` only protects
   string/char literals (see Kotlin Symbol Scripts above), not shadowed locals or
   string-template expressions. Use the IDE's Rename refactor for actual Kotlin symbols
   whenever one is available.

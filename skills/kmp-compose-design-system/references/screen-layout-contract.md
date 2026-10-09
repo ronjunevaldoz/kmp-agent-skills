@@ -82,7 +82,7 @@ Rules:
 - Tabbed screens define the chrome; **each tab page must use the same inner pattern** (all tabs flat, or all tabs card-sectioned — never mixed)
 - If two screens genuinely need different patterns, they belong in different features or flows
 
-`scan_design_violations.py --layout` flags any feature `ui/` directory where `*Content.kt` files use different patterns.
+`scan_design_violations.py` flags any feature `ui/` directory where `*Content.kt` files use different patterns.
 
 ---
 

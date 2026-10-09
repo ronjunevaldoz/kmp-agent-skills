@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-18'
+  last-updated: '2026-10-09'
   references: []
   keywords:
     - update skills
@@ -49,12 +49,16 @@ Do NOT use this skill when:
 **Default to machine-wide assistant sync unless explicitly operating on a project-local vendored directory:**
 
 ```bash
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
 # 1. Check if updates exist
-python3 scripts/check_updates.py
+python3 "$KMP_REPO/scripts/check_updates.py"
 
 # 2. Sync all local assistant skill runtimes
-bash scripts/sync-local-assistant-skills.sh
+bash "$KMP_REPO/scripts/sync-local-assistant-skills.sh"
 ```
+
+The first line finds the scripts in the Claude Code plugin or a kmp-agent-skills checkout; they
+are not deployed with the skills themselves. Run each block in one shell.
 
 In Antigravity, slash commands are populated directly by active skills. Invoking `/kmp-update` in the chat canvas triggers this runbook.
 
@@ -65,17 +69,20 @@ In Antigravity, slash commands are populated directly by active skills. Invoking
 To verify if local skills are current relative to upstream:
 
 ```bash
-python3 scripts/check_updates.py
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+python3 "$KMP_REPO/scripts/check_updates.py"
 ```
 
 - **Exit 0**: Skills are up to date.
 - **Exit 1**: Updates are available. Inspect the list of changed skills and commits.
-- **Exit 2**: Offline or unable to reach remote. Continue with local cache and warn user.
+- **Exit 2**: Offline or unable to reach remote, or the scripts are the Claude Code plugin (update
+  it with `claude plugin update kmp-agent-skills@kmp-agent-skills`). Continue with local cache and warn user.
 
 To check the installed version in a specific target directory:
 
 ```bash
-bash scripts/check-installed-skills-version.sh ~/.gemini/skills
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+bash "$KMP_REPO/scripts/check-installed-skills-version.sh" ~/.gemini/skills
 ```
 
 ---
@@ -85,19 +92,22 @@ bash scripts/check-installed-skills-version.sh ~/.gemini/skills
 To update all assistant bundles across the current machine:
 
 ```bash
-bash scripts/sync-local-assistant-skills.sh
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+bash "$KMP_REPO/scripts/sync-local-assistant-skills.sh"
 ```
 
 This synchronizes the latest release to:
 - `~/.gemini/config/plugins/kmp-agent-skills/` (Antigravity plugin manifest + skills)
 - `~/.gemini/skills/` and `~/.gemini/commands/` (Gemini CLI)
 - `~/.agents/skills/` and `~/.agents/commands/` (Cross-client convention)
-- `~/.claude/skills/` and `~/.claude/commands/` (Claude Code)
+- `~/.claude/skills/` and `~/.claude/commands/` (Claude Code), skipped when the kmp-agent-skills
+  Claude Code plugin is installed; update the plugin with `claude plugin update kmp-agent-skills@kmp-agent-skills`
 - `~/.codex/skills/` (Codex CLI)
 
 Dry-run preview:
 ```bash
-bash scripts/sync-local-assistant-skills.sh --dry-run
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+bash "$KMP_REPO/scripts/sync-local-assistant-skills.sh" --dry-run
 ```
 
 ---
@@ -108,7 +118,8 @@ When working inside a consumer project that vendors `.agents/skills`:
 
 1. **Deploy latest skills**:
    ```bash
-   bash scripts/update-consumer-skills.sh --agent-dir .agents/skills
+   for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+   bash "$KMP_REPO/scripts/update-consumer-skills.sh" --agent-dir .agents/skills
    ```
 2. **Regenerate lockfile**:
    ```bash
@@ -127,7 +138,8 @@ After synchronizing or deploying updates:
 
 1. **Run Project Architecture Audit**:
    ```bash
-   python3 scripts/audit_project.py .
+   for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+   python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" .
    ```
 2. **Verify Zero Smell Regressions**:
    Ensure no new architecture violations were introduced and recheck baseline freshness.
@@ -147,10 +159,14 @@ After synchronizing or deploying updates:
 
 ## Testing
 
-Validate update workflows and sync script reliability using unit test suites:
-- Run `@Test` cases in `tests/test_sync_local_assistant_skills.py` to verify dry-run safety and directory targeting.
-- Execute `runTest` harness in `tests/test_check_updates.py` to confirm exit codes (0, 1, 2) against mocked remote git states.
-- Use `FakeDirectoryFixture` when validating consumer skills deployment and lockfile verification in isolation.
+The scripts this skill drives are covered by pytest suites in the kmp-agent-skills repo:
+- `tests/test_sync_local_assistant_skills.py`: dry-run safety, directory targeting, plugin-aware `~/.claude` skip.
+- `tests/test_check_updates.py`: exit codes 0, 1 and 2 against mocked git output, and the plugin (non-git) case.
+- `tests/test_update_consumer_skills.py`: consumer deployment, pruning, and the version marker, against temp directories.
+
+```bash
+python3 -m pytest tests/test_sync_local_assistant_skills.py tests/test_check_updates.py tests/test_update_consumer_skills.py -q
+```
 
 ---
 
@@ -176,4 +192,5 @@ When executing `/kmp-update` or reporting update status:
 
 | Date | Version | Description |
 |---|---|---|
+| 2026-10-09 | 3.3.0 | Scripts resolve from the Claude Code plugin or a kmp-agent-skills checkout instead of the current directory; the audit runs from `kmp-audit`'s real path; notes that the sync skips `~/.claude` when the plugin is installed; Testing lists the real pytest suites. |
 | 2026-09-18 | 3.0.14 | Initial release of `kmp-update` skill, bridging `/kmp-update` slash command support for Antigravity and unified upstream sync workflows. |

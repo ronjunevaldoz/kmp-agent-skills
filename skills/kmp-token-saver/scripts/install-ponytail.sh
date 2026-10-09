@@ -16,6 +16,10 @@
 
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 PLUGIN="ponytail@ponytail"
 MARKETPLACE_SOURCE="DietrichGebert/ponytail"
 MARKETPLACE_NAME="ponytail"
@@ -37,7 +41,7 @@ echo ""
 echo "Checking current ponytail install state..."
 EXISTING_USER_INSTALL=$(
   claude plugin list --json 2>/dev/null \
-    | python3 -c "
+    | "$PYTHON" -c "
 import json, sys
 try:
     plugins = json.load(sys.stdin)

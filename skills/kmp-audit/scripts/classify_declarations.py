@@ -179,7 +179,7 @@ def classify(root: Path) -> list[dict]:
     for path in sorted(root.rglob("*.kt")):
         if _is_excluded(path):
             continue
-        rel = str(path.relative_to(root))
+        rel = path.relative_to(root).as_posix()
         if _TEST_PATH_RE.search(rel):
             continue
         rows.extend(classify_file(path, rel))

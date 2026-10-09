@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from _helpers import REPO_ROOT
+from _helpers import BASH, REPO_ROOT
 
 SCRIPT = REPO_ROOT / "scripts" / "bootstrap-consumer-skills.sh"
 
@@ -26,11 +26,11 @@ class BootstrapConsumerSkillsTests(unittest.TestCase):
 
     def _run(self, cwd: Path, target: str, env: dict) -> subprocess.CompletedProcess:
         return subprocess.run(
-            ["bash", str(SCRIPT), target],
+            [BASH, str(SCRIPT), target],
             cwd=cwd,
             env=env,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def test_noop_when_target_already_populated(self) -> None:

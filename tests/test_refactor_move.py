@@ -49,11 +49,11 @@ def test_refactor_move_package_and_dry_run(tmp_path: Path):
     assert not source_file.exists()
     expected_new_file = tmp_path / "core" / "src" / "commonMain" / "kotlin" / "com" / "newpkg" / "UserSession.kt"
     assert expected_new_file.exists()
-    assert "package com.newpkg" in expected_new_file.read_text()
-    assert "[com.newpkg.UserSession]" in expected_new_file.read_text()
+    assert "package com.newpkg" in expected_new_file.read_text(encoding="utf-8")
+    assert "[com.newpkg.UserSession]" in expected_new_file.read_text(encoding="utf-8")
 
     # Consumer imports updated
-    consumer_content = consumer_file.read_text()
+    consumer_content = consumer_file.read_text(encoding="utf-8")
     assert "import com.newpkg.UserSession" in consumer_content
     assert "import com.oldpkg.UserSession" not in consumer_content
 
@@ -81,4 +81,4 @@ def test_refactor_rename_symbol(tmp_path: Path):
     new_file = src_dir / "NewName.kt"
     assert new_file.exists()
     assert not source_file.exists()
-    assert "class NewName" in new_file.read_text()
+    assert "class NewName" in new_file.read_text(encoding="utf-8")

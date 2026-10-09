@@ -33,7 +33,7 @@ def test_bulk_symbol_refactoring(tmp_path: Path):
 
     execute_bulk_refactor(plan, dry_run=False)
 
-    updated_content = file1.read_text()
+    updated_content = file1.read_text(encoding="utf-8")
     assert "class AslShader" in updated_content
     assert "class GpuTexture" in updated_content
     assert "class ShaderRegistry(val shader: AslShader, val texture: GpuTexture)" in updated_content
@@ -60,7 +60,7 @@ def test_bulk_symbol_refactoring_does_not_corrupt_string_literals(tmp_path: Path
     )
     execute_bulk_refactor(plan, dry_run=False)
 
-    updated_content = file1.read_text()
+    updated_content = file1.read_text(encoding="utf-8")
     assert "class AslShader" in updated_content
     assert '@SerialName("LegacyShader")' in updated_content
     assert 'println("LegacyShader not found")' in updated_content
@@ -89,7 +89,7 @@ def test_bulk_package_refactoring(tmp_path: Path):
 
     execute_bulk_refactor(plan, dry_run=False)
 
-    updated_content = file1.read_text()
+    updated_content = file1.read_text(encoding="utf-8")
     assert "import io.github.security.User" in updated_content
     assert "import io.github.graphics.Camera" in updated_content
     assert "com.old.auth" not in updated_content

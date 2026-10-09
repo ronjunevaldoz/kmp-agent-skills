@@ -4,11 +4,15 @@
 # SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 repo_root="$(git rev-parse --show-toplevel)"
 
 # 1. Verify Copyright & SPDX headers on staged files (if tool exists)
 if [ -f "$repo_root/tools/verify_copyright_headers.py" ]; then
-  if ! python3 "$repo_root/tools/verify_copyright_headers.py" --staged; then
+  if ! "$PYTHON" "$repo_root/tools/verify_copyright_headers.py" --staged; then
     echo "pre-commit hook: staged first-party source is missing required copyright/SPDX header." >&2
     exit 1
   fi
@@ -64,7 +68,7 @@ if git diff --cached --name-only | grep -q "^docs/.*\.md$"; then
     heal_script="$repo_root/scripts/heal_docs.py"
   fi
   if [ -n "$heal_script" ]; then
-    python3 "$heal_script" --project "$repo_root" >/dev/null 2>&1 || true
+    "$PYTHON" "$heal_script" --project "$repo_root" >/dev/null 2>&1 || true
     if [ -f "$repo_root/docs/README.md" ]; then
       git add "$repo_root/docs/README.md"
     fi
@@ -83,7 +87,7 @@ if git diff --cached --name-only | grep -q "^docs/"; then
     audit_script="$repo_root/skills/kmp-audit/scripts/audit_skills_repo.py"
   fi
   if [ -n "$audit_script" ] && [ -d "$repo_root/docs" ]; then
-    if ! python3 "$audit_script" "$repo_root" --docs-hygiene-only; then
+    if ! "$PYTHON" "$audit_script" "$repo_root" --docs-hygiene-only; then
       echo "pre-commit hook: docs hygiene violation detected! Run 'python3 $audit_script $repo_root --docs-hygiene-only' for details." >&2
       exit 1
     fi

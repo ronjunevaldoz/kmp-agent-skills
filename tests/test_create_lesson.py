@@ -54,7 +54,7 @@ class CreateLessonTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             p = self._run(root, "Effect replay", evidence="Foo.kt:10")
-            text = p.read_text()
+            text = p.read_text(encoding="utf-8")
             for token in ("skill:", "date:", "severity:", "type:",
                           "## What we followed", "## Correct pattern", "## Evidence"):
                 self.assertIn(token, text)

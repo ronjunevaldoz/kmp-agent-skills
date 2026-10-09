@@ -251,7 +251,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "detekt-rules" / "build.gradle.kts"
         )
         self.assertTrue(build_file.exists())
-        content = build_file.read_text()
+        content = build_file.read_text(encoding="utf-8")
         self.assertIn("detekt-api", content)
 
     def test_detekt_rules_config_exists(self) -> None:
@@ -260,7 +260,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "detekt-rules" / "config" / "detekt-design-system.yml"
         )
         self.assertTrue(config_file.exists())
-        content = config_file.read_text()
+        content = config_file.read_text(encoding="utf-8")
         for rule in ("HardcodedColor", "HardcodedDp", "MaterialThemeUsage",
                      "DirectTextStyle", "NestedContainer",
                      "ComponentRegistryRule", "ImportBoundaryRule",
@@ -275,7 +275,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "io.gitlab.arturbosch.detekt.api.RuleSetProvider"
         )
         self.assertTrue(svc_file.exists())
-        self.assertIn("DesignSystemRuleSetProvider", svc_file.read_text())
+        self.assertIn("DesignSystemRuleSetProvider", svc_file.read_text(encoding="utf-8"))
 
     def test_detekt_rule_set_provider_has_all_9_rules(self) -> None:
         provider_kt = (
@@ -284,7 +284,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "GROUP_ID" / "designsystem" / "detekt"
             / "DesignSystemRuleSetProvider.kt"
         )
-        content = provider_kt.read_text()
+        content = provider_kt.read_text(encoding="utf-8")
         for rule in ("HardcodedColorRule", "HardcodedDpRule", "MaterialThemeUsageRule",
                      "DirectTextStyleRule", "NestedContainerRule",
                      "ComponentRegistryRule", "ImportBoundaryRule",
@@ -298,7 +298,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "GROUP_ID" / "designsystem" / "detekt"
             / "RedundantScreenTitleRule.kt"
         )
-        content = rule_kt.read_text()
+        content = rule_kt.read_text(encoding="utf-8")
         self.assertIn("RedundantScreenTitle", content)
         self.assertIn("KtTreeVisitorVoid", content)
         self.assertIn("AppTopAppBar", content)
@@ -310,7 +310,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "GROUP_ID" / "designsystem" / "detekt"
             / "HardcodedGridColumnsRule.kt"
         )
-        content = rule_kt.read_text()
+        content = rule_kt.read_text(encoding="utf-8")
         self.assertIn("HardcodedGridColumns", content)
         self.assertIn("GridCells", content)
         self.assertIn("Adaptive", content)
@@ -322,7 +322,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "GROUP_ID" / "designsystem" / "detekt"
             / "ComponentRegistryRule.kt"
         )
-        content = rule_kt.read_text()
+        content = rule_kt.read_text(encoding="utf-8")
         self.assertIn("componentPrefix", content)
         self.assertIn("valueOrDefault", content)
 
@@ -333,7 +333,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "GROUP_ID" / "designsystem" / "detekt"
             / "ImportBoundaryRule.kt"
         )
-        content = rule_kt.read_text()
+        content = rule_kt.read_text(encoding="utf-8")
         self.assertIn("/feature/", content)
         self.assertIn("/ui/", content)
 
@@ -345,7 +345,7 @@ class AuditSkillsRepoTests(unittest.TestCase):
             / "references" / "design-system-template.md"
         )
         self.assertTrue(template.exists(), "design-system-template.md missing from references/")
-        content = template.read_text()
+        content = template.read_text(encoding="utf-8")
         for section in ("PROJECT_NAME", "GROUP_ID", "COMPONENT_PREFIX",
                         "Color palette", "Typography", "Spacing scale",
                         "Component Inventory", "Ownership Model",
@@ -355,20 +355,20 @@ class AuditSkillsRepoTests(unittest.TestCase):
     def test_record_design_baselines_command_exists(self) -> None:
         cmd = REPO_ROOT / "commands" / "kmp-record-design-baselines.md"
         self.assertTrue(cmd.exists())
-        content = cmd.read_text()
+        content = cmd.read_text(encoding="utf-8")
         self.assertIn("roborazzi.record=true", content)
         self.assertIn("roborazzi.verify=true", content)
 
     def test_audit_design_visual_command_exists(self) -> None:
         cmd = REPO_ROOT / "commands" / "kmp-audit-design-visual.md"
         self.assertTrue(cmd.exists())
-        content = cmd.read_text()
+        content = cmd.read_text(encoding="utf-8")
         self.assertIn("snapshots", content)
         self.assertIn("vision", content.lower())
 
     def test_fix_design_references_detekt_as_primary(self) -> None:
         cmd = REPO_ROOT / "commands" / "kmp-fix-design.md"
-        content = cmd.read_text()
+        content = cmd.read_text(encoding="utf-8")
         self.assertIn("detekt", content)
         self.assertIn("detekt-design-system.yml", content)
 

@@ -28,7 +28,7 @@ class ScaffoldKotlinRpcTests(unittest.TestCase):
                 "server/rpc/GreetingRpcModule.kt",
                 "client/rpc/GreetingRpcClient.kt",
             }
-            self.assertTrue(expected.issubset({str(p.relative_to(root)) for p in root.rglob("*.kt")}))
+            self.assertTrue(expected.issubset({p.relative_to(root).as_posix() for p in root.rglob("*.kt")}))
             self.assertIn("package com.example.app.rpc", (root / "shared" / "rpc" / "GreetingService.kt").read_text(encoding="utf-8"))
             self.assertIn("package com.example.app.server.rpc", (root / "server" / "rpc" / "GreetingRpcModule.kt").read_text(encoding="utf-8"))
 

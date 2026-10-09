@@ -64,12 +64,12 @@ def test_refactor_rename_entire_package_tree(tmp_path: Path):
     assert expected_file1.exists()
     assert expected_file2.exists()
 
-    assert "package io.github.new.security" in expected_file1.read_text()
-    assert "[io.github.new.security.User]" in expected_file1.read_text()
-    assert "package io.github.new.security.internal" in expected_file2.read_text()
+    assert "package io.github.new.security" in expected_file1.read_text(encoding="utf-8")
+    assert "[io.github.new.security.User]" in expected_file1.read_text(encoding="utf-8")
+    assert "package io.github.new.security.internal" in expected_file2.read_text(encoding="utf-8")
 
     # Consumer imports updated
-    consumer_text = consumer_file.read_text()
+    consumer_text = consumer_file.read_text(encoding="utf-8")
     assert "import io.github.new.security.User" in consumer_text
     assert "import io.github.new.security.internal.TokenStore" in consumer_text
     assert "com.old.auth" not in consumer_text

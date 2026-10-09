@@ -16,6 +16,10 @@
 
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 SKILLS_SOURCE=""
 SYNC_COMMANDS=true
 DRY_RUN=false
@@ -58,7 +62,7 @@ resolve_source() {
 }
 
 version_of() {
-  python3 - <<'PY' "$1"
+  "$PYTHON" - <<'PY' "$1"
 import json, sys
 from pathlib import Path
 p = Path(sys.argv[1]) / "skills.json"
@@ -73,7 +77,7 @@ SOURCE_VERSION="$(version_of "$SKILLS_SOURCE")"
 # Claude Code gets skills, commands, and agents from the kmp-agent-skills plugin when it's
 # installed at user scope — syncing ~/.claude too would show every skill twice.
 claude_plugin_installed() {
-  python3 - "$HOME/.claude/plugins/installed_plugins.json" <<'PY'
+  "$PYTHON" - "$HOME/.claude/plugins/installed_plugins.json" <<'PY'
 import json, sys
 try:
     data = json.load(open(sys.argv[1]))
@@ -141,8 +145,18 @@ for target in "${TARGETS[@]}"; do
   # '/.*' protects top-level hidden entries the client owns (Codex's .system bundled
   # skills, a .git, the version marker) — --delete used to wipe ~/.codex/skills/.system
   # on every sync. skills/ ships no top-level dotfiles, so nothing of ours is skipped.
-  rsync -a --delete --exclude '/.*' --exclude '.DS_Store' --exclude '.pytest_cache' \
-    "$SKILLS_SOURCE/skills/" "$target/"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete --exclude '/.*' --exclude '.DS_Store' --exclude '.pytest_cache' \
+      "$SKILLS_SOURCE/skills/" "$target/"
+  else
+    # No rsync (Git Bash on Windows): same result. Globs skip dotfiles, so the client's
+    # top-level hidden entries survive here too.
+    for entry in "$target"/*; do rm -rf "$entry"; done
+    for entry in "$SKILLS_SOURCE"/skills/*; do
+      cp -R "$entry" "$target/"
+      find "$target/$(basename "$entry")" \( -name .DS_Store -o -name .pytest_cache \) -prune -exec rm -rf {} + 2>/dev/null || true
+    done
+  fi
 
   # A global (non-git) install otherwise has no record of what version it's on,
   # making "is this stale?" unanswerable without diffing file contents by hand —

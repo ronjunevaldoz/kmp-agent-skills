@@ -60,6 +60,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -83,8 +84,13 @@ TESTS_DIR = REPO_ROOT / "tests"
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+# Child scripts print emoji; UTF-8 mode keeps them from failing on a Windows code page.
+_CHILD_ENV = {**os.environ, "PYTHONUTF8": "1"}
+
+
 def run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT, check=check)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          cwd=REPO_ROOT, check=check, env=_CHILD_ENV)
 
 
 def fail(msg: str) -> None:
@@ -115,7 +121,7 @@ def check_clean_tree() -> None:
 # ── step 2: audit ─────────────────────────────────────────────────────────────
 
 def run_audit() -> None:
-    result = run(["python3", str(AUDIT_SCRIPT), str(REPO_ROOT)], check=False)
+    result = run([sys.executable, str(AUDIT_SCRIPT), str(REPO_ROOT)], check=False)
     if result.returncode != 0 or result.stdout.strip():
         fail(
             "audit_skills_repo.py found issues. Fix them before releasing.\n"
@@ -126,7 +132,7 @@ def run_audit() -> None:
 
 
 def run_scan_skill_issues() -> None:
-    result = run(["python3", str(SCAN_ISSUES_SCRIPT)], check=False)
+    result = run([sys.executable, str(SCAN_ISSUES_SCRIPT)], check=False)
     if result.returncode != 0:
         fail(
             "scan_skill_issues.py found issues. Fix them before releasing.\n"
@@ -137,7 +143,7 @@ def run_scan_skill_issues() -> None:
 
 
 def run_command_shell_portability_scan() -> None:
-    result = run(["python3", str(SCAN_COMMAND_SHELL_PORTABILITY_SCRIPT)], check=False)
+    result = run([sys.executable, str(SCAN_COMMAND_SHELL_PORTABILITY_SCRIPT)], check=False)
     if result.returncode != 0:
         fail(
             "scan_command_shell_portability.py found issues. Fix them before releasing.\n"
@@ -149,7 +155,7 @@ def run_command_shell_portability_scan() -> None:
 
 def run_skill_map_validation() -> None:
     result = run(
-        ["python3", str(VALIDATE_SKILL_MAP_SCRIPT), "--repo-root", str(REPO_ROOT)],
+        [sys.executable, str(VALIDATE_SKILL_MAP_SCRIPT), "--repo-root", str(REPO_ROOT)],
         check=False,
     )
     if result.returncode != 0:
@@ -163,7 +169,7 @@ def run_skill_map_validation() -> None:
 
 def run_keyword_routing_validation() -> None:
     result = run(
-        ["python3", str(VALIDATE_KEYWORD_ROUTING_SCRIPT), "--repo-root", str(REPO_ROOT)],
+        [sys.executable, str(VALIDATE_KEYWORD_ROUTING_SCRIPT), "--repo-root", str(REPO_ROOT)],
         check=False,
     )
     if result.returncode != 0:
@@ -178,7 +184,7 @@ def run_keyword_routing_validation() -> None:
 # ── step 3: tests ─────────────────────────────────────────────────────────────
 
 def run_tests() -> None:
-    result = run(["python3", "-m", "pytest", str(TESTS_DIR), "-v", "--tb=short"], check=False)
+    result = run([sys.executable, "-m", "pytest", str(TESTS_DIR), "-v", "--tb=short"], check=False)
     if result.returncode != 0:
         fail("Tests are failing. Fix them before releasing.\n" + result.stdout + result.stderr)
     # Count passed
@@ -188,7 +194,7 @@ def run_tests() -> None:
 
 
 def run_compat_matrix_check() -> None:
-    result = run(["python3", str(CHECK_COMPAT_MATRIX_SCRIPT)], check=False)
+    result = run([sys.executable, str(CHECK_COMPAT_MATRIX_SCRIPT)], check=False)
     if result.returncode != 0:
         fail(
             "Compatibility matrix is out of sync with skill files. "
@@ -563,6 +569,10 @@ def git_commit_and_tag(
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main() -> int:
+    # The ✅/❌ status lines can't be encoded on a Windows code page when output is piped.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8", errors="replace")
+
     # `publish` is a separate mode (post-push GitHub Release creation) — dispatched
     # before the main argparse setup since it takes an optional tag, not a bump choice.
     if len(sys.argv) >= 2 and sys.argv[1] == "publish":
@@ -597,7 +607,7 @@ def main() -> int:
     run_release_validation()
 
     # Determine new base version
-    manifest = json.loads(SKILLS_JSON.read_text())
+    manifest = json.loads(SKILLS_JSON.read_text(encoding="utf-8"))
     current_version = manifest["version"]
 
     bump = args.bump
@@ -637,7 +647,7 @@ def main() -> int:
     # skills.json always stores the base semver (no -rc suffix)
     update_skills_json(new_base_version)
     update_plugin_json(new_base_version)
-    skill_count = len(json.loads(SKILLS_JSON.read_text())["skills"])
+    skill_count = len(json.loads(SKILLS_JSON.read_text(encoding="utf-8"))["skills"])
     update_plan_md(skill_count)
     changelog_section = update_changelog(full_version, prev_tag, dry_run=False)
     update_skills_report()

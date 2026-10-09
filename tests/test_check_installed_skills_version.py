@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from _helpers import REPO_ROOT
+from _helpers import BASH, REPO_ROOT
 
 SCRIPT = REPO_ROOT / "scripts" / "check-installed-skills-version.sh"
 
@@ -22,7 +22,7 @@ class CheckInstalledSkillsVersionTests(unittest.TestCase):
             target = Path(tmp) / "skills"
             target.mkdir()
             result = subprocess.run(
-                ["bash", str(SCRIPT), str(target)], capture_output=True, text=True,
+                [BASH, str(SCRIPT), str(target)], capture_output=True, text=True, encoding="utf-8",
             )
         self.assertEqual(result.returncode, 2)
         self.assertIn("No version marker", result.stdout)
@@ -31,7 +31,7 @@ class CheckInstalledSkillsVersionTests(unittest.TestCase):
         # Just confirms the script doesn't crash resolving its default target —
         # doesn't assert on network-dependent output.
         result = subprocess.run(
-            ["bash", str(SCRIPT), "/nonexistent-dir-for-test"], capture_output=True, text=True,
+            [BASH, str(SCRIPT), "/nonexistent-dir-for-test"], capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(result.returncode, 2)
 

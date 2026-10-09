@@ -42,7 +42,7 @@ class SlotScaffoldTests(unittest.TestCase):
     def test_weights_come_from_closed_set(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             f = self._wireframe(tmp)
-            text = f.read_text().replace("main: 3f", "main: 0.37f")
+            text = f.read_text(encoding="utf-8").replace("main: 3f", "main: 0.37f")
             f.write_text(text, encoding="utf-8")
             with self.assertRaises(ValueError):
                 slot_scaffold_scripts.load_contract(f)
@@ -50,7 +50,7 @@ class SlotScaffoldTests(unittest.TestCase):
     def test_missing_breakpoint_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             f = self._wireframe(tmp)
-            text = f.read_text().replace("compact: [main], ", "")
+            text = f.read_text(encoding="utf-8").replace("compact: [main], ", "")
             f.write_text(text, encoding="utf-8")
             with self.assertRaises(ValueError):
                 slot_scaffold_scripts.load_contract(f)

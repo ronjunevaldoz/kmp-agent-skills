@@ -25,7 +25,7 @@ def test_optimize_imports_removes_unused(tmp_path: Path):
 
     execute_optimize_imports(plan, dry_run=False)
 
-    updated_text = file1.read_text()
+    updated_text = file1.read_text(encoding="utf-8")
     assert "import com.app.UsedClass" in updated_text
     assert "import com.app.UnusedClass" not in updated_text
     assert "import com.app.AnotherUnused" not in updated_text
@@ -49,7 +49,7 @@ def test_optimize_imports_preserves_kdoc_and_wildcards(tmp_path: Path):
 
     execute_optimize_imports(plan, dry_run=False)
 
-    updated_text = file1.read_text()
+    updated_text = file1.read_text(encoding="utf-8")
     assert "import com.wildcard.*" in updated_text
     assert "import com.kdoc.DocumentedClass" in updated_text
     assert "import com.unused.DeadClass" not in updated_text

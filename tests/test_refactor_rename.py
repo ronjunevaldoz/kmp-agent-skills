@@ -57,14 +57,14 @@ def test_refactor_rename_class_across_modules(tmp_path: Path):
     assert new_def_file.exists()
 
     # Check updated definition
-    def_content = new_def_file.read_text()
+    def_content = new_def_file.read_text(encoding="utf-8")
     assert "class Mat4" in def_content
     assert "fun multiply(other: Mat4): Mat4" in def_content
     assert "[Mat4]" in def_content
     assert "TransformMatrix" not in def_content
 
     # Check updated consumer
-    consumer_content = consumer_file.read_text()
+    consumer_content = consumer_file.read_text(encoding="utf-8")
     assert "import com.math.Mat4" in consumer_content
     assert "class Camera(val matrix: Mat4)" in consumer_content
     assert "val identity = Mat4()" in consumer_content
@@ -94,7 +94,7 @@ def test_refactor_rename_does_not_corrupt_string_literals(tmp_path: Path):
     execute_rename(plan, dry_run=False)
 
     new_file = src_dir / "Account.kt"
-    content = new_file.read_text()
+    content = new_file.read_text(encoding="utf-8")
     assert "data class Account(" in content
     assert '@SerialName("User")' in content
     assert 'println("User not found")' in content

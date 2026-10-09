@@ -22,7 +22,8 @@ Our Python script detects the 5 most critical KMP architecture smells. A clean p
 must pass this before any Gradle task runs.
 
 ```bash
-python3 skills/kmp-audit/scripts/audit_project.py <project_root>
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" <project_root>
 ```
 
 Pass: `OK: no lightweight architecture smells matched the current scan`

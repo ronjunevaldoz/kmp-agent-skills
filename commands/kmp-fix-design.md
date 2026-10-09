@@ -31,8 +31,7 @@ Which project should I scan for design violations?
 (Provide the path to the KMP project root, e.g. ~/projects/MyApp)
 ```
 
-Set `PROJECT_ROOT` from the answer. Set `SKILLS_ROOT` to the directory containing
-this skills collection (parent of `commands/`).
+Set `PROJECT_ROOT` from the answer.
 
 ---
 
@@ -40,8 +39,9 @@ this skills collection (parent of `commands/`).
 
 **Primary (PSI-based — recommended when detekt is wired into the project):**
 ```bash
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
 ./gradlew detekt --rerun-tasks \
-  --config "$SKILLS_ROOT/skills/kmp-compose-design-system/detekt-rules/config/detekt-design-system.yml"
+  --config "$KMP_SKILLS/kmp-compose-design-system/detekt-rules/config/detekt-design-system.yml"
 ```
 
 Parse the detekt XML/SARIF output. Violations map to rule IDs:
@@ -50,7 +50,8 @@ Parse the detekt XML/SARIF output. Violations map to rule IDs:
 
 **Fallback (quick CLI, no JVM warm-up, no Gradle required):**
 ```bash
-python3 "$SKILLS_ROOT/skills/kmp-compose-design-system/scripts/scan_design_violations.py" \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
+python3 "$KMP_SKILLS/kmp-compose-design-system/scripts/scan_design_violations.py" \
   "$PROJECT_ROOT" --json
 ```
 

@@ -61,16 +61,8 @@ If the project does **not** use the `kmp-compose-design-system` skill's
 Never hand-edit the generated file's package line instead.
 
 ```bash
-python3 ~/.agents/skills/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py \
-  <input> --name <PascalName> --group-id <group.id> --color-mode <mode> \
-  [--package <full.kotlin.package>] \
-  --output <ui module>/core/designsystem/icons
-```
-
-If the script is not at `~/.agents/skills/` (Codex, Gemini CLI, or a repo-relative install),
-use the path relative to wherever the skill was installed, e.g.:
-```bash
-python3 skills/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-imagevector-generator" ] && break; done
+python3 "$KMP_SKILLS/kmp-imagevector-generator/scripts/convert_image_to_imagevector.py" \
   <input> --name <PascalName> --group-id <group.id> --color-mode <mode> \
   [--package <full.kotlin.package>] \
   --output <ui module>/core/designsystem/icons

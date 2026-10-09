@@ -98,6 +98,27 @@ Everything inside a subdirectory uses `kebab-case` (or `snake_case` for Python s
 
 ---
 
+## Script paths in consumer commands
+
+Consumer commands run inside other projects, so `skills/...` and `scripts/...` paths don't
+exist there. A bash block that runs a bundled script finds it first, in the same block
+(each block runs in its own shell):
+
+```bash
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" .
+```
+
+Probe for the skill the block needs (`kmp-audit` above). Claude Code fills in
+`${CLAUDE_PLUGIN_ROOT}` when it loads a plugin command or agent; everywhere else it is empty
+and the loop moves on. Top-level `scripts/` aren't deployed with skills, so those use the
+`KMP_REPO` loop instead, which finds the plugin or a kmp-agent-skills checkout (see
+`commands/kmp-update-skills.md`). Repo-internal commands, listed in README's
+"Repo-internal commands" table, keep repo-relative paths so they run your working copy.
+`tests/test_docs_governance.py` enforces this.
+
+---
+
 ## Adding a new skill
 
 Before you scaffold, make sure the request is truly a consumer-facing skill and not

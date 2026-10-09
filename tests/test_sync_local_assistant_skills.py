@@ -90,6 +90,21 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
         self.assertIn(".codex/skills", result.stdout)
         self.assertIn("plugin installed", result.stdout)
 
+    def test_unexpected_installed_plugins_format_keeps_claude_targets_quietly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = self._fake_source(tmp)
+            home = Path(tmp) / "home"
+            (home / ".claude" / "plugins").mkdir(parents=True)
+            (home / ".claude" / "plugins" / "installed_plugins.json").write_text(json.dumps(
+                {"version": 9, "plugins": {"kmp-agent-skills@kmp-agent-skills": "unknown"}}))
+            result = subprocess.run(
+                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(".claude/skills", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_missing_source_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             empty = Path(tmp) / "not-a-skills-repo"

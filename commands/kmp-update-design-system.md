@@ -32,11 +32,10 @@ Set `PROJECT_ROOT` from the answer.
 ## Step 2 — Run the comparison script
 
 ```bash
-python3 <skills_root>/skills/kmp-compose-design-system/scripts/update_design_system.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
+python3 "$KMP_SKILLS/kmp-compose-design-system/scripts/update_design_system.py" \
   "$PROJECT_ROOT"
 ```
-
-Where `<skills_root>` is the directory containing this skills collection.
 
 **Exit 0** → all components CURRENT or MODIFIED. Continue to Step 3.
 **Exit 1** → one or more components MISSING. Continue to Step 3.
@@ -63,7 +62,8 @@ the file to `core/designsystem/components/`.
 Do NOT overwrite automatically. For each modified component, show the diff:
 
 ```bash
-python3 <skills_root>/skills/kmp-compose-design-system/scripts/update_design_system.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
+python3 "$KMP_SKILLS/kmp-compose-design-system/scripts/update_design_system.py" \
   "$PROJECT_ROOT" --diff <ComponentName>
 ```
 

@@ -71,6 +71,7 @@ class CheckUpdatesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             skills_json = Path(tmp) / "skills.json"
             skills_json.write_text(_json.dumps({"version": "1.7.0"}))
+            (Path(tmp) / ".git").mkdir()
 
             from unittest.mock import patch
             responses = iter([
@@ -93,6 +94,22 @@ class CheckUpdatesTests(unittest.TestCase):
                 check_updates_scripts.ROOT = old_root
 
         self.assertEqual(rc, 1)
+
+    def test_main_exit_2_without_git_checkout_and_runs_no_git(self) -> None:
+        # The Claude Code plugin is a plain copy: point at `claude plugin update` instead of
+        # running git, which would otherwise inspect the caller's own project.
+        import tempfile
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            old_root = check_updates_scripts.ROOT
+            check_updates_scripts.ROOT = Path(tmp)
+            try:
+                with patch.object(check_updates_scripts, "run") as run:
+                    rc = check_updates_scripts.main()
+            finally:
+                check_updates_scripts.ROOT = old_root
+        self.assertEqual(rc, 2)
+        run.assert_not_called()
 
 
 if __name__ == "__main__":

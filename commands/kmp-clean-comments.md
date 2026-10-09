@@ -38,7 +38,6 @@ What should I clean up?
 ```
 
 Set `SCOPE_PATH` and `SCOPE_MODE` (`file`, `diff`, or `project`) from the answer.
-Set `SKILLS_ROOT` to the directory containing this skills collection (parent of `commands/`).
 
 ---
 
@@ -48,7 +47,8 @@ For `project` scope, run the audit detector first to get verifiable evidence bef
 reading any file in full:
 
 ```bash
-python3 "$SKILLS_ROOT/skills/kmp-audit/scripts/audit_project.py" "$SCOPE_PATH" --json
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" "$SCOPE_PATH"
 ```
 
 Filter to the comment findings. **Five** of them now have automated detectors — this

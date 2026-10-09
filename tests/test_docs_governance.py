@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -445,6 +446,42 @@ class HealDocsTests(unittest.TestCase):
             self.assertTrue(any("redundant suffix" in w for w in warnings))
             self.assertTrue(any("action-named" in w for w in warnings))
 
+
+
+class CommandScriptPathTests(unittest.TestCase):
+    """Consumer commands run inside other projects, where `skills/...` and `scripts/...` don't
+    exist, and from the Claude Code plugin, where Claude Code fills in ${CLAUDE_PLUGIN_ROOT}.
+    Every bash block that runs a bundled script must resolve it first (blocks run as
+    separate shells, so the lookup can't live in an earlier block)."""
+
+    SKILLS_LOOKUP = ('for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills '
+                     '~/.agents/skills ~/.claude/skills; do')
+    REPO_LOOKUP = ('for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . '
+                   '../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do')
+    SCRIPT_RUN = re.compile(r"^\s*(?:python3|bash)\s+(\S+?\.(?:py|sh))\b", re.MULTILINE)
+
+    def test_consumer_commands_resolve_bundled_scripts(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        internal_table = readme.split("### Repo-internal commands", 1)[1].split("\n## ", 1)[0]
+        internal = set(re.findall(r"^\| `/(kmp-[a-z-]+)", internal_table, re.MULTILINE))
+        self.assertIn("kmp-new-skill", internal, "README's repo-internal command table moved")
+
+        problems = []
+        for path in sorted((REPO_ROOT / "commands").glob("*.md")):
+            if path.stem in internal:
+                continue
+            for block in re.findall(r"```bash\n(.*?)```", path.read_text(encoding="utf-8"), re.DOTALL):
+                for script in self.SCRIPT_RUN.findall(block):
+                    if script.startswith('"$KMP_SKILLS/'):
+                        lookup = self.SKILLS_LOOKUP
+                    elif script.startswith('"$KMP_REPO/'):
+                        lookup = self.REPO_LOOKUP
+                    else:
+                        problems.append(f"{path.name}: {script} — use $KMP_SKILLS or $KMP_REPO")
+                        continue
+                    if lookup not in block:
+                        problems.append(f"{path.name}: {script} — its lookup loop isn't in the same block")
+        self.assertEqual(problems, [])
 
 
 new_task = load_module(

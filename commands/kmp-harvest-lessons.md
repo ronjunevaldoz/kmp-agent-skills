@@ -23,18 +23,13 @@ Each finding becomes a concrete proposal: which skill to update, what to add, an
 ## Step 1 — Run harvest mode
 
 ```bash
-python3 ~/.agents/skills/kmp-audit/scripts/audit_project.py \
-  --harvest "${ARGUMENTS:-.}"
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" --harvest "${ARGUMENTS:-.}"
 ```
 
 Parse the JSON output. It has two keys:
 - `findings` — architecture violations (same as `--audit`); show these as a summary only
 - `lessons` — positive patterns detected; these are the focus of this command
-
-If the script is not at `~/.agents/skills/`, try:
-```bash
-python3 skills/kmp-audit/scripts/audit_project.py --harvest "${ARGUMENTS:-.}"
-```
 
 ---
 
@@ -141,7 +136,8 @@ Would you like to submit this as an improvement proposal?
 If the user says **y** or **v then y**, run:
 
 ```bash
-python3 ~/.agents/skills/kmp-audit/scripts/draft_issue.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/draft_issue.py" \
   --title "Lesson: <pattern name> — <skill slug>" \
   --evidence "<evidence field from lesson dict>" \
   --recommendation "<proposed addition summary from Step 4>" \

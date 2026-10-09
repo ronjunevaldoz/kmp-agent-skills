@@ -23,6 +23,7 @@ metadata:
     - deferred work
     - triage labels
     - priority
+    - ai attribution
 ---
 
 # GitHub Issue & Sub-Issue Governance
@@ -38,7 +39,7 @@ Use this skill when:
 - Opening or merging a PR that defers work, or closing an issue
 - Labelling issues so a backlog can be ordered by priority
 
-**Trigger keywords:** github issue, sub-issue, epic, ticket spam, issue template, gh issue, comment flooding, markdown corruption, gh sub-issue, in-place update, deferred work, triage labels, priority.
+**Trigger keywords:** github issue, sub-issue, epic, ticket spam, issue template, gh issue, comment flooding, markdown corruption, gh sub-issue, in-place update, deferred work, triage labels, priority, AI attribution, Generated with Claude Code.
 
 ## Recommendation First
 
@@ -111,6 +112,13 @@ once the PR merges. Before opening or merging a PR:
 2. Check it: `gh pr view <n> --json body --jq .body | python3 scripts/validate_issue_payload.py - --pr`.
 3. A verification-only remainder (a device or emulator check) stays the issue's last unchecked
    "Done when" bullet with an owner, or becomes its own issue.
+
+### No AI Attribution (Mandatory)
+
+Issue bodies, PR descriptions and comments carry no "🤖 Generated with Claude Code"-style footer
+and no `Co-authored-by` line for an AI tool, even when the agent runtime suggests one. Human
+co-authors are fine. `validate_issue_payload.py` rejects both on every payload (code blocks are
+exempt), and the `commit-msg` hook rejects them in commits.
 
 ### Closing an Issue
 
@@ -302,6 +310,7 @@ This skill bundles two scripts in `scripts/`:
 | Filing an Epic for a single-PR task | Use `feature_request.yml`; reserve Epics strictly for multi-PR milestones |
 | Leaving sub-issues unlinked in issue descriptions | Use `gh_sub_issue.py add <parent> <child>` so GitHub's native progress bar tracks completion |
 | Listing "Not in this PR" items with no issue | File each, link it, and run `validate_issue_payload.py - --pr` |
+| Ending a PR or issue with "🤖 Generated with Claude Code" or an AI `Co-authored-by` line | Delete it; `validate_issue_payload.py` flags it |
 | Closing an issue because the PR says it's done | Check every "Done when" bullet on the default branch first |
 | Filing issues with a milestone but no labels | Add one type, one `priority: P*` and one `area:` label |
 | Submitting markdown with literal `\n\n` text | Run `validate_issue_payload.py` to ensure newlines are real byte linebreaks, not escaped strings |
@@ -344,6 +353,7 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-10-09 | No AI attribution: `validate_issue_payload.py` rejects "Generated with Claude Code"-style footers and AI `Co-authored-by` lines in every payload (human co-authors and code blocks are fine); the `commit-msg` hook rejects the footer in commits as it already did the trailer. |
 | 2026-10-09 | `validate_issue_payload.py --pr`: prose that starts with a trigger word ("Deferred loading is ...") no longer opens a deferred list; any paragraph or `Label:` line ends it; numbered items are checked; code blocks are skipped. |
 | 2026-10-03 | Deferred work must link an issue (`validate_issue_payload.py --pr` checks it), issues close only when "Done when" holds on the default branch, and every open issue carries a type, `priority: P0`–`P3` and `area:` label. |
 | 2026-09-27 | Media Inclusion Rules: replaced branch-pinned raw URLs with SHA-pinned `blob/<sha>/<path>?raw=true` links and pointed agents (which cannot upload attachments via `gh`) to `kmp-roborazzi/scripts/pr_visual_evidence.py`. |

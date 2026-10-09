@@ -260,7 +260,10 @@ docs: add CONTRIBUTING.md
 
 **No `Co-Authored-By` trailer.** Commits in this repo — including ones made by an AI
 coding agent — do not carry a `Co-Authored-By: <agent>` trailer. Keep the message to the
-subject line (and body if needed) per the format above, nothing appended below it.
+subject line (and body if needed) per the format above, nothing appended below it. The same
+applies to PR descriptions, issues and comments: no "🤖 Generated with Claude Code"-style
+footer. `hooks/commit-msg` and `validate_issue_payload.py` (kmp-github-issue-governance)
+reject both.
 
 ---
 

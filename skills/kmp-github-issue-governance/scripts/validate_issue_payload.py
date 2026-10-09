@@ -79,31 +79,39 @@ def check_template_sections(content: str, template: str) -> list[str]:
     return errors
 
 
-# A heading or bold lead-in that opens a list of work the PR leaves for later.
+# A heading, bold lead-in, or bare "Label:" line that opens a list of work the PR leaves for
+# later. Group 1 is the heading/bold marker; group 2 is the rest of the line.
 DEFERRED_HEADING = re.compile(
-    r"^\s*(?:#{1,6}\s+|\*\*)?\s*(?:not in this pr|follow[- ]?ups?|out of scope|known limits?"
-    r"|left for later|deferred|still to do|not done)\b",
+    r"^\s*(#{1,6}\s+|\*\*)?\s*(?:not in this pr|follow[- ]?ups?|out of scope|known limits?"
+    r"|left for later|deferred|still to do|not done)\b(.*)$",
     re.IGNORECASE,
 )
+LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 ISSUE_LINK = re.compile(r"(?:[\w.-]+/[\w.-]+)?#\d+|/issues/\d+")
 
 
 def check_deferred_items(content: str) -> list[str]:
-    """Every bullet under a deferred-work heading must link the issue that tracks it."""
+    """Every list item under a deferred-work heading must link the issue that tracks it."""
     errors = []
-    in_deferred = False
+    in_deferred = in_fence = False
     for line in content.splitlines():
-        if DEFERRED_HEADING.match(line):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or not line.strip():
+            continue
+        heading = DEFERRED_HEADING.match(line)
+        # Prose that merely starts with a trigger word ("Deferred loading is ...") opens nothing.
+        if heading and (heading.group(1) or heading.group(2).rstrip().endswith(":")):
             in_deferred = True
             continue
         if not in_deferred:
             continue
-        stripped = line.strip()
-        if stripped.startswith("#") or (stripped.startswith("**") and not stripped.startswith("- ")):
-            in_deferred = False
-            continue
-        if re.match(r"^[-*]\s+", stripped) and not ISSUE_LINK.search(stripped):
-            errors.append(f"Deferred item links no issue: {stripped[:100]}")
+        if LIST_ITEM.match(line):
+            if not ISSUE_LINK.search(line):
+                errors.append(f"Deferred item links no issue: {line.strip()[:100]}")
+        elif not line[0].isspace():
+            in_deferred = False  # any heading, lead-in, or paragraph ends the list
     return errors
 
 

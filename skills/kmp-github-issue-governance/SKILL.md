@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-03'
+  last-updated: '2026-10-09'
   keywords:
     - github issue
     - sub-issue
@@ -38,7 +38,7 @@ Use this skill when:
 - Opening or merging a PR that defers work, or closing an issue
 - Labelling issues so a backlog can be ordered by priority
 
-**Trigger keywords:** github issue, sub-issue, epic, ticket spam, issue template, gh issue, comment flooding, markdown corruption, gh sub-issue, in-place update.
+**Trigger keywords:** github issue, sub-issue, epic, ticket spam, issue template, gh issue, comment flooding, markdown corruption, gh sub-issue, in-place update, deferred work, triage labels, priority.
 
 ## Recommendation First
 
@@ -344,6 +344,7 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-10-09 | `validate_issue_payload.py --pr`: prose that starts with a trigger word ("Deferred loading is ...") no longer opens a deferred list; any paragraph or `Label:` line ends it; numbered items are checked; code blocks are skipped. |
 | 2026-10-03 | Deferred work must link an issue (`validate_issue_payload.py --pr` checks it), issues close only when "Done when" holds on the default branch, and every open issue carries a type, `priority: P0`–`P3` and `area:` label. |
 | 2026-09-27 | Media Inclusion Rules: replaced branch-pinned raw URLs with SHA-pinned `blob/<sha>/<path>?raw=true` links and pointed agents (which cannot upload attachments via `gh`) to `kmp-roborazzi/scripts/pr_visual_evidence.py`. |
 | 2026-09-15 | Added Visual & Verification Evidence Standards: Before vs After tables, collapsible `<details>` blocks for multi-platform captures, and shell-safe media inclusion rules. |

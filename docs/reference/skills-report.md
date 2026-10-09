@@ -1,6 +1,6 @@
 # Skills Report
 
-Generated 2026-10-04 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
+Generated 2026-10-09 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
 
 **77 skills** — 77 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
 
@@ -12,10 +12,10 @@ Generated 2026-10-04 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-compose-slot-api`](../../skills/kmp-compose-slot-api/) | 483 | 2026-06-26 | ✅ |
 | [`kmp-clean-architecture`](../../skills/kmp-clean-architecture/) | 482 | 2026-08-11 | ✅ |
 | [`kmp-compose-design-system`](../../skills/kmp-compose-design-system/) | 481 | 2026-09-27 | ✅ |
+| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 480 | 2026-10-09 | ✅ |
 | [`kmp-ci-github-actions`](../../skills/kmp-ci-github-actions/) | 479 | 2026-09-27 | ✅ |
-| [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 479 | 2026-10-04 | ✅ |
 | [`kmp-jni-pro`](../../skills/kmp-jni-pro/) | 478 | 2026-08-24 | ✅ |
-| [`kmp-audit`](../../skills/kmp-audit/) | 476 | 2026-10-01 | ✅ |
+| [`kmp-audit`](../../skills/kmp-audit/) | 477 | 2026-10-09 | ✅ |
 | [`kmp-network-layer`](../../skills/kmp-network-layer/) | 474 | 2026-07-31 | ✅ |
 | [`kmp-roborazzi`](../../skills/kmp-roborazzi/) | 470 | 2026-09-27 | ✅ |
 | [`kmp-code-quality`](../../skills/kmp-code-quality/) | 469 | 2026-08-24 | ✅ |
@@ -54,8 +54,8 @@ Generated 2026-10-04 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-security`](../../skills/kmp-security/) | 357 | 2026-08-24 | ✅ |
 | [`kmp-lessons`](../../skills/kmp-lessons/) | 356 | 2026-07-12 | ✅ |
 | [`kmp-deep-linking`](../../skills/kmp-deep-linking/) | 351 | 2026-06-21 | ✅ |
+| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 351 | 2026-10-09 | ✅ |
 | [`kmp-crash-reporting`](../../skills/kmp-crash-reporting/) | 350 | 2026-06-24 | ✅ |
-| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 350 | 2026-10-03 | ✅ |
 | [`kmp-compose-accessibility`](../../skills/kmp-compose-accessibility/) | 347 | 2026-09-27 | ✅ |
 | [`kmp-unit-testing`](../../skills/kmp-unit-testing/) | 340 | 2026-08-22 | ✅ |
 | [`kmp-skill-harvester`](../../skills/kmp-skill-harvester/) | 337 | 2026-06-26 | ✅ |

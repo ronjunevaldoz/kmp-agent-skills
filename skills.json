@@ -1,5 +1,5 @@
 {
-  "version": "3.2.1",
+  "version": "3.2.2",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -131,7 +131,7 @@
       "path": "skills/kmp-audit",
       "description": "KMP project audit skill for reviewing an existing Kotlin Multiplatform codebase. Use this skill to inspect architecture, module boundaries, state handling, repository and network layering, Compose patterns, expect/actual usage, shared resources, design system usage, test coverage, platform readiness, and the skills repo itself. Produces findings, risk levels, and a fix sequence instead of implementation code. Pair with kmp-expert to route any follow-up work to the right domain skills.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-01",
+      "last_updated": "2026-10-09",
       "keywords": [
         "investigation narration comment",
         "state the finding not the investigation",
@@ -1886,7 +1886,7 @@
       "path": "skills/kmp-github-issue-governance",
       "description": "Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP repositories. Use when decomposing work into epics and sub-issues, preventing ticket spam or comment flooding, drafting bug reports and technical tasks, tracking work a PR defers, labelling issues so they can be prioritised, or transporting markdown payloads safely through the GitHub CLI without escaping corruption.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-03",
+      "last_updated": "2026-10-09",
       "keywords": [
         "github issue",
         "sub-issue",
@@ -1911,7 +1911,10 @@
         "comment flooding",
         "markdown corruption",
         "gh sub-issue",
-        "in-place update"
+        "in-place update",
+        "deferred work",
+        "triage labels",
+        "priority"
       ],
       "scripts": [
         "gh_sub_issue.py",
@@ -3092,7 +3095,7 @@
       "path": "skills/kmp-project-docs-maintainer",
       "description": "Maintains downstream consumer-facing KMP project documentation only: README, GETTING_STARTED, INSTALL, RELEASING, PRODUCT.md, docs/reference pages, onboarding guides, architecture notes, and architecture diagrams. Use this skill when project docs need to match the actual code, commands, config, folder layout, or app/library structure. Does NOT cover consumer release-note generation, per-skill changelogs, or skills-repo documentation.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-04",
+      "last_updated": "2026-10-09",
       "keywords": [
         "project docs",
         "consumer docs",

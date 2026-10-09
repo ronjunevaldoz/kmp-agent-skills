@@ -2,6 +2,25 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.2.2] — 2026-10-09
+
+### Fixed
+
+- fix: run the test suite and release.py on Windows
+- fix(plugin): run bundled scripts from the plugin, project, or global install
+- fix(issue-governance): stop the --pr deferred-work check flagging prose and plain labels
+- fix(docs-maintainer): delete a finished task only when git has its exact content
+
+### Docs
+
+- docs: fix broken script and file references in skills
+
+### Other
+
+- refactor(scripts): drop root copies of kmp-shadcn-compose scripts
+
+---
+
 ## [v3.2.1] — 2026-10-04
 
 ### Added

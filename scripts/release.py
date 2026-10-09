@@ -303,7 +303,7 @@ def update_plugin_json(new_version: str) -> None:
 
     if MARKETPLACE_JSON.exists():
         market = json.loads(MARKETPLACE_JSON.read_text(encoding="utf-8"))
-        skill_count = len(list((REPO_ROOT / "skills").glob("*/SKILL.md")))
+        skill_count = len(list(SKILLS_DIR.glob("*/SKILL.md")))
         for entry in market.get("plugins", []):
             if entry.get("name") == manifest["name"]:
                 entry["version"] = new_version

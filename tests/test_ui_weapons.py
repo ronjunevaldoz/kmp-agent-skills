@@ -4,9 +4,16 @@
 
 import pytest
 from pathlib import Path
-from scripts.theme_contrast_audit import evaluate_contrast, hex_to_rgb, oklch_to_rgb
-from scripts.audit_compose_perf import audit_compose_performance
-from scripts.scaffold_shadcn_component import scaffold_component_slice
+from _helpers import REPO_ROOT, load_module_registered
+
+# The copies that ship with the skill, which are the ones its docs tell people to run.
+_SCRIPTS = REPO_ROOT / "skills" / "kmp-shadcn-compose" / "scripts"
+_contrast = load_module_registered("theme_contrast_audit", _SCRIPTS / "theme_contrast_audit.py")
+evaluate_contrast, hex_to_rgb, oklch_to_rgb = _contrast.evaluate_contrast, _contrast.hex_to_rgb, _contrast.oklch_to_rgb
+audit_compose_performance = load_module_registered(
+    "audit_compose_perf", _SCRIPTS / "audit_compose_perf.py").audit_compose_performance
+scaffold_component_slice = load_module_registered(
+    "scaffold_shadcn_component", _SCRIPTS / "scaffold_shadcn_component.py").scaffold_component_slice
 
 
 def test_theme_contrast_audit_math():

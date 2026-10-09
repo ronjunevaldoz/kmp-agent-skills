@@ -83,7 +83,7 @@ Generated 2026-10-09 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-openrewrite`](../../skills/kmp-openrewrite/) | 224 | 2026-09-15 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
 | [`kmp-token-saver`](../../skills/kmp-token-saver/) | 207 | 2026-07-13 | ✅ |
-| [`kmp-update`](../../skills/kmp-update/) | 179 | 2026-09-18 | ✅ |
+| [`kmp-update`](../../skills/kmp-update/) | 196 | 2026-10-09 | ✅ |
 
 **Status legend:** ✅ no issues · 🟡 known, tracked debt (doesn't block a release — see KI-008) · 🔴 blocking (would fail `scan_skill_issues.py`, a new regression, not tracked debt)
 

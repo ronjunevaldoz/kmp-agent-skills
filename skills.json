@@ -1,5 +1,5 @@
 {
-  "version": "3.2.2",
+  "version": "3.3.0",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -3934,7 +3934,7 @@
       "path": "skills/kmp-update",
       "description": "Update kmp-agent-skills to the latest upstream release across machine-wide assistant bundles or consumer projects. Check for version drift, sync installed skills (~/.gemini/config/plugins/kmp-agent-skills, ~/.gemini/skills, ~/.agents/skills, ~/.claude/skills, ~/.codex/skills), update consumer .agents/skills, regenerate skills lockfiles, and run post-update verification audits.",
       "license": "Apache-2.0",
-      "last_updated": "2026-09-18",
+      "last_updated": "2026-10-09",
       "keywords": [
         "update skills",
         "check updates",

@@ -2,6 +2,18 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.3.0] — 2026-10-09
+
+### Added
+
+- feat(skills): add kmp-update skill for upstream sync and Antigravity slash command
+
+### Fixed
+
+- fix(kmp-update): resolve scripts from the plugin or a checkout
+
+---
+
 ## [v3.2.2] — 2026-10-09
 
 ### Fixed

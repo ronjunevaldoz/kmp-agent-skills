@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -398,7 +399,7 @@ fun LoginContent(
     def test_cli_exit_0_on_clean_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system"
                      / "scripts" / "scan_design_violations.py"),
                  tmp],
@@ -411,7 +412,7 @@ fun LoginContent(
             root = Path(tmp)
             (root / "Foo.kt").write_text("val c = Color(0xFF1A73E8)\n", encoding="utf-8")
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system"
                      / "scripts" / "scan_design_violations.py"),
                  tmp],
@@ -421,7 +422,7 @@ fun LoginContent(
 
     def test_cli_exit_2_on_missing_root(self) -> None:
         result = subprocess.run(
-            ["python3",
+            [sys.executable,
              str(REPO_ROOT / "skills" / "kmp-compose-design-system"
                  / "scripts" / "scan_design_violations.py"),
              "/nonexistent/path/that/does/not/exist"],
@@ -434,12 +435,12 @@ fun LoginContent(
             root = Path(tmp)
             (root / "Foo.kt").write_text("val c = Color(0xFF1A73E8)\n", encoding="utf-8")
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system"
                      / "scripts" / "scan_design_violations.py"),
                  tmp, "--json"],
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
             )
         parsed = json.loads(result.stdout)
         self.assertIsInstance(parsed, list)

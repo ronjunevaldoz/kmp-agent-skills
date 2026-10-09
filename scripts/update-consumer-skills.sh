@@ -23,6 +23,10 @@
 
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 SKILLS_SOURCE=""
 AGENT_DIR=""
 COMMANDS_DIR=""
@@ -95,9 +99,9 @@ echo ""
 # ── Read current local version ────────────────────────────────────────────────
 
 OLD_VERSION="?"
-if command -v python3 &>/dev/null && [[ -f "$SKILLS_SOURCE/skills.json" ]]; then
-  OLD_VERSION=$(python3 -c \
-    "import json; print(json.load(open('$SKILLS_SOURCE/skills.json'))['version'])" \
+if command -v "$PYTHON" &>/dev/null && [[ -f "$SKILLS_SOURCE/skills.json" ]]; then
+  OLD_VERSION=$("$PYTHON" -c \
+    "import json, sys; print(json.load(open(sys.argv[1]))['version'])" "$SKILLS_SOURCE/skills.json" \
     2>/dev/null || echo "?")
 fi
 
@@ -133,9 +137,9 @@ else
 fi
 
 NEW_VERSION="?"
-if command -v python3 &>/dev/null; then
-  NEW_VERSION=$(python3 -c \
-    "import json; print(json.load(open('$SKILLS_SOURCE/skills.json'))['version'])" \
+if command -v "$PYTHON" &>/dev/null; then
+  NEW_VERSION=$("$PYTHON" -c \
+    "import json, sys; print(json.load(open(sys.argv[1]))['version'])" "$SKILLS_SOURCE/skills.json" \
     2>/dev/null || echo "?")
 fi
 

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from _helpers import REPO_ROOT
+from _helpers import BASH, REPO_ROOT
 
 
 class UpdateConsumerSkillsScriptTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
     def _run_update(self, source: Path, project: Path, *extra: str) -> subprocess.CompletedProcess:
         return subprocess.run(
             [
-                "bash",
+                BASH,
                 str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                 "--source", str(source),
                 "--agent-dir", ".agents/skills",
@@ -35,7 +35,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             ],
             cwd=project,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def test_writes_version_marker_for_the_option_e_hook(self) -> None:
@@ -353,7 +353,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
 
             result = subprocess.run(
                 [
-                    "bash",
+                    BASH,
                     str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                     "--source",
                     str(source),
@@ -361,7 +361,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                 ],
                 cwd=project,
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
@@ -430,7 +430,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
 
             result = subprocess.run(
                 [
-                    "bash",
+                    BASH,
                     str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                     "--source",
                     str(source),
@@ -439,7 +439,7 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
                 ],
                 cwd=project,
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
@@ -466,10 +466,10 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
 
             result = subprocess.run(
                 [
-                    "bash", str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
+                    BASH, str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"),
                     "--source", str(source), "--agent-dir", ".agents/skills",
                 ],
-                cwd=project, capture_output=True, text=True,
+                cwd=project, capture_output=True, text=True, encoding="utf-8",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
@@ -494,8 +494,8 @@ class UpdateConsumerSkillsScriptTests(unittest.TestCase):
             (project / ".agents" / "skills").mkdir(parents=True)
 
             result = subprocess.run(
-                ["bash", str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"), "--source", str(source)],
-                cwd=project, capture_output=True, text=True,
+                [BASH, str(REPO_ROOT / "scripts" / "update-consumer-skills.sh"), "--source", str(source)],
+                cwd=project, capture_output=True, text=True, encoding="utf-8",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

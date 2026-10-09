@@ -25,6 +25,11 @@ fix bugs, run validation, and cut a release.
 | Python | 3.10 | Audit scripts, release script, tests |
 | Git | 2.x | Version control |
 | Claude Code | latest | Running skills and commands as an agent |
+| Git for Windows | latest | Windows only: the bash that runs hooks and shell-script tests |
+
+On Windows, run `python` where the docs say `python3` (the `python3` there is a Microsoft
+Store stub). The tests and `scripts/release.py` run from PowerShell or Git Bash; tests call
+Git for Windows' bash directly, since a bare `bash` would start WSL instead.
 
 Install Python dependencies (tests only, no runtime deps):
 

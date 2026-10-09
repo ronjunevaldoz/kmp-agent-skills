@@ -59,7 +59,7 @@ class TestSnapshotDiff(unittest.TestCase):
     def _git(self, *args: str) -> str:
         return subprocess.run(
             ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
-            cwd=self.root, check=True, capture_output=True, text=True,
+            cwd=self.root, check=True, capture_output=True, text=True, encoding="utf-8",
         ).stdout.strip()
 
     def _commit(self, msg: str) -> str:

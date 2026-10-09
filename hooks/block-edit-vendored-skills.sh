@@ -18,13 +18,21 @@
 
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 TARGET="${1:-}"
 # Claude Code sends hook input as JSON on stdin (tool_input.file_path); the positional
-# argument is for tests and manual runs. select() keeps a never-closed stdin from hanging.
+# argument is for tests and manual runs. The 1s thread timeout keeps a never-closed stdin
+# from hanging (select() won't do: on Windows it only accepts sockets).
 if [[ -z "$TARGET" && ! -t 0 ]]; then
-  TARGET="$(python3 -c 'import json,select,sys
-r, _, _ = select.select([sys.stdin], [], [], 1)
-print((json.load(sys.stdin).get("tool_input") or {}).get("file_path", "") if r else "")' 2>/dev/null || true)"
+  TARGET="$("$PYTHON" -c 'import json,os,sys,threading
+got = []
+t = threading.Thread(target=lambda: got.append(sys.stdin.read()), daemon=True)
+t.start(); t.join(1)
+print((json.loads(got[0]).get("tool_input") or {}).get("file_path", "") if got and got[0].strip() else "", flush=True)
+os._exit(0)  # a reader thread still blocked on stdin can abort normal shutdown' 2>/dev/null || true)"
 fi
 
 if [[ -z "$TARGET" ]]; then

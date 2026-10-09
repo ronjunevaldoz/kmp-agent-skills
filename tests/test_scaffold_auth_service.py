@@ -30,7 +30,7 @@ class ScaffoldAuthServiceTests(unittest.TestCase):
                 "model/AuthError.kt",
                 "di/AuthModule.kt",
             }
-            self.assertTrue(expected.issubset({str(p.relative_to(root)) for p in root.rglob("*.kt")}))
+            self.assertTrue(expected.issubset({p.relative_to(root).as_posix() for p in root.rglob("*.kt")}))
             self.assertIn("package com.example.server.auth.model", (root / "model" / "AuthRequest.kt").read_text(encoding="utf-8"))
             self.assertIn("package com.example.server.auth.di", (root / "di" / "AuthModule.kt").read_text(encoding="utf-8"))
 

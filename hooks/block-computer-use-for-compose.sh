@@ -18,9 +18,9 @@ is_compose_project() {
   find "$PROJECT_ROOT" \
     -path "*/build" -prune -o \
     -path "*/.gradle" -prune -o \
-    \( -name "*.gradle.kts" -o -name "libs.versions.toml" \) -print \
+    \( -name "*.gradle.kts" -o -name "libs.versions.toml" \) -print0 \
     2>/dev/null \
-  | xargs grep -lE "org\.jetbrains\.compose|compose-multiplatform|jetbrains\.androidx\.compose" 2>/dev/null \
+  | xargs -0 grep -lE "org\.jetbrains\.compose|compose-multiplatform|jetbrains\.androidx\.compose" 2>/dev/null \
   | head -1 \
   | grep -q .
 }

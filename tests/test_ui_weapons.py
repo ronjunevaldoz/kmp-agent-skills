@@ -55,5 +55,5 @@ def test_scaffold_shadcn_component(tmp_path: Path):
 
     assert comp_file.exists()
     assert page_file.exists()
-    assert "fun ShadcnSheet" in comp_file.read_text()
-    assert "val SheetPage" in page_file.read_text()
+    assert "fun ShadcnSheet" in comp_file.read_text(encoding="utf-8")
+    assert "val SheetPage" in page_file.read_text(encoding="utf-8")

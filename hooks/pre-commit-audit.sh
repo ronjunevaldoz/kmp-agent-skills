@@ -5,6 +5,10 @@
 
 set -euo pipefail
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 # Deriving REPO_ROOT from ${BASH_SOURCE[0]} breaks under the real install path:
 # scripts/install-hooks.sh symlinks this file to .git/hooks/pre-commit, and git
 # invokes it via that .git/hooks/ path — dirname("$REPO_ROOT/.git/hooks/pre-commit")
@@ -46,7 +50,7 @@ STAGED=$(git diff --cached --name-only)
 STAGED_KT=$(echo "$STAGED" | grep -E '\.(kt|kts)$' || true)
 if [[ -n "$STAGED_KT" ]] && [[ -n "$KMP_AUDIT_DIR" ]]; then
   echo "Running architecture audit on staged Kotlin files..."
-  python3 "$KMP_AUDIT_DIR/audit_project.py" "$REPO_ROOT"
+  "$PYTHON" "$KMP_AUDIT_DIR/audit_project.py" "$REPO_ROOT"
   STATUS=$?
   if [[ $STATUS -ne 0 ]]; then
     echo ""
@@ -66,7 +70,7 @@ fi
 STAGED_DOCS=$(echo "$STAGED" | grep -E '(^docs/.*\.md$|^[A-Z_]+\.md$)' || true)
 if [[ -n "$STAGED_DOCS" ]] && [[ -n "$KMP_AUDIT_DIR" ]]; then
   echo "Running docs hygiene check on staged docs..."
-  if ! python3 "$KMP_AUDIT_DIR/audit_skills_repo.py" "$REPO_ROOT" --docs-hygiene-only; then
+  if ! "$PYTHON" "$KMP_AUDIT_DIR/audit_skills_repo.py" "$REPO_ROOT" --docs-hygiene-only; then
     echo ""
     echo "Commit blocked: docs hygiene found issues (line-cap, naming, orphaned reference doc)."
     echo "Run: python3 $KMP_AUDIT_DIR/audit_skills_repo.py . --docs-hygiene-only"

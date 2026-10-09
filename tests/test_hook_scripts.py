@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from _helpers import REPO_ROOT, load_module
+from _helpers import BASH, REPO_ROOT, load_module
 
 HOOKS_DIR = REPO_ROOT / "hooks"
 
@@ -25,7 +25,7 @@ class HookScriptTests(unittest.TestCase):
 
     def test_validate_arch_skips_non_kotlin_file(self) -> None:
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "validate-architecture.sh"), "readme.txt"],
+            [BASH, str(HOOKS_DIR / "validate-architecture.sh"), "readme.txt"],
             capture_output=True,
         )
         self.assertEqual(result.returncode, 0, (
@@ -37,7 +37,7 @@ class HookScriptTests(unittest.TestCase):
         # Pass a clean temp dir as $2 so the audit doesn't scan SKILL.md examples.
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "validate-architecture.sh"), "SomeFile.kt", tmp],
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh"), "SomeFile.kt", tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0, (
@@ -49,7 +49,7 @@ class HookScriptTests(unittest.TestCase):
         # No file arg → audit runs; use a clean temp dir as $2 to avoid SKILL.md false positives.
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "validate-architecture.sh"), "", tmp],
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh"), "", tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0, (
@@ -61,7 +61,7 @@ class HookScriptTests(unittest.TestCase):
         for ext in (".json", ".sh", ".py", ".toml", ".xml"):
             with self.subTest(ext=ext):
                 result = subprocess.run(
-                    ["bash", str(HOOKS_DIR / "validate-architecture.sh"), f"file{ext}"],
+                    [BASH, str(HOOKS_DIR / "validate-architecture.sh"), f"file{ext}"],
                     capture_output=True,
                 )
                 self.assertEqual(result.returncode, 0, (
@@ -84,7 +84,7 @@ class HookScriptTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             skills_dir = self._make_skill_dir(tmp, "kmp-foo", datetime.date.today().isoformat())
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
+                [BASH, str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0, (
@@ -96,7 +96,7 @@ class HookScriptTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             skills_dir = self._make_skill_dir(tmp, "kmp-old", "2020-01-01")
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
+                [BASH, str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 1, (
@@ -115,7 +115,7 @@ class HookScriptTests(unittest.TestCase):
                 encoding="utf-8",
             )
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
+                [BASH, str(HOOKS_DIR / "check-skill-freshness.sh"), str(skills_dir)],
                 capture_output=True,
             )
         # No stale count incremented — exits 0 but prints WARN
@@ -127,7 +127,7 @@ class HookScriptTests(unittest.TestCase):
             empty_skills = Path(tmp) / "skills"
             empty_skills.mkdir()
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "check-skill-freshness.sh"), str(empty_skills)],
+                [BASH, str(HOOKS_DIR / "check-skill-freshness.sh"), str(empty_skills)],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0, (
@@ -140,7 +140,7 @@ class HookScriptTests(unittest.TestCase):
         # A SessionStart hook must never fail the session — exit 0 regardless of
         # whether check_updates.py reports up-to-date, behind, or unreachable.
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "session-start-check-updates.sh")],
+            [BASH, str(HOOKS_DIR / "session-start-check-updates.sh")],
             capture_output=True,
             cwd=str(REPO_ROOT),
         )
@@ -151,7 +151,7 @@ class HookScriptTests(unittest.TestCase):
 
     def test_session_start_check_updates_prints_status(self) -> None:
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "session-start-check-updates.sh")],
+            [BASH, str(HOOKS_DIR / "session-start-check-updates.sh")],
             capture_output=True,
             cwd=str(REPO_ROOT),
         )
@@ -164,12 +164,12 @@ class HookScriptTests(unittest.TestCase):
             fake_repo = Path(tmp)
             (fake_repo / "hooks").mkdir()
             (fake_repo / "scripts").mkdir()
-            hook_src = (HOOKS_DIR / "session-start-check-updates.sh").read_text()
-            (fake_repo / "hooks" / "session-start-check-updates.sh").write_text(hook_src)
-            check_updates_src = (REPO_ROOT / "scripts" / "check_updates.py").read_text()
-            (fake_repo / "scripts" / "check_updates.py").write_text(check_updates_src)
+            hook_src = (HOOKS_DIR / "session-start-check-updates.sh").read_text(encoding="utf-8")
+            (fake_repo / "hooks" / "session-start-check-updates.sh").write_text(hook_src, encoding="utf-8")
+            check_updates_src = (REPO_ROOT / "scripts" / "check_updates.py").read_text(encoding="utf-8")
+            (fake_repo / "scripts" / "check_updates.py").write_text(check_updates_src, encoding="utf-8")
             result = subprocess.run(
-                ["bash", str(fake_repo / "hooks" / "session-start-check-updates.sh")],
+                [BASH, str(fake_repo / "hooks" / "session-start-check-updates.sh")],
                 capture_output=True,
                 cwd=str(fake_repo),
             )
@@ -188,7 +188,7 @@ class HookScriptTests(unittest.TestCase):
                 'plugins { id("org.jetbrains.compose") }\n', encoding="utf-8"
             )
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
+                [BASH, str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 2, (
@@ -205,7 +205,7 @@ class HookScriptTests(unittest.TestCase):
                 'compose-multiplatform = "1.11.1"\n', encoding="utf-8"
             )
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
+                [BASH, str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 2)
@@ -216,7 +216,7 @@ class HookScriptTests(unittest.TestCase):
                 'plugins { id("java") }\n', encoding="utf-8"
             )
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
+                [BASH, str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0, (
@@ -227,7 +227,7 @@ class HookScriptTests(unittest.TestCase):
     def test_allows_computer_use_when_no_gradle_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
+                [BASH, str(HOOKS_DIR / "block-computer-use-for-compose.sh"), tmp],
                 capture_output=True,
             )
         self.assertEqual(result.returncode, 0)
@@ -239,7 +239,7 @@ class HookScriptTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "CLAUDE_PROJECT_DIR": tmp}
             skipped = subprocess.run(
-                ["bash", str(HOOKS_DIR / "validate-architecture.sh")],
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh")],
                 input=json.dumps({"tool_input": {"file_path": "src/Foo.kt"}}).encode(),
                 capture_output=True, env=env,
             )
@@ -248,7 +248,7 @@ class HookScriptTests(unittest.TestCase):
 
             (Path(tmp) / "settings.gradle.kts").write_text('rootProject.name = "demo"\n')
             non_kotlin = subprocess.run(
-                ["bash", str(HOOKS_DIR / "validate-architecture.sh")],
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh")],
                 input=json.dumps({"tool_input": {"file_path": "notes.txt"}}).encode(),
                 capture_output=True, env=env,
             )
@@ -260,7 +260,7 @@ class HookScriptTests(unittest.TestCase):
     def test_blocks_mirror_edit_from_hook_stdin(self) -> None:
         payload = json.dumps({"tool_input": {"file_path": "/p/.claude/skills/kmp-mvi/SKILL.md"}})
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh")],
+            [BASH, str(HOOKS_DIR / "block-edit-vendored-skills.sh")],
             input=payload.encode(), capture_output=True,
         )
         self.assertEqual(result.returncode, 2, result.stderr.decode())
@@ -276,7 +276,7 @@ class HookScriptTests(unittest.TestCase):
         for path in mirror_paths:
             with self.subTest(path=path):
                 result = subprocess.run(
-                    ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh"), path],
+                    [BASH, str(HOOKS_DIR / "block-edit-vendored-skills.sh"), path],
                     capture_output=True,
                 )
                 self.assertEqual(result.returncode, 2, (
@@ -286,21 +286,21 @@ class HookScriptTests(unittest.TestCase):
 
     def test_allows_edit_under_source_skills_dir(self) -> None:
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh"), "skills/kmp-mvi/SKILL.md"],
+            [BASH, str(HOOKS_DIR / "block-edit-vendored-skills.sh"), "skills/kmp-mvi/SKILL.md"],
             capture_output=True,
         )
         self.assertEqual(result.returncode, 0)
 
     def test_allows_edit_of_unrelated_file(self) -> None:
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh"), "src/commonMain/kotlin/Foo.kt"],
+            [BASH, str(HOOKS_DIR / "block-edit-vendored-skills.sh"), "src/commonMain/kotlin/Foo.kt"],
             capture_output=True,
         )
         self.assertEqual(result.returncode, 0)
 
     def test_allows_when_no_path_given(self) -> None:
         result = subprocess.run(
-            ["bash", str(HOOKS_DIR / "block-edit-vendored-skills.sh")],
+            [BASH, str(HOOKS_DIR / "block-edit-vendored-skills.sh")],
             capture_output=True,
         )
         self.assertEqual(result.returncode, 0)
@@ -333,7 +333,7 @@ class PreCommitAuditDocsHygieneTests(unittest.TestCase):
             subprocess.run(["git", "add", "docs/big.md"], cwd=tmp, check=True)
 
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "pre-commit-audit.sh")],
+                [BASH, str(HOOKS_DIR / "pre-commit-audit.sh")],
                 cwd=tmp, capture_output=True,
             )
             self.assertEqual(result.returncode, 1)
@@ -347,7 +347,7 @@ class PreCommitAuditDocsHygieneTests(unittest.TestCase):
             subprocess.run(["git", "add", "notes.txt"], cwd=tmp, check=True)
 
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "pre-commit-audit.sh")],
+                [BASH, str(HOOKS_DIR / "pre-commit-audit.sh")],
                 cwd=tmp, capture_output=True,
             )
             self.assertEqual(result.returncode, 0, result.stdout.decode() + result.stderr.decode())
@@ -365,7 +365,7 @@ class PreCommitAuditDocsHygieneTests(unittest.TestCase):
             subprocess.run(["git", "add", "docs/small.md", "README.md"], cwd=tmp, check=True)
 
             result = subprocess.run(
-                ["bash", str(HOOKS_DIR / "pre-commit-audit.sh")],
+                [BASH, str(HOOKS_DIR / "pre-commit-audit.sh")],
                 cwd=tmp, capture_output=True,
             )
             self.assertEqual(result.returncode, 0, result.stdout.decode() + result.stderr.decode())
@@ -378,7 +378,7 @@ class CommitMsgHookTests(unittest.TestCase):
             f_path = f.name
         try:
             return subprocess.run(
-                ["bash", str(HOOKS_DIR / "commit-msg"), f_path],
+                [BASH, str(HOOKS_DIR / "commit-msg"), f_path],
                 capture_output=True,
             )
         finally:
@@ -411,7 +411,7 @@ class PrePushHookTests(unittest.TestCase):
     def test_pre_push_hook_exists_and_runs(self) -> None:
         # Runs cleanly in current repo with no un-squashed fixups
         res = subprocess.run(
-            ["bash", str(HOOKS_DIR / "pre-push")],
+            [BASH, str(HOOKS_DIR / "pre-push")],
             capture_output=True,
             cwd=str(REPO_ROOT),
         )

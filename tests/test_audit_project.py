@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -2350,9 +2351,9 @@ class HarvestProjectTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             audit_script = REPO_ROOT / "skills" / "kmp-audit" / "scripts" / "audit_project.py"
             result = subprocess.run(
-                ["python3", str(audit_script), "--harvest", tmp],
+                [sys.executable, str(audit_script), "--harvest", tmp],
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
             )
             self.assertIn(result.returncode, (0, 1), "harvest should exit 0 or 1 only")
             parsed = _json.loads(result.stdout)

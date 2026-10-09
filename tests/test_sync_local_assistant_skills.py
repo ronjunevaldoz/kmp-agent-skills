@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from _helpers import REPO_ROOT
+from _helpers import BASH, REPO_ROOT, minimal_path
 
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync-local-assistant-skills.sh"
 
@@ -25,8 +25,8 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             source = self._fake_source(tmp)
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
-                capture_output=True, text=True,
+                [BASH, str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, encoding="utf-8",
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills", ".gemini/config/plugins/kmp-agent-skills/skills"):
@@ -38,10 +38,10 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             source = self._fake_source(tmp)
             fake_home = Path(tmp) / "fake_home"
             fake_home.mkdir()
-            env = {"HOME": str(fake_home), "PATH": "/usr/bin:/bin"}
+            env = {"HOME": str(fake_home), "PATH": minimal_path()}
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
-                capture_output=True, text=True, env=env,
+                [BASH, str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, encoding="utf-8", env=env,
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse((fake_home / ".agents").exists())
@@ -61,8 +61,8 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             old_backup.mkdir()
 
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--skip-commands"],
-                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+                [BASH, str(SYNC_SCRIPT), "--source", str(source), "--skip-commands"],
+                capture_output=True, text=True, encoding="utf-8", env={**os.environ, "HOME": str(home)},
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -81,8 +81,8 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             (home / ".claude" / "plugins" / "installed_plugins.json").write_text(json.dumps(
                 {"version": 2, "plugins": {"kmp-agent-skills@kmp-agent-skills": [{"scope": "user"}]}}))
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
-                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+                [BASH, str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, encoding="utf-8", env={**os.environ, "HOME": str(home)},
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotIn(".claude/skills", result.stdout)
@@ -98,8 +98,8 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             (home / ".claude" / "plugins" / "installed_plugins.json").write_text(json.dumps(
                 {"version": 9, "plugins": {"kmp-agent-skills@kmp-agent-skills": "unknown"}}))
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
-                capture_output=True, text=True, env={**os.environ, "HOME": str(home)},
+                [BASH, str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
+                capture_output=True, text=True, encoding="utf-8", env={**os.environ, "HOME": str(home)},
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(".claude/skills", result.stdout)
@@ -110,8 +110,8 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
             empty = Path(tmp) / "not-a-skills-repo"
             empty.mkdir()
             result = subprocess.run(
-                ["bash", str(SYNC_SCRIPT), "--source", str(empty), "--dry-run"],
-                capture_output=True, text=True,
+                [BASH, str(SYNC_SCRIPT), "--source", str(empty), "--dry-run"],
+                capture_output=True, text=True, encoding="utf-8",
             )
         self.assertNotEqual(result.returncode, 0)
 

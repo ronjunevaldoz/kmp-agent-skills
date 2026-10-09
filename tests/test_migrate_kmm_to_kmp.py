@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from _helpers import REPO_ROOT
+from _helpers import BASH, REPO_ROOT
 
 SCRIPT = REPO_ROOT / "scripts" / "migrate-kmm-to-kmp.sh"
 
@@ -13,10 +13,10 @@ SCRIPT = REPO_ROOT / "scripts" / "migrate-kmm-to-kmp.sh"
 class MigrateKmmToKmpTests(unittest.TestCase):
     def _run(self, project: Path, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(
-            ["bash", str(SCRIPT), *args],
+            [BASH, str(SCRIPT), *args],
             cwd=str(project),
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def _make_stale_project(self, project: Path) -> None:

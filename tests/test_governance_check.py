@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -365,8 +366,8 @@ class ProfileContentScreenshotTest {
             root = self._project(tmp)
             script = REPO_ROOT / "skills/kmp-audit/scripts/governance_check.py"
             result = subprocess.run(
-                ["python3", str(script), str(root)],
-                capture_output=True, text=True,
+                [sys.executable, str(script), str(root)],
+                capture_output=True, text=True, encoding="utf-8",
             )
         self.assertEqual(result.returncode, 0)
 
@@ -379,17 +380,17 @@ class ProfileContentScreenshotTest {
             )
             script = REPO_ROOT / "skills/kmp-audit/scripts/governance_check.py"
             result = subprocess.run(
-                ["python3", str(script), str(root)],
+                [sys.executable, str(script), str(root)],
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
             )
         self.assertEqual(result.returncode, 1)
 
     def test_cli_exit_2_on_missing_root(self) -> None:
         script = REPO_ROOT / "skills/kmp-audit/scripts/governance_check.py"
         result = subprocess.run(
-            ["python3", str(script), "/nonexistent/path/xyz"],
-            capture_output=True, text=True,
+            [sys.executable, str(script), "/nonexistent/path/xyz"],
+            capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(result.returncode, 2)
 
@@ -398,8 +399,8 @@ class ProfileContentScreenshotTest {
             root = self._project(tmp)
             script = REPO_ROOT / "skills/kmp-audit/scripts/governance_check.py"
             result = subprocess.run(
-                ["python3", str(script), str(root), "--json"],
-                capture_output=True, text=True,
+                [sys.executable, str(script), str(root), "--json"],
+                capture_output=True, text=True, encoding="utf-8",
             )
         self.assertEqual(result.returncode, 0)
         parsed = json.loads(result.stdout)

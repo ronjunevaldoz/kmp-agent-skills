@@ -11,6 +11,7 @@ Enforces:
 
 import argparse
 import datetime
+import os
 import re
 import sys
 from pathlib import Path
@@ -68,7 +69,9 @@ Brief description of the task requirements and objective.
     if heal_script.exists():
         import subprocess
         # Not silenced: healing may delete finished tasks, and it lists what it removed.
-        subprocess.run([sys.executable, str(heal_script), "--project", str(repo_root)], check=False)
+        # UTF-8 mode: its emoji output can't be encoded on a Windows code page when piped.
+        subprocess.run([sys.executable, str(heal_script), "--project", str(repo_root)], check=False,
+                       env={**os.environ, "PYTHONUTF8": "1"})
         
     return task_path
 

@@ -68,7 +68,7 @@ def main() -> int:
 
     # 3. Version comparison
     local_skills_path = ROOT / "skills.json"
-    local_version = read_version(local_skills_path.read_text()) if local_skills_path.exists() else "?"
+    local_version = read_version(local_skills_path.read_text(encoding="utf-8")) if local_skills_path.exists() else "?"
     remote_json, _ = run(f"git show {REMOTE}/{BRANCH}:skills.json 2>/dev/null")
     remote_version = read_version(remote_json)
 

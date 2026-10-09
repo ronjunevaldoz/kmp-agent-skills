@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -47,7 +48,7 @@ class ReleaseScriptTests(unittest.TestCase):
 
         self.assertIn(
             [
-                "python3",
+                sys.executable,
                 str(release_scripts.VALIDATE_SKILL_MAP_SCRIPT),
                 "--repo-root",
                 str(release_scripts.REPO_ROOT),
@@ -56,7 +57,7 @@ class ReleaseScriptTests(unittest.TestCase):
         )
         self.assertIn(
             [
-                "python3",
+                sys.executable,
                 str(release_scripts.VALIDATE_KEYWORD_ROUTING_SCRIPT),
                 "--repo-root",
                 str(release_scripts.REPO_ROOT),
@@ -204,14 +205,14 @@ class PluginManifestTests(unittest.TestCase):
 
     def test_plugin_commands_match_commands_dir(self) -> None:
         release = load_module("release_plugin", REPO_ROOT / "scripts" / "release.py")
-        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text())
+        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["commands"], release.plugin_command_paths(),
                          "run scripts/release.py or add the command to plugin.json")
 
     def test_plugin_agents_exist_with_frontmatter(self) -> None:
-        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text())
+        manifest = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
         for rel in manifest["agents"]:
-            text = (REPO_ROOT / rel).read_text()
+            text = (REPO_ROOT / rel).read_text(encoding="utf-8")
             self.assertTrue(text.startswith("---\nname: "), rel)
             self.assertIn("\ndescription: ", text.split("\n---", 1)[0], rel)
 

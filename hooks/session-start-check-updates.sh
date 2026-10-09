@@ -9,8 +9,12 @@
 # this repo's own origin/main) — not applicable to a deployed skills/ copy in a
 # consumer project.
 
+# On Windows, python3 can be the Microsoft Store stub, which only prints an install hint.
+PYTHON=python3
+"$PYTHON" -c '' 2>/dev/null || PYTHON=python
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-python3 "$REPO_ROOT/scripts/check_updates.py"
+"$PYTHON" "$REPO_ROOT/scripts/check_updates.py"
 exit 0

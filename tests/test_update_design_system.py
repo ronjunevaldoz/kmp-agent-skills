@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -194,7 +195,7 @@ class UpdateDesignSystemTests(unittest.TestCase):
                 update_design_system_scripts.main, "__wrapped__"
             ) else None
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system" / "scripts" / "update_design_system.py"),
                  tmp,
                  "--skill-root", tmp],
@@ -210,7 +211,7 @@ class UpdateDesignSystemTests(unittest.TestCase):
             skill_md_dir.mkdir(parents=True)
             (skill_md_dir / "SKILL.md").write_text(self._SKILL_MD_TEMPLATE, encoding="utf-8")
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system" / "scripts" / "update_design_system.py"),
                  str(root),
                  "--skill-root", str(skill_root)],
@@ -237,7 +238,7 @@ class UpdateDesignSystemTests(unittest.TestCase):
                 dest.write_text(code, encoding="utf-8")
 
             result = subprocess.run(
-                ["python3",
+                [sys.executable,
                  str(REPO_ROOT / "skills" / "kmp-compose-design-system" / "scripts" / "update_design_system.py"),
                  str(root),
                  "--skill-root", str(skill_root)],

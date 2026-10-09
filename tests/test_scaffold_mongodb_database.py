@@ -28,7 +28,7 @@ class ScaffoldMongoDatabaseTests(unittest.TestCase):
                 "user/repository/UserRepository.kt",
                 "user/repository/UserRepositoryImpl.kt",
             }
-            self.assertTrue(expected.issubset({str(p.relative_to(root)) for p in root.rglob("*.kt")}))
+            self.assertTrue(expected.issubset({p.relative_to(root).as_posix() for p in root.rglob("*.kt")}))
             self.assertIn("package com.example.server.database", (root / "MongoClientFactory.kt").read_text(encoding="utf-8"))
             self.assertIn("package com.example.server.user.repository", (root / "user" / "repository" / "UserRepository.kt").read_text(encoding="utf-8"))
 

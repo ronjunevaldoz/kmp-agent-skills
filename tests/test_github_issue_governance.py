@@ -114,6 +114,20 @@ class TestDeferredItems(unittest.TestCase):
         body = "## Summary\n- Moves the view.\n- Renames it.\n"
         self.assertEqual(validate_payload_module.check_deferred_items(body), [])
 
+    def test_prose_starting_with_a_trigger_word_opens_no_section(self) -> None:
+        body = "Deferred loading is now the default.\n\nChanges:\n- Moves the view.\n"
+        self.assertEqual(validate_payload_module.check_deferred_items(body), [])
+
+    def test_plain_label_ends_the_deferred_list(self) -> None:
+        body = "Out of scope:\n- Web (#7)\n\nTest plan:\n- Ran unit tests.\n"
+        self.assertEqual(validate_payload_module.check_deferred_items(body), [])
+
+    def test_flags_numbered_items_and_skips_code_fences(self) -> None:
+        body = "## Follow-ups\n```\n- sample output\n```\n1. Untracked item.\n"
+        errors = validate_payload_module.check_deferred_items(body)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Untracked item", errors[0])
+
     def test_only_runs_in_pr_mode(self) -> None:
         body = "## Follow-ups\n- Untracked item.\n"
         self.assertEqual(validate_payload_module.validate_payload(body), [])

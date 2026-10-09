@@ -221,7 +221,7 @@ real-world icon sets like Heroicons, which use arcs for every rounded/circular e
 ## Testing
 
 The toolchain core (SVG parse → normalize → codegen) is pure Python and covered by
-repo tests (`tests/test_skill_scripts.py`):
+repo tests (`tests/test_imagevector.py`):
 
 - path parser: absolute/relative commands, H/V expansion, S/T control-point reflection, implicit lineto after M, arc-to-cubic flattening (including the packed-flag parsing gotcha, e.g. `"1110"` = large-arc=1, sweep=1, x=10)
 - viewport rescale: uniform scale + centering into the canonical square

@@ -171,7 +171,7 @@ versions when the local repo can be checked directly.
 
 ## The 77 Skills and What They Own
 
-The complete catalog is maintained in [`README.md`](../../../README.md); the task-to-skill
+The complete catalog is maintained in [`README.md`](../../README.md); the task-to-skill
 routes live in [`references/skill-invocation-map.md`](references/skill-invocation-map.md).
 Keep that mapping canonical instead of copying the full skill inventory into agents.
 

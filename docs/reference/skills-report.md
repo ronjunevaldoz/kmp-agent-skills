@@ -50,11 +50,11 @@ Generated 2026-10-09 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-resilience`](../../skills/kmp-resilience/) | 370 | 2026-08-24 | ✅ |
 | [`kmp-coroutines-flow-patterns`](../../skills/kmp-coroutines-flow-patterns/) | 367 | 2026-08-19 | ✅ |
 | [`kmp-xcframework-spm`](../../skills/kmp-xcframework-spm/) | 364 | 2026-06-06 | ✅ |
+| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 361 | 2026-10-09 | ✅ |
 | [`kmp-form-validation`](../../skills/kmp-form-validation/) | 358 | 2026-06-21 | ✅ |
 | [`kmp-security`](../../skills/kmp-security/) | 357 | 2026-08-24 | ✅ |
 | [`kmp-lessons`](../../skills/kmp-lessons/) | 356 | 2026-07-12 | ✅ |
 | [`kmp-deep-linking`](../../skills/kmp-deep-linking/) | 351 | 2026-06-21 | ✅ |
-| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 351 | 2026-10-09 | ✅ |
 | [`kmp-crash-reporting`](../../skills/kmp-crash-reporting/) | 350 | 2026-06-24 | ✅ |
 | [`kmp-compose-accessibility`](../../skills/kmp-compose-accessibility/) | 347 | 2026-09-27 | ✅ |
 | [`kmp-unit-testing`](../../skills/kmp-unit-testing/) | 340 | 2026-08-22 | ✅ |

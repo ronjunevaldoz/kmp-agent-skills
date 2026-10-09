@@ -10,7 +10,7 @@
       "name": "kmp-agent-skills",
       "source": ".",
       "description": "78 Kotlin Multiplatform agent skills, 33 slash commands, and 7 role agents covering the full KMP stack: architecture, MVI, networking, persistence, design systems, testing, and release.",
-      "version": "3.3.0"
+      "version": "3.4.0"
     }
   ]
 }

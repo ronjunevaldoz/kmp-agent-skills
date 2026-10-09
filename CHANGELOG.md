@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.4.0] — 2026-10-09
+
+### Added
+
+- feat(issue-governance): reject AI attribution in issues, PRs and commits
+
+---
+
 ## [v3.3.0] — 2026-10-09
 
 ### Added

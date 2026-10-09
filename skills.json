@@ -1,5 +1,5 @@
 {
-  "version": "3.3.0",
+  "version": "3.4.0",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -1899,7 +1899,8 @@
         "in-place updates",
         "deferred work",
         "triage labels",
-        "priority"
+        "priority",
+        "ai attribution"
       ],
       "triggers": [
         "github issue",
@@ -1914,7 +1915,9 @@
         "in-place update",
         "deferred work",
         "triage labels",
-        "priority"
+        "priority",
+        "AI attribution",
+        "Generated with Claude Code"
       ],
       "scripts": [
         "gh_sub_issue.py",

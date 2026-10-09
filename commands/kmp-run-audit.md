@@ -15,7 +15,8 @@ Target project: `$ARGUMENTS` (defaults to `.` if empty)
 ## Step 1 — Run the script
 
 ```bash
-python3 skills/kmp-audit/scripts/audit_project.py "${ARGUMENTS:-.}"
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" "${ARGUMENTS:-.}"
 ```
 
 Findings carry verifiable evidence — each shows `file:line` plus the matched source line
@@ -86,7 +87,8 @@ The script also prints a separate, non-blocking `HINTS` section:
 ## Step 1b — Structure diagram (optional, on request)
 
 ```bash
-python3 skills/kmp-audit/scripts/generate_structure_diagram.py "${ARGUMENTS:-.}" --mermaid
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/generate_structure_diagram.py" "${ARGUMENTS:-.}" --mermaid
 ```
 
 Run when the user wants to visually verify the module layout, or after adding/removing/
@@ -99,10 +101,11 @@ diagram. Purely informational — layer violations are already gated by Step 1's
 ## Step 2 — Quality scan
 
 ```bash
-python3 scripts/scan_skill_issues.py
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+python3 "$KMP_REPO/scripts/scan_skill_issues.py"
 ```
 
-Parse the JSON output (`total_issues`, `by_severity`, `issues[]`).
+Skip this step if no plugin or kmp-agent-skills checkout is found (the script is missing). Parse the JSON output (`total_issues`, `by_severity`, `issues[]`).
 
 Print a brief summary before the architecture findings:
 
@@ -252,7 +255,8 @@ The kmp-agent-skills team can improve the skill so future consumers don't hit th
 If the user says **y** or **v then y**, submit via:
 
 ```bash
-python3 ~/.claude/skills/kmp-audit/scripts/draft_issue.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/draft_issue.py" \
   --title "Skill gap: <finding summary>" \
   --evidence "<file:line — <finding text>>" \
   --recommendation "<fix guidance from Step 4>" \

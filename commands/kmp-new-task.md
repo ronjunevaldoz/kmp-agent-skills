@@ -23,7 +23,8 @@ Example:
 Runs the task scaffolding engine:
 
 ```bash
-python3 .agents/skills/kmp-project-docs-maintainer/scripts/new_task.py $ARGUMENTS || python3 skills/kmp-project-docs-maintainer/scripts/new_task.py $ARGUMENTS
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-project-docs-maintainer" ] && break; done
+python3 "$KMP_SKILLS/kmp-project-docs-maintainer/scripts/new_task.py" $ARGUMENTS
 ```
 
 1. **Enforces Canonical Folder**: Places the file in `docs/tasks/<parent>/` (never loose in `docs/tasks/` or ad-hoc `docs/plans/`).

@@ -18,7 +18,8 @@ Skill path: **$ARGUMENTS** (e.g. `awake-render-vulkan` → `skills/awake-render-
 ## Step 1 — Mechanical baseline first
 
 ```bash
-python3 ~/.agents/skills/kmp-audit/scripts/audit_project.py .
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" .
 ```
 
 Fix any `project skill missing SKILL.md` / `missing frontmatter` / `missing name` /

@@ -372,7 +372,8 @@ Rate each fix before applying it:
 
 1. Re-run the Level 1 audit to confirm the specific finding is gone:
    ```bash
-   python3 skills/kmp-audit/scripts/audit_project.py <project_root>
+   for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+   python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" <project_root>
    ```
 2. Add the successful fix to `.agents/pipeline-context.json` under `proven_patterns`:
    ```json

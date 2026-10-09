@@ -77,11 +77,14 @@ claude_plugin_installed() {
 import json, sys
 try:
     data = json.load(open(sys.argv[1]))
+    plugins = data.get("plugins", data)
+    # Each entry is a list of install records; tolerate a single record too.
+    installed = any(k.startswith("kmp-agent-skills@") and any(
+        isinstance(r, dict) and r.get("scope") == "user" for r in (v if isinstance(v, list) else [v]))
+        for k, v in plugins.items())
 except Exception:
-    sys.exit(1)
-plugins = data.get("plugins", data)
-sys.exit(0 if any(k.startswith("kmp-agent-skills@") and any(i.get("scope") == "user" for i in v)
-                  for k, v in plugins.items()) else 1)
+    installed = False  # unreadable or unknown format: keep syncing ~/.claude
+sys.exit(0 if installed else 1)
 PY
 }
 CLAUDE_TARGETS=("$HOME/.claude/skills")

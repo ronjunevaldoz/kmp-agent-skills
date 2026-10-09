@@ -13,6 +13,8 @@ audit_scripts = load_module(
     "audit_project",
     REPO_ROOT / "skills" / "kmp-audit" / "scripts" / "audit_project.py",
 )
+# Keep agent-setup findings independent of whether this machine has the plugin installed.
+audit_scripts.INSTALLED_PLUGINS_JSON = Path(tempfile.gettempdir()) / "no-such-dir" / "installed_plugins.json"
 
 class AuditProjectTests(unittest.TestCase):
     def test_audit_project_finds_smells(self) -> None:
@@ -4331,6 +4333,26 @@ class AgentsSkillsCrossClientTests(unittest.TestCase):
             for needle in (".agents/skills/ missing", ".agents/commands/ missing"):
                 self.assertTrue(any(needle in f for f in without), needle)
                 self.assertFalse(any(needle in f for f in with_plugin), needle)
+
+    def test_user_scope_plugin_record_counts_without_plugin_env(self) -> None:
+        # Slash commands run the audit through the Bash tool, where CLAUDE_PLUGIN_ROOT is unset.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "project"
+            root.mkdir()
+            (root / "settings.gradle.kts").write_text('rootProject.name = "demo"\n', encoding="utf-8")
+            record = Path(tmp) / "installed_plugins.json"
+
+            def findings_with(plugins: dict) -> list[str]:
+                record.write_text(json.dumps({"version": 2, "plugins": plugins}), encoding="utf-8")
+                with mock.patch.object(audit_scripts, "INSTALLED_PLUGINS_JSON", record):
+                    return audit_scripts._detect_agent_setup(root)
+
+            user = findings_with({"kmp-agent-skills@kmp-agent-skills": [{"scope": "user"}]})
+            project = findings_with({"kmp-agent-skills@kmp-agent-skills": [{"scope": "project"}]})
+            other = findings_with({"other@market": [{"scope": "user"}]})
+            self.assertFalse(any(".agents/skills/ missing" in f for f in user))
+            self.assertTrue(any(".agents/skills/ missing" in f for f in project))
+            self.assertTrue(any(".agents/skills/ missing" in f for f in other))
 
     def test_warns_redundant_when_claude_skills_mirror_matches_agents_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

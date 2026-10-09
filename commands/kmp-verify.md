@@ -20,7 +20,8 @@ so results are reproducible in CI.
 ## Step 1 — Architecture audit
 
 ```bash
-python3 skills/kmp-audit/scripts/audit_project.py "${ARGUMENTS:-.}"
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" "${ARGUMENTS:-.}"
 ```
 
 Expected: `OK: no lightweight architecture smells matched the current scan`
@@ -38,7 +39,8 @@ PASS/FAIL result.
 ## Step 1a — Project structure diagram (optional, on request)
 
 ```bash
-python3 skills/kmp-audit/scripts/generate_structure_diagram.py "${ARGUMENTS:-.}" --mermaid
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/generate_structure_diagram.py" "${ARGUMENTS:-.}" --mermaid
 ```
 
 Run this when the user asks to see or verify the module structure, or after any module

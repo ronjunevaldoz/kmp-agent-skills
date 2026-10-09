@@ -47,7 +47,8 @@ Bucket each file into its layer:
 ## Step 3 — Run the architecture audit
 
 ```bash
-python3 skills/kmp-audit/scripts/audit_project.py .
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" .
 ```
 
 Any finding is an automatic blocker.

@@ -46,15 +46,20 @@ Do not use this agent when:
 ### Consumer project audit
 
 ```bash
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-audit" ] && break; done
+
 # Violation report
-python3 .agents/skills/kmp-audit/scripts/audit_project.py <project_root>
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" <project_root>
 
 # Adoption roadmap (for existing projects with no prior skill adoption)
-python3 .agents/skills/kmp-audit/scripts/audit_project.py <project_root> --roadmap
+python3 "$KMP_SKILLS/kmp-audit/scripts/audit_project.py" <project_root> --roadmap
 
 # Module structure vs canonical App/Library layout — informational, not a gate
-python3 .agents/skills/kmp-audit/scripts/generate_structure_diagram.py <project_root> --mermaid
+python3 "$KMP_SKILLS/kmp-audit/scripts/generate_structure_diagram.py" <project_root> --mermaid
 ```
+
+This file is read on demand, so Claude Code doesn't fill in `${CLAUDE_PLUGIN_ROOT}` here. With
+only the plugin installed, reuse the `KMP_SKILLS` path from `reviewer.md` Check 1, which it does fill in.
 
 `audit_project.py` prints its blocking findings first, then a separate non-blocking
 `HINTS` section (currently: `name-behavior drift` — a ViewModel whose name shares no words

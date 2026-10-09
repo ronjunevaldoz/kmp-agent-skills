@@ -15,7 +15,8 @@ Feature name: **$ARGUMENTS**
 ## Phase 0 — Skills freshness check
 
 ```bash
-python3 scripts/check_updates.py
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+python3 "$KMP_REPO/scripts/check_updates.py"
 ```
 
 | Exit | Action |

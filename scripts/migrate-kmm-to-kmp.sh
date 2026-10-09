@@ -16,6 +16,9 @@
 
 set -euo pipefail
 
+# The updater ships next to this script; deployed skill folders don't include scripts/.
+UPDATE_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update-consumer-skills.sh"
+
 DRY_RUN=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -97,8 +100,8 @@ else
   echo "Next: re-run update-consumer-skills.sh to make sure kmp-compose-* and any"
   echo "new skills are actually deployed (this script only removes stale copies,"
   echo "it does not install anything):"
-  echo "  bash .agents/skills/scripts/update-consumer-skills.sh"
+  echo "  bash $UPDATE_SCRIPT"
   echo ""
   echo "If you installed slash commands, reinstall them under the new kmp-* names:"
-  echo "  bash .agents/skills/scripts/update-consumer-skills.sh --install-commands"
+  echo "  bash $UPDATE_SCRIPT --install-commands"
 fi

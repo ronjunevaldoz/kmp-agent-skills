@@ -21,7 +21,8 @@ REPO_URL = "https://github.com/ronjunevaldoz/kmp-agent-skills"
 
 
 def run(cmd: str) -> tuple[str, int]:
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    # Git must inspect this skills checkout, not whichever project the caller runs in.
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=ROOT)
     return result.stdout.strip(), result.returncode
 
 
@@ -34,6 +35,12 @@ def read_version(json_text: str) -> str:
 
 def main() -> int:
     print(f"Checking for skill updates from {REMOTE}/{BRANCH}…")
+
+    # The Claude Code plugin is installed as a copy with no git history to compare.
+    if not (ROOT / ".git").exists():
+        print(f"⚠️  {ROOT} is not a git checkout — if it is the Claude Code plugin, update with:")
+        print("   claude plugin update kmp-agent-skills@kmp-agent-skills")
+        return 2
 
     # 1. Fetch remote — non-fatal if offline
     _, rc = run(f"git fetch {REMOTE} {BRANCH} --quiet 2>&1")

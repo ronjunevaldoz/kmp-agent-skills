@@ -12,7 +12,8 @@ description: "Check whether the local skills collection is behind `origin/main` 
 ## Step 1 — Run the update check
 
 ```bash
-python3 scripts/check_updates.py
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+python3 "$KMP_REPO/scripts/check_updates.py"
 ```
 
 **Exit 0** → skills are up to date. Continue with your work.
@@ -20,8 +21,9 @@ python3 scripts/check_updates.py
 **Exit 1** → updates are available. Show the output verbatim and present the user with the
 choice below.
 
-**Exit 2** → could not reach remote (offline / no git remote). Warn the user that the skills
-may be stale and continue.
+**Exit 2** → could not reach remote (offline / no git remote), or the skills are the Claude Code
+plugin (the output says to run `claude plugin update`). Warn the user that the skills may be
+stale and continue.
 
 ---
 
@@ -47,10 +49,11 @@ Wait for the user to choose. Do not pull automatically.
 ## Step 3a — Pull (option 1)
 
 ```bash
-git pull origin main
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+git -C "$KMP_REPO" pull origin main
 ```
 
-After pulling:
+After pulling, inside that checkout:
 1. Re-run the audit: `python3 skills/kmp-audit/scripts/audit_skills_repo.py .`
 2. Re-run tests: `python3 -m pytest tests/ -q`
 3. Report: skills updated to v<new_version>, audit clean / failing, tests pass / fail.
@@ -72,7 +75,8 @@ fixes or new patterns. Log a session note:
 ## Step 3c — View diff (option 3)
 
 ```bash
-git log HEAD..origin/main --oneline -- skills/ agents/ commands/ scripts/
+for KMP_REPO in "${CLAUDE_PLUGIN_ROOT}" "${KMP_AGENT_SKILLS_SOURCE}" . ../kmp-agent-skills ~/dev/kmp-agent-skills ~/Documents/kmp-agent-skills; do [ -f "$KMP_REPO/skills.json" ] && break; done
+git -C "$KMP_REPO" log HEAD..origin/main --oneline -- skills/ agents/ commands/ scripts/
 ```
 
 Show the log. Then re-present the Pull / Skip choice.

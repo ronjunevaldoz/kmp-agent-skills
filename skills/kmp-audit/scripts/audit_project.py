@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import functools
+import json
 import os
 import re
 import subprocess
@@ -327,6 +328,29 @@ def _git_ignored(root: Path, relpath: str) -> bool:
     return result.returncode == 0
 
 
+INSTALLED_PLUGINS_JSON = Path.home() / ".claude" / "plugins" / "installed_plugins.json"
+
+
+def _claude_plugin_installed() -> bool:
+    """True when kmp-agent-skills runs as, or is installed as, a user-scope Claude Code plugin.
+
+    Plugin hooks get CLAUDE_PLUGIN_ROOT, but slash commands run scripts through the Bash
+    tool, which doesn't set it, so the install record is read as well.
+    """
+    if os.environ.get("CLAUDE_PLUGIN_ROOT"):
+        return True
+    try:
+        plugins = json.loads(INSTALLED_PLUGINS_JSON.read_text(encoding="utf-8")).get("plugins", {})
+        return any(
+            key.startswith("kmp-agent-skills@") and any(
+                isinstance(r, dict) and r.get("scope") == "user"
+                for r in (records if isinstance(records, list) else [records]))
+            for key, records in plugins.items()
+        )
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
 def _detect_agent_setup(root: Path) -> list[str]:
     # Only meaningful for real Gradle projects; skip bare temp dirs used in unit tests.
     is_gradle_project = (root / "settings.gradle.kts").exists() or (root / "settings.gradle").exists()
@@ -344,9 +368,9 @@ def _detect_agent_setup(root: Path) -> list[str]:
     if legacy_claude_dir.exists() and (legacy_claude_dir / "AGENTS.md").exists() and _git_ignored(root, ".claude/AGENTS.md"):
         findings.append("agent-setup [HIGH]: .claude/AGENTS.md exists but is gitignored — migrate to committed AGENTS.md")
 
-    # Running from the installed Claude Code plugin: skills and commands ship with the
-    # plugin, so a missing vendored .agents/skills/ or .agents/commands/ is not a finding.
-    from_plugin = bool(os.environ.get("CLAUDE_PLUGIN_ROOT"))
+    # With the Claude Code plugin, skills and commands ship with the plugin, so a missing
+    # vendored .agents/skills/ or .agents/commands/ is not a finding.
+    from_plugin = _claude_plugin_installed()
 
     commands_dir = root / ".agents" / "commands"
     if not commands_dir.exists() and legacy_claude_dir.exists():

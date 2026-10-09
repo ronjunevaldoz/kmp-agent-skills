@@ -11,7 +11,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-01'
+  last-updated: '2026-10-09'
   keywords:
     - investigation narration comment
     - state the finding not the investigation
@@ -370,7 +370,7 @@ Full content: [references/governance-ci-enforcement.md](references/governance-ci
   - `--roadmap` — prints a prioritized adoption plan
   - `--harvest` — prints JSON `{ findings, lessons }` where `lessons` are positive patterns
     the consumer does right that could be upstreamed to skills (run `/kmp-harvest-lessons`)
-- `scripts/validate_module_graph.py` — checks an existing project’s feature module layout and
+- `../kmp-feature-scaffold/scripts/validate_module_graph.py` (ships with `kmp-feature-scaffold`) — checks an existing project’s feature module layout and
   requires a preview stub for each `*Content.kt` in `:feature:*:ui`.
 - `scripts/audit_skills_repo.py` — checks the skills repo for metadata, freshness, scripts,
   and documentation gaps.
@@ -410,6 +410,7 @@ Ask before converting findings to issue drafts. Keep implementation advice minim
 
 | Date | Change |
 |---|---|
+| 2026-10-09 | The agent-setup check also treats a user-scope `kmp-agent-skills` entry in `~/.claude/plugins/installed_plugins.json` as the plugin providing skills and commands. Slash commands run the audit through the Bash tool, where `CLAUDE_PLUGIN_ROOT` is unset, so plugin users got `.agents/skills/ missing` findings. |
 | 2026-10-01 | Docs-hygiene findings for finished tasks and lessons now say to promote durable guidance and delete the file, instead of moving it to an `archive/` folder (matches `kmp-project-docs-maintainer`'s new delete-when-done policy). Legacy `archive/` folders are still skipped. Updated 2 tests. |
 | 2026-09-11 | Added expect/actual vs platform-exclusive file naming check under Section 4 (Multiplatform code) — distinguish `Name.<platform>.kt` (reserved strictly for `actual` declarations matching an `expect`) from standard `Name.kt` (platform-exclusive files, target entry points, DI modules). Clarify that coexistence of both styles across a codebase is intentional and must not be flagged as a naming divergence. |
 | 2026-08-30 | Added `_check_changelog_unreleased_backlog` to `audit_skills_repo.py` — user asked whether docs healing scoped `CHANGELOG.md`'s growth, and it deliberately doesn't (`kmp-project-docs-maintainer`'s scope explicitly excludes release notes). Real gap found in that investigation: `git-cliff`'s `## [Unreleased]` section (`kmp-release`'s own convention) only flushes into a dated version section on an actual `--tag` release run, and nothing previously flagged a project that just never cuts one — it silently accumulates forever. Flags once `[Unreleased]` exceeds 20 bullet entries, static filename/heading scan only, no git dependency, consistent with every other check in this file. Wired into both `--docs-hygiene-only` and the full audit. 4 new tests. |

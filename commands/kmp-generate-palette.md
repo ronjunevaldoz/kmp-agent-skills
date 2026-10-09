@@ -34,7 +34,8 @@ If `$ARGUMENTS` contains a file path or the user attaches/pastes an image:
 
 You can also pass an image file directly to the script via `--image`:
 ```bash
-python3 generate_palette.py --image design_mockup.png --count 3 --group-id com.example.app
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
+python3 "$KMP_SKILLS/kmp-compose-design-system/scripts/generate_palette.py" --image design_mockup.png --count 3 --group-id com.example.app
 ```
 The script uses PIL (Pillow) for image reading + pure-Python k-means for color extraction.
 If Pillow is not installed: `pip install Pillow`.
@@ -86,17 +87,10 @@ If `--output` is not specified:
 ## Step 3 — Run the generator
 
 ```bash
-python3 ~/.agents/skills/kmp-compose-design-system/scripts/generate_palette.py \
+for KMP_SKILLS in "${CLAUDE_PLUGIN_ROOT}/skills" skills .agents/skills ~/.agents/skills ~/.claude/skills; do [ -d "$KMP_SKILLS/kmp-compose-design-system" ] && break; done
+python3 "$KMP_SKILLS/kmp-compose-design-system/scripts/generate_palette.py" \
   --brand <name>=<#HEX> \
   [--brand <name>=<#HEX> ...] \
-  --group-id <group.id> \
-  --output <resolved path>
-```
-
-If running from inside kmp-agent-skills:
-```bash
-python3 skills/kmp-compose-design-system/scripts/generate_palette.py \
-  --brand <name>=<#HEX> \
   --group-id <group.id> \
   --output <resolved path>
 ```

@@ -2,6 +2,14 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.4.1] — 2026-10-12
+
+### Fixed
+
+- fix(token-saver): install RTK with winget on Windows
+
+---
+
 ## [v3.4.0] — 2026-10-09
 
 ### Added

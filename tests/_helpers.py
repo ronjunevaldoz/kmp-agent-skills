@@ -28,13 +28,18 @@ def _find_bash() -> str:
 BASH = _find_bash()
 
 
+def bash_path(path: Path) -> str:
+    """`path` the way bash sees it: C:/x → /c/x under Git Bash on Windows, unchanged elsewhere."""
+    text = path.as_posix()
+    if os.name == "nt" and text[1:2] == ":":
+        text = "/" + text[0].lower() + text[2:]
+    return text
+
+
 def minimal_path() -> str:
     """A bare POSIX PATH for scripts under test, plus the running Python's directory
     (Git Bash on Windows keeps no Python in /usr/bin)."""
-    py_dir = Path(sys.executable).parent.as_posix()
-    if os.name == "nt":  # C:/Python → /c/Python, the form Git Bash uses
-        py_dir = "/" + py_dir[0].lower() + py_dir[2:]
-    return f"/usr/bin:/bin:{py_dir}"
+    return f"/usr/bin:/bin:{bash_path(Path(sys.executable).parent)}"
 
 
 def load_module(name: str, path: Path):

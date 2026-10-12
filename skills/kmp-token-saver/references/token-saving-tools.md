@@ -67,6 +67,7 @@ Source: [rtk-ai/rtk](https://github.com/rtk-ai/rtk)
 **Phase 1 — binary install: safe to run directly.**
 ```bash
 brew install rtk        # verified working; local package install, no config changes
+winget install rtk-ai.rtk   # Windows: official winget package, verified on Windows 11
 rtk --version && rtk gain   # sanity check
 ```
 

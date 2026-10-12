@@ -11,7 +11,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-07-13'
+  last-updated: '2026-10-12'
   keywords:
     - token saver
     - prompt compression
@@ -44,7 +44,8 @@ These four are not equally available by default — verified against each tool's
 install method, not assumed:
 
 1. **RTK** — real risk profile: low. Installs via `brew install rtk` (an official
-   Homebrew bottle). Once installed and its hook wired, it runs automatically; nothing
+   Homebrew bottle) or, on Windows, `winget install rtk-ai.rtk` (the official winget
+   package). Once installed and its hook wired, it runs automatically; nothing
    further to enable per-session.
 2. **Ponytail** — real risk profile: low. Installs through Claude Code's own plugin
    marketplace (`/plugin marketplace add DietrichGebert/ponytail`, then
@@ -67,7 +68,7 @@ install method, not assumed:
    user has set it up themselves; do not block a task on it.
 
 RTK itself has two install phases with different authorization needs — the binary
-install (`brew install rtk`) is safe to run directly, but the hook wiring
+install (`brew install rtk`, or `winget install rtk-ai.rtk` on Windows) is safe to run directly, but the hook wiring
 (`rtk init -g`, which patches global `settings.json`/`CLAUDE.md`) needs specific
 confirmation of the exact diff, not a repeat of an earlier general go-ahead. See
 `references/token-saving-tools.md` for the verified details — this was hit in
@@ -116,8 +117,8 @@ before recommending one, rather than assuming all four are equally available:
   themselves; wrapping it in a script would undercut that.
 - **RTK**: compress command output before it reaches the model — the one most likely to
   already be installed; check with `rtk --version` before assuming it needs setup.
-  `scripts/install-rtk.sh` handles Phase 1 only (`brew install rtk`, safe to run
-  directly) and then runs `rtk init -g --dry-run` to preview the Phase 2 hook-wiring
+  `scripts/install-rtk.sh` handles Phase 1 only (`brew install rtk`, else
+  `winget install rtk-ai.rtk` on Windows; safe to run directly) and then runs `rtk init -g --dry-run` to preview the Phase 2 hook-wiring
   diff — it never applies Phase 2 itself; the user runs `rtk init -g` after reviewing
   the preview.
 - **Headroom**: compress tool output, logs, files, and RAG chunks when the host is
@@ -197,6 +198,7 @@ See [token-saving-tools.md](references/token-saving-tools.md) for tool-by-tool s
 
 | Date | Change |
 |---|---|
+| 2026-10-12 | `scripts/install-rtk.sh` installs through the official winget package (`rtk-ai.rtk`) when Homebrew is absent, so Phase 1 works on Windows; it reaches `rtk.exe` through WinGet's Links folder if the current shell's PATH predates the install. Verified on Windows 11: RTK 0.50.0 installed, hook-only wiring rewrites `git status` to `rtk git status`. |
 | 2026-09-12 | Added Cross-Assistant Compatibility Matrix covering Claude Code, Google Antigravity & Gemini CLI, and Cursor / Windsurf / Codex. Documented why Antigravity bypasses Claude-specific `settings.json` hooks, and codified the equivalent token-saving workflow via `AGENTS.md` response density directives, manual/aliased `rtk` command execution, and native context checkpoint management. |
 | 2026-07-13 | Fixed a real gap: this skill never documented that Headroom needs `~/.claude/settings.json`'s `env` block wired with `ANTHROPIC_BASE_URL` pointed at the local proxy — package install and a running proxy alone route nothing. Verified against a real, working setup (found by the user) that also showed the backend doesn't have to be a paid provider key; it can point at a local model (observed: Ollama). Updated `scripts/install-headroom.sh`'s printed next-steps, `references/token-saving-tools.md`, and 2 new anti-patterns. This settings.json wiring is treated the same as RTK's hook wiring — the user edits it, not this skill's script. |
 | 2026-07-13 | Added `scripts/install-rtk.sh` — Phase 1 (`brew install rtk`) runs directly, then previews Phase 2 via `rtk init -g --dry-run` without applying it, matching the existing two-phase authorization rule. Also ran the previously-blocked `scripts/install-ponytail.sh` after the user gave specific confirmation naming that exact script: verified `ponytail@ponytail` is now installed at `scope: user`, `enabled: true` (was previously only `scope: project`, disabled, for one project). |

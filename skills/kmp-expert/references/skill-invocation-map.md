@@ -28,6 +28,8 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "token saver", "token-saver", "token saving", "token reduction", "prompt compression", "context compression", "context headroom", "verbose output", "too much output", "caveman", "ponytail", "headroom", "rtk" | `kmp-token-saver` |
 | "string.format", "decimalformat", "simpledateformat", "locale formatting", "number formatting", "date formatting", "shared formatter", "kmp formatter" | `kmp-expect-actual` |
 | "auth", "authentication", "authorization", "JWT", "sessions", "Ktor RPC" | `kmp-ktor-auth-service` |
+| "Ktor server", "Ktor plugin", "createApplicationPlugin", "Application.module", "ApplicationConfig", "application.yaml", "Ktor DI", "testApplication", "backend structure", "restructure Ktor app" | `kmp-ktor-server` |
+| "WebSocket server", "Ktor WebSockets", "real-time server", "game server", "multiplayer server", "tick loop", "authoritative server", "message router", "broadcast", "backpressure" | `kmp-ktor-realtime` |
 | "MongoDB", "database", "collection", "Flow", "change stream", "server-side Kotlin" | `kmp-mongodb-database` |
 | "kotlin rpc", "kRPC", "kotlinx rpc", "RPC service", "shared RPC models" | `kmp-kotlin-rpc` |
 | "add Ktor", "network layer", "API calls", "token refresh" | `kmp-network-layer` |

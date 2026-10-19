@@ -7,7 +7,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-09-27'
+  last-updated: '2026-10-19'
   keywords:
     - KMP expert
     - orchestrator
@@ -99,7 +99,7 @@ When more than one skill could apply, rank them instead of enabling everything.
 
 1. Contract and scaffold skills first: `clean-architecture`, `feature-scaffold`, `presenter-module`
 2. Foundation and project plumbing next: `dependency-injection`, `flavor-environment`, `ci-github-actions`, `logging`
-3. Core infrastructure after the foundation is clear: `network-layer`, `sqldelight-setup`, `datastore`, `logging`, `kotlin-rpc`, `ktor-auth-service`, `mongodb-database`, `xcframework-spm`
+3. Core infrastructure after the foundation is clear: `network-layer`, `sqldelight-setup`, `datastore`, `logging`, `kotlin-rpc`, `ktor-server`, `ktor-auth-service`, `ktor-realtime`, `mongodb-database`, `xcframework-spm`
 4. Feature building blocks after the data and platform shape is known: `navigation`, `mvi`, `repository-pattern`, `shared-resources`, `paging`, `analytics`, `form-validation`, `image-loading`, `permissions`, `deep-linking`, `biometric-auth`, `push-notifications`, `workmanager`, `feature-flags`, `crash-reporting`
 5. UI, testing, quality, docs, and release last: `design-system`, `design-system-extended`, `adaptive-layout`, `compose-*`, `preview-driven-development`, `unit-testing`, `roborazzi`, `code-quality`, `accessibility`, `project-docs-maintainer`, `audit`, `release`
 
@@ -169,7 +169,7 @@ versions when the local repo can be checked directly.
 
 ---
 
-## The 78 Skills and What They Own
+## The 80 Skills and What They Own
 
 The complete catalog is maintained in [`README.md`](../../README.md); the task-to-skill
 routes live in [`references/skill-invocation-map.md`](references/skill-invocation-map.md).

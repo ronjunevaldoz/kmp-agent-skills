@@ -11,7 +11,7 @@ Created and maintained by [Ron Valdoz](https://github.com/ronjunevaldoz).
 AI agent skills for **Kotlin Multiplatform (KMP)** development — clean module boundaries,
 version catalogs, build-logic convention plugins, and explicit review loops before code is generated.
 
-Built on the open [Agent Skills](https://agentskills.io) format. All 78 skills verified
+Built on the open [Agent Skills](https://agentskills.io) format. All 80 skills verified
 against the real [`skills-ref`](https://github.com/agentskills/agentskills) reference
 validator — see [`docs/reference/agentskills-io-standards.md`](docs/reference/agentskills-io-standards.md)
 for what was checked and how.
@@ -124,7 +124,7 @@ python3 scripts/release.py auto --dry-run # preview first
 
 ## Skills
 
-78 skills covering the full KMP stack. Load the smallest set that answers the request.
+80 skills covering the full KMP stack. Load the smallest set that answers the request.
 Health at a glance (size, freshness, known issues) without reading every `SKILL.md`:
 [`docs/reference/skills-report.md`](docs/reference/skills-report.md).
 
@@ -153,6 +153,8 @@ Health at a glance (size, freshness, known issues) without reading every `SKILL.
 - [`android-cli`](skills/kmp-android-cli/) — Google's `android` CLI: emulator, build/deploy, SDK installs, agent bootstrap
 
 ### Infrastructure
+- [`ktor-server`](skills/kmp-ktor-server/) — Ktor server structure: modules, custom plugins, config, lifecycle, DI, testApplication
+- [`ktor-realtime`](skills/kmp-ktor-realtime/) — WebSocket servers: bounded sessions, typed routing, authoritative loop, broadcast, graceful drain
 - [`ktor-auth-service`](skills/kmp-ktor-auth-service/) — auth service, bearer/JWT, sessions
 - [`network-layer`](skills/kmp-network-layer/) — Ktor client, auth refresh, result mapping
 - [`resilience`](skills/kmp-resilience/) — retry/backoff/jitter, timeout, circuit breaker, rate limiting, idempotency keys
@@ -321,7 +323,7 @@ listed twice; remove any previously synced `~/.claude/skills/kmp-*` and
 `~/.claude/commands/kmp-*` copies.
 
 ### 🚀 Global Machine-Wide Install (Codex, Gemini CLI, Cursor, and other agents)
-Install once to make all 78 skills available across all your KMP projects:
+Install once to make all 80 skills available across all your KMP projects:
 
 ```bash
 # Sync latest released skills globally (~/.claude, ~/.gemini, ~/.codex, ~/.agents)

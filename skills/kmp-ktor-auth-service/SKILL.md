@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-06-13'
+  last-updated: '2026-10-19'
   keywords:
     - auth
     - authentication
@@ -66,7 +66,8 @@ Why:
 
 ## Project Structure
 
-Keep auth code separate from the rest of the backend:
+Keep auth code separate from the rest of the backend. For how the whole server is laid out
+(`Application.module()`, feature modules, custom plugins, configuration, lifecycle), load `kmp-ktor-server`.
 
 ```text
 server/
@@ -240,3 +241,4 @@ Keep the snippet to one install block and one guarded route. Map to the user's a
 | Date | Change |
 |---|---|
 | 2026-06-13 | Initial release. |
+| 2026-10-19 | Point server structure beyond auth at `kmp-ktor-server` (issue #23). |

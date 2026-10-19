@@ -1,5 +1,5 @@
 {
-  "version": "3.4.1",
+  "version": "3.5.0",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -1657,7 +1657,7 @@
       "path": "skills/kmp-expert",
       "description": "Route Kotlin Multiplatform project or feature work to the smallest relevant skills and sequence them. Use for skill selection, build-order decisions, or adoption-roadmap routing; use the audit skill for project findings.",
       "license": "Apache-2.0",
-      "last_updated": "2026-09-27",
+      "last_updated": "2026-10-19",
       "keywords": [
         "KMP expert",
         "orchestrator",
@@ -2204,7 +2204,7 @@
       "path": "skills/kmp-ktor-auth-service",
       "description": "Ktor-based auth service pattern for Kotlin Multiplatform full-stack apps. Covers: bearer and JWT auth, sessions when stateful browser-style sessions are a better fit, Ktor RPC when the client and server are both Kotlin-first, typed auth errors, route guards, refresh/logout flows, and a small scaffold script for repeated auth module setup. Use this for server-side auth, not shared UI auth state.",
       "license": "Apache-2.0",
-      "last_updated": "2026-06-13",
+      "last_updated": "2026-10-19",
       "keywords": [
         "auth",
         "authentication",
@@ -2248,6 +2248,89 @@
       "scripts": [
         "scaffold_auth_service.py"
       ]
+    },
+    {
+      "name": "kmp-ktor-realtime",
+      "path": "skills/kmp-ktor-realtime",
+      "description": "Real-time WebSocket servers on Ktor 3: install(WebSockets) settings, a per-connection session with a bounded outbound channel (backpressure, slow-client handling), typed message routing by registration instead of one central when, features that register their own handlers, a single-threaded authoritative loop (a game tick or a matching engine) fed by a bounded inbound queue, broadcast and fan-out, graceful drain on ApplicationStopping, and tests with testApplication's WebSocket client. Builds on kmp-ktor-server. Not for HTTP routes, auth or the client side.",
+      "license": "Apache-2.0",
+      "last_updated": "2026-10-19",
+      "keywords": [
+        "WebSocket server",
+        "Ktor WebSockets",
+        "real-time server",
+        "game server",
+        "multiplayer server",
+        "tick loop",
+        "authoritative server",
+        "message router",
+        "broadcast",
+        "backpressure",
+        "slow client",
+        "session lifecycle",
+        "graceful shutdown"
+      ],
+      "triggers": [
+        "WebSocket server",
+        "Ktor WebSockets",
+        "real-time server",
+        "game server",
+        "multiplayer server",
+        "tick loop",
+        "authoritative server",
+        "message router",
+        "broadcast",
+        "backpressure",
+        "slow client",
+        "session lifecycle",
+        "graceful shutdown",
+        "webSocket route"
+      ],
+      "scripts": []
+    },
+    {
+      "name": "kmp-ktor-server",
+      "path": "skills/kmp-ktor-server",
+      "description": "How to structure a Ktor 3 server application: Application.module() composition, one module per feature, writing your own plugins with createApplicationPlugin and createRouteScopedPlugin (typed config, hooks, lifecycle events), configuration from ApplicationConfig/YAML, background work tied to the application lifecycle, dependency injection (Ktor DI or Koin), and testApplication tests. Use it for any Ktor backend, admin panel or game server. Not for auth details (kmp-ktor-auth-service), WebSocket servers (kmp-ktor-realtime) or the Ktor client (kmp-network-layer).",
+      "license": "Apache-2.0",
+      "last_updated": "2026-10-19",
+      "keywords": [
+        "Ktor server",
+        "Ktor plugin",
+        "createApplicationPlugin",
+        "createRouteScopedPlugin",
+        "Application.module",
+        "ApplicationConfig",
+        "application.yaml",
+        "EngineMain",
+        "ApplicationStarted",
+        "ApplicationStopping",
+        "Ktor DI",
+        "Koin Ktor",
+        "testApplication",
+        "backend structure",
+        "server architecture"
+      ],
+      "triggers": [
+        "Ktor server",
+        "Ktor plugin",
+        "createApplicationPlugin",
+        "createRouteScopedPlugin",
+        "Application.module",
+        "ApplicationConfig",
+        "application.yaml",
+        "EngineMain",
+        "ApplicationStarted",
+        "ApplicationStopping",
+        "Ktor DI",
+        "Koin Ktor",
+        "testApplication",
+        "backend structure",
+        "server architecture",
+        "god class server",
+        "restructure Ktor app"
+      ],
+      "scripts": []
     },
     {
       "name": "kmp-layout-system",

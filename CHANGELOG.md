@@ -2,6 +2,18 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.5.0] — 2026-10-19
+
+### Added
+
+- feat(ktor-server, ktor-realtime): Ktor server structure and WebSocket server skills (#24)
+
+### Fixed
+
+- fix(tests): run the sync dry-run test with a fake HOME (#25)
+
+---
+
 ## [v3.4.1] — 2026-10-12
 
 ### Fixed

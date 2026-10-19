@@ -22,11 +22,16 @@ class SyncLocalAssistantSkillsTests(unittest.TestCase):
         return source
 
     def test_dry_run_lists_supported_targets(self) -> None:
+        # A fake HOME: on a machine with the Claude Code plugin installed, the real one
+        # makes the script skip ~/.claude, and the test would fail for that machine only.
         with tempfile.TemporaryDirectory() as tmp:
             source = self._fake_source(tmp)
+            fake_home = Path(tmp) / "fake_home"
+            fake_home.mkdir()
             result = subprocess.run(
                 [BASH, str(SYNC_SCRIPT), "--source", str(source), "--dry-run"],
                 capture_output=True, text=True, encoding="utf-8",
+                env={**os.environ, "HOME": str(fake_home)},
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         for target in (".claude/skills", ".codex/skills", ".gemini/skills", ".agents/skills", ".gemini/config/plugins/kmp-agent-skills/skills"):

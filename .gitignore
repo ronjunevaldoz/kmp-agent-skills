@@ -23,3 +23,8 @@ local.properties
 
 # Agent local caches
 .claude/
+
+# Generated local skills documentation site
+website/.generated/
+website/site/
+website/.venv/

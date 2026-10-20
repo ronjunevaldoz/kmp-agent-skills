@@ -127,15 +127,17 @@ python3 scripts/release.py auto --dry-run # preview first
 80 skills covering the full KMP stack. Load the smallest set that answers the request.
 Health at a glance (size, freshness, known issues) without reading every `SKILL.md`:
 [`docs/reference/skills-report.md`](docs/reference/skills-report.md).
+For a searchable, rendered guide to every skill and its routing rules, see
+[`website/README.md`](website/README.md) to build the local site.
 
 | Category | Count | Covers |
 |---|---|---|
 | Foundation | 10 | Module structure, clean architecture, DI, CI, GitHub issue governance, delivery lifecycle, Android CLI |
-| Infrastructure | 15 | Auth, networking, resilience, MCP, database, publishing, JNI, codegen |
+| Infrastructure | 17 | Auth, networking, resilience, MCP, database, publishing, JNI, codegen |
 | Patterns | 22 | MVI, navigation, offline-first, notifications, IAP, security, and more |
 | UI System | 13 | Design system, state hoisting, animation, adaptive layout |
 | Testing & Quality | 6 | Unit tests, screenshot tests, lint/static analysis, web performance |
-| Meta | 11 | Routing, audit, migration, OpenRewrite, docs, release, refactor |
+| Meta | 12 | Routing, audit, migration, OpenRewrite, docs, release, refactor |
 
 <details>
 <summary>Full skill list (click to expand)</summary>

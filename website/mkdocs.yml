@@ -1,0 +1,20 @@
+site_name: KMP Agent Skills
+site_description: Searchable reference for the KMP Agent Skills collection.
+repo_name: ronjunevaldoz/kmp-agent-skills
+repo_url: https://github.com/ronjunevaldoz/kmp-agent-skills
+
+docs_dir: .generated
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences

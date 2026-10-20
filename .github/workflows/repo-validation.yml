@@ -20,10 +20,15 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
-          cache-dependency-path: requirements-dev.txt
+          cache-dependency-path: |
+            requirements-dev.txt
+            website/requirements.txt
 
       - name: Install test dependencies
         run: pip install -r requirements-dev.txt
+
+      - name: Install documentation dependencies
+        run: pip install -r website/requirements.txt
 
       - name: Run repo validation gates
         run: |
@@ -32,3 +37,8 @@ jobs:
           python3 skills/kmp-expert/scripts/validate_skill_map.py --repo-root .
           python3 skills/kmp-expert/scripts/validate_keyword_routing.py --repo-root .
           python3 -m pytest tests -v --tb=short
+
+      - name: Build searchable skill reference
+        run: |
+          python3 scripts/build_skill_site.py
+          mkdocs build -f website/mkdocs.yml --strict

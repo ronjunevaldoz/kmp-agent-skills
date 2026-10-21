@@ -230,7 +230,7 @@ For a searchable, rendered guide to every skill and its routing rules, see
 - [`legal-docs`](skills/kmp-legal-docs/) — privacy policy, terms, GDPR, data-safety labels
 - [`lessons`](skills/kmp-lessons/) — structured lesson files for pattern mismatches
 - [`skill-harvester`](skills/kmp-skill-harvester/) — reads lessons, proposes skill amendments
-- [`token-saver`](skills/kmp-token-saver/) — terse replies, output compression, and smallest-correct-solution checks
+- [`token-saver`](skills/kmp-token-saver/) — terse replies, output compression, smallest-correct-solution checks, and optional local Graphify/Obsidian workflow
 - [`release`](skills/kmp-release/) — versioning, Maven Central, git-cliff, GitHub Release
 - [`update`](skills/kmp-update/) — sync installed skills with upstream, drift checks, lockfile regeneration
 

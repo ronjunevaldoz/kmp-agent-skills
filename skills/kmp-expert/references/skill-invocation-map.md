@@ -25,7 +25,7 @@ When the user asks about one of these topics, invoke the corresponding skill:
 | "wireframes", "screen flows", "layout specs", "design handoff", "component API", "visual direction" | `designer` |
 | "release notes", "consumer release notes", "per-skill changelog", "CHANGELOG.md" | `changelog` |
 | "logging", "logger wrapper", "logger facade", "kotlin-logging", "KotlinLogging", "Kermit", "log level", "crash reporting", "Crashlytics logging" | `kmp-logging` |
-| "token saver", "token-saver", "token saving", "token reduction", "prompt compression", "context compression", "context headroom", "verbose output", "too much output", "caveman", "ponytail", "headroom", "rtk" | `kmp-token-saver` |
+| "token saver", "token-saver", "token saving", "token reduction", "prompt compression", "context compression", "context headroom", "verbose output", "too much output", "caveman", "ponytail", "headroom", "rtk", "graphify", "Obsidian development documentation" | `kmp-token-saver` |
 | "string.format", "decimalformat", "simpledateformat", "locale formatting", "number formatting", "date formatting", "shared formatter", "kmp formatter" | `kmp-expect-actual` |
 | "auth", "authentication", "authorization", "JWT", "sessions", "Ktor RPC" | `kmp-ktor-auth-service` |
 | "Ktor server", "Ktor plugin", "createApplicationPlugin", "Application.module", "ApplicationConfig", "application.yaml", "Ktor DI", "testApplication", "backend structure", "restructure Ktor app" | `kmp-ktor-server` |

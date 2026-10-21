@@ -80,7 +80,8 @@
     "kmp-expert": ["where do I start KMP", "which skill", "skill order", "KMP architecture decision", "review my KMP project"],
     "kmp-audit": ["audit repo", "review architecture", "project health", "what is wrong with this project"],
     "kmp-github-issue-governance": ["github issue", "sub-issue", "create epic", "ticket spam", "gh issue", "comment flooding", "issue template", "gh sub-issue"],
-    "kmp-update": ["update skills", "check updates", "sync skills", "kmp-update", "upgrade skills", "skills drift"]
+    "kmp-update": ["update skills", "check updates", "sync skills", "kmp-update", "upgrade skills", "skills drift"],
+    "kmp-token-saver": ["graphify", "knowledge graph for token reduction", "Obsidian development documentation"]
   },
   "hard_boundaries": [
     "JNI (JVM, JNIEnv, Java_*) is kmp-jni-pro. Kotlin/Native cinterop (CPointer, .def) is expect-actual. They are different mechanisms — never conflate.",

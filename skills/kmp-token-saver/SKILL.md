@@ -7,11 +7,12 @@ description: >
   solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse
   replies, RTK for shell output compression, and universal AGENTS.md guardrails for
   environments without Claude plugin runtimes. Headroom stays optional until setup
-  exists; do not block the task on it.
+  exists; do not block the task on it. Includes optional Graphify retrieval and
+  Git-backed Obsidian development documentation.
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-12'
+  last-updated: '2026-10-21'
   keywords:
     - token saver
     - prompt compression
@@ -22,6 +23,7 @@ metadata:
     - ponytail
     - headroom
     - rtk
+    - graphify
 ---
 
 # Kotlin Multiplatform Token Saver
@@ -36,7 +38,7 @@ Use this skill when the request is about:
 - deciding whether a setup-heavy compressor is worth enabling yet
 
 **Trigger keywords:** token saver, token reduction, prompt compression, context compression,
-too much output, terse, caveman, ponytail, headroom, rtk, smallest correct solution, YAGNI.
+too much output, terse, caveman, ponytail, headroom, rtk, graphify, smallest correct solution, YAGNI.
 
 ## Recommendation First
 
@@ -133,6 +135,15 @@ before recommending one, rather than assuming all four are equally available:
   route anything — that only happens once `settings.json`'s `env` block points
   `ANTHROPIC_BASE_URL` at the proxy (verified against a real, working setup;
   see `references/token-saving-tools.md`).
+
+## Optional Graphify and Obsidian workflow
+
+When the user asks for Graphify retrieval or portable development documentation, read
+[references/graphify-obsidian.md](references/graphify-obsidian.md). It includes a pinned,
+local-only helper that resolves checkout paths and stores generated graphs outside Git.
+Keep authored Markdown in the project's existing docs and use Git between development
+machines. Graphify is a navigation aid; source files, Gradle and compiler checks remain
+authoritative. Use focused queries when helpful, without mandatory hooks or graph-first rules.
 
 ## Default Rules
 

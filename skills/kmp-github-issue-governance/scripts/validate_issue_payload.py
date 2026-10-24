@@ -178,7 +178,56 @@ def check_ai_attribution(content: str) -> list[str]:
     return errors
 
 
-def validate_payload(content: str, template: str | None = None, pr: bool = False) -> list[str]:
+def extract_h2_headings(markdown: str) -> list[str]:
+    """Return all level-2 markdown headings (`## Heading`) outside fenced code blocks."""
+    headings: list[str] = []
+    in_fence = False
+    for line in markdown.splitlines():
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        match = re.match(r"^##\s+(.+?)\s*$", line)
+        if match:
+            headings.append(match.group(1))
+    return headings
+
+
+def check_pr_template_sections(content: str, pr_template_path: Path | None) -> list[str]:
+    """Verify that all `## ...` headings from `.github/pull_request_template.md` are present."""
+    if pr_template_path is None or not pr_template_path.is_file():
+        return []
+    expected = extract_h2_headings(pr_template_path.read_text(encoding="utf-8"))
+    actual_lower = {h.lower() for h in extract_h2_headings(content)}
+    errors = []
+    for heading in expected:
+        if heading.lower() not in actual_lower:
+            errors.append(
+                f"Missing required PR template section '## {heading}' (from {pr_template_path.as_posix()})."
+            )
+    return errors
+
+
+IMAGE_EMBED_RE = re.compile(r"!\[[^\]]*\]\([^)]+\)|<img\b[^>]*\bsrc\s*=", re.IGNORECASE)
+
+
+def check_pr_visual_evidence(content: str) -> list[str]:
+    """When `--ui` is set, require at least one embedded screenshot/image in the PR body."""
+    if not IMAGE_EMBED_RE.search(content):
+        return [
+            "UI PR is missing visual evidence: include at least one screenshot (`![alt](url)` or `<img src=\"...\" />`)."
+        ]
+    return []
+
+
+def validate_payload(
+    content: str,
+    template: str | None = None,
+    pr: bool = False,
+    pr_template_path: Path | None = None,
+    ui: bool = False,
+) -> list[str]:
     """Run all validation checks and return list of errors."""
     errors = []
     errors.extend(check_escaped_newlines(content))
@@ -189,6 +238,10 @@ def validate_payload(content: str, template: str | None = None, pr: bool = False
         errors.extend(check_template_sections(content, template))
     if pr:
         errors.extend(check_deferred_items(content))
+        if pr_template_path is not None:
+            errors.extend(check_pr_template_sections(content, pr_template_path))
+        if ui:
+            errors.extend(check_pr_visual_evidence(content))
     return errors
 
 
@@ -219,6 +272,15 @@ def main() -> int:
         action="store_true",
         help="Treat the payload as a PR body: deferred work must link its tracking issue",
     )
+    parser.add_argument(
+        "--pr-template",
+        help="Optional path to .github/pull_request_template.md to verify all required ## headings are present",
+    )
+    parser.add_argument(
+        "--ui",
+        action="store_true",
+        help="With --pr, require at least one embedded screenshot or image in the PR body",
+    )
     args = parser.parse_args()
 
     if args.file == "-":
@@ -230,7 +292,14 @@ def main() -> int:
             return 1
         content = path.read_text(encoding="utf-8")
 
-    errors = validate_payload(content, args.template, args.pr)
+    pr_template_path = Path(args.pr_template) if args.pr_template else None
+    errors = validate_payload(
+        content,
+        args.template,
+        args.pr,
+        pr_template_path=pr_template_path,
+        ui=args.ui,
+    )
 
     if errors:
         print("❌ Payload validation failed:", file=sys.stderr)

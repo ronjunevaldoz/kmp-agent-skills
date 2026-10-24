@@ -34,6 +34,8 @@ def run_gh_cmd(args: list[str]) -> tuple[int, str, str]:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
@@ -232,6 +234,13 @@ def cmd_remove(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
     parser = argparse.ArgumentParser(
         description="GitHub Sub-Issues GraphQL CLI Helper",
         formatter_class=argparse.RawDescriptionHelpFormatter,

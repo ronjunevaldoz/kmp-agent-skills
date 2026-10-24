@@ -35,6 +35,16 @@ subprocess.run(["gh", "issue", "create", "-b", body])
 ```
 If newlines are escaped as literal two-character sequences (`\\` and `n`), `gh` encodes them as literal characters. GitHub Markdown displays `\n\n` as text rather than rendering a blank line break.
 
+### Failure Mode 3: PowerShell Backtick Escapes (`@"..."@`) & Windows Codepage (`cp1252`) Mojibake
+
+On Windows PowerShell, passing markdown inside double quotes (`"..."`) or a double-quoted here-string (`@"..."@`) corrupts inline code spans and Unicode punctuation:
+1. PowerShell uses the backtick (`` ` ``) as its escape character inside double quotes:
+   - `` `a `` becomes ASCII BEL (`\x07`, rendered as a control box `\u0007`), e.g. `` `app/dashboard` `` becomes `\u0007pp/dashboard`.
+   - `` `b `` becomes ASCII Backspace (`\x08`), `` `f `` becomes Form Feed (`\x0c`), `` `v `` becomes Vertical Tab (`\x0b`), `` `0 `` becomes NUL (`\x00`), and `` `n `` / `` `r `` / `` `t `` become control whitespace.
+   - Closing backticks before spaces or punctuation are silently stripped, leaving even-numbered backtick counts when an even number of code spans are eaten.
+2. Non-ASCII punctuation (em-dashes `—`, en-dashes `–`, smart quotes, `→`, `×`) passed through `cp1252` console pipes or CLI arguments turns into mojibake (`â€”`, `â€“`, `â†’`, `Ã—`).
+3. **Rule**: Never pass `--body @"..."@` in PowerShell. Write the payload to a UTF-8 file using plain ASCII punctuation (`-`, `--`, `->`, `x`), validate it with `validate_issue_payload.py`, and pass `--body-file`.
+
 ---
 
 ## 2. The Golden Rule: Always Use `--body-file`

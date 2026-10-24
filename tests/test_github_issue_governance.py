@@ -167,6 +167,37 @@ class TestDeferredItems(unittest.TestCase):
         self.assertEqual(validate_payload_module.validate_payload(body), [])
         self.assertEqual(len(validate_payload_module.validate_payload(body, pr=True)), 1)
 
+    def test_validates_pr_template_sections_and_visual_evidence(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tpl = Path(tmp) / "pull_request_template.md"
+            tpl.write_text(
+                "## Summary\n\n## Verification\n\n## Visual evidence\n\n## Follow-ups\n",
+                encoding="utf-8",
+            )
+            incomplete = "## Summary\nChanged layout.\n\n## Verification\n- Passed.\n"
+            errors = validate_payload_module.validate_payload(
+                incomplete, pr=True, pr_template_path=tpl, ui=True
+            )
+            self.assertEqual(len(errors), 3, errors)
+            self.assertTrue(any("## Visual evidence" in e for e in errors))
+            self.assertTrue(any("## Follow-ups" in e for e in errors))
+            self.assertTrue(any("visual evidence" in e for e in errors))
+
+            complete = (
+                "## Summary\nChanged layout.\n\n"
+                "## Verification\n- Passed.\n\n"
+                "## Visual evidence\n![After](https://github.com/org/repo/blob/abc1234/after.png?raw=true)\n\n"
+                "## Follow-ups\n- Tracked on #539\n"
+            )
+            self.assertEqual(
+                validate_payload_module.validate_payload(
+                    complete, pr=True, pr_template_path=tpl, ui=True
+                ),
+                [],
+            )
+
 
 class TestSkillMetadata(unittest.TestCase):
 

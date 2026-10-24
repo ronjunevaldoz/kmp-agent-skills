@@ -30,6 +30,16 @@ class TestValidateIssuePayload(unittest.TestCase):
         errors = validate_payload_module.check_escaped_newlines(clean_text)
         self.assertEqual(errors, [])
 
+    def test_check_shell_and_encoding_corruption_detects_powershell_bell_and_mojibake(self) -> None:
+        corrupted = "Aligns (\x07pp/dashboard) and \x07wake-mark.svg \u00e2\u20ac\u201d Track 1\u00e2\u20ac\u201c3"
+        errors = validate_payload_module.validate_payload(corrupted)
+        self.assertTrue(any("ASCII control character" in e for e in errors), errors)
+        self.assertTrue(any("mojibake" in e for e in errors), errors)
+
+    def test_check_shell_and_encoding_corruption_passes_clean_ascii_markdown(self) -> None:
+        clean = "Aligns (`app/dashboard`) and `awake-mark.svg` - Track 1-3\n"
+        self.assertEqual(validate_payload_module.check_shell_and_encoding_corruption(clean), [])
+
     def test_check_markdown_fences_detects_unclosed_block(self) -> None:
         bad_fence = "Here is some code:\n```kotlin\nval x = 1\n"
         errors = validate_payload_module.check_markdown_fences(bad_fence)
@@ -41,7 +51,10 @@ class TestValidateIssuePayload(unittest.TestCase):
         self.assertTrue(any("Unmatched inline backticks" in e for e in errors))
 
     def test_check_markdown_fences_passes_balanced_markdown(self) -> None:
-        clean = "Fixed on `refactor/studio` branch.\n\n```kotlin\nval x = `escaped`\n```\nAll good."
+        clean = (
+            "Fixed on `refactor/studio` branch with `` `a `` and `` `b `` escapes.\n\n"
+            "```kotlin\nval x = `escaped`\n```\nAll good."
+        )
         errors = validate_payload_module.check_markdown_fences(clean)
         self.assertEqual(errors, [])
 

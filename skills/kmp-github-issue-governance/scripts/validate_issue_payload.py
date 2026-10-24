@@ -6,10 +6,12 @@ validate_issue_payload.py — Lint and validate GitHub issue/comment markdown pa
 
 Checks:
 1. Escaped newline corruption (literal '\\n\\n' in text).
-2. Unclosed code blocks (```) or unclosed inline backticks (`).
-3. Required section headings based on issue template type.
-4. With --pr: deferred work ("Not in this PR", "Follow-up", ...) that links no issue.
-5. AI-tool attribution: a "Generated with Claude Code"-style footer or an AI Co-authored-by line.
+2. Shell backtick-escape control characters (e.g. PowerShell `"..."` / `@"..."@` turning `` `a `` into '\\x07')
+   and Windows cp1252 UTF-8 mojibake ('â€”', 'â€“', '\\ufffd').
+3. Unclosed code blocks (```) or unclosed inline backticks (`).
+4. Required section headings based on issue template type.
+5. With --pr: deferred work ("Not in this PR", "Follow-up", ...) that links no issue.
+6. AI-tool attribution: a "Generated with Claude Code"-style footer or an AI Co-authored-by line.
 
 Usage:
   python3 validate_issue_payload.py /path/to/payload.md
@@ -31,6 +33,22 @@ TEMPLATE_REQUIRED_SECTIONS: dict[str, list[str]] = {
     "feature": ["Problem", "Proposal", "Acceptance"],
 }
 
+# Control characters outside \t (0x09), \n (0x0a), \r (0x0d). PowerShell double-quoted strings
+# ("..." or @"..."@) turn `a -> \x07 (BEL), `b -> \x08 (BS), `f -> \x0c (FF), `v -> \x0b (VT),
+# `0 -> \x00 (NUL), and `e -> \x1b (ESC).
+CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+# Common UTF-8 bytes decoded as Windows-1252 / Latin-1 when passed through non-UTF-8 shell pipes.
+MOJIBAKE_PATTERNS: tuple[str, ...] = (
+    "\u00e2\u20ac\u201d",  # â€” (em-dash —)
+    "\u00e2\u20ac\u201c",  # â€“ (en-dash –)
+    "\u00e2\u20ac\u2122",  # â€™ (right single quote ’)
+    "\u00e2\u20ac\u0153",  # â€œ (left double quote “)
+    "\u00e2\u2020\u2019",  # â†’ (right arrow →)
+    "\u00c3\u2014",        # Ã— (multiplication sign ×)
+    "\ufffd",              # Unicode replacement character
+)
+
 
 def check_escaped_newlines(content: str) -> list[str]:
     """Check for literal '\\n' sequences that should have been real newlines."""
@@ -45,6 +63,28 @@ def check_escaped_newlines(content: str) -> list[str]:
     return errors
 
 
+def check_shell_and_encoding_corruption(content: str) -> list[str]:
+    """Check for PowerShell backtick-escape control characters and cp1252 UTF-8 mojibake."""
+    errors = []
+    control_matches = CONTROL_CHAR_RE.findall(content)
+    if control_matches:
+        sample = ", ".join(sorted({repr(ch) for ch in control_matches}))
+        errors.append(
+            f"Found {len(control_matches)} ASCII control character(s) ({sample}). "
+            "PowerShell double-quoted strings (@\"...\"@) interpret `a, `b, `f, `v as control bytes and strip "
+            "backticks; write the payload to a UTF-8 file and pass --body-file instead."
+        )
+
+    found_mojibake = [token for token in MOJIBAKE_PATTERNS if token in content]
+    if found_mojibake:
+        sample = ", ".join(repr(token) for token in found_mojibake)
+        errors.append(
+            f"Found corrupted UTF-8/cp1252 mojibake sequence(s) ({sample}). "
+            "Prefer plain ASCII punctuation (-, --, ->, x) and pass UTF-8 files via --body-file."
+        )
+    return errors
+
+
 def check_markdown_fences(content: str) -> list[str]:
     """Check for unclosed code fences and backticks."""
     errors = []
@@ -53,11 +93,12 @@ def check_markdown_fences(content: str) -> list[str]:
     if fence_count % 2 != 0:
         errors.append(f"Unmatched code block fences (```): found {fence_count} (must be even).")
 
-    # Strip code blocks before checking inline backticks
+    # Strip fenced code blocks, then strip balanced CommonMark inline code spans (`...`, `` `a ``, ``` `` `a `` ```)
     stripped = re.sub(r"```[\s\S]*?```", "", content)
-    inline_ticks = len(re.findall(r"(?<!`)`(?!`)", stripped))
-    if inline_ticks % 2 != 0:
-        errors.append(f"Unmatched inline backticks (`): found {inline_ticks} single backticks.")
+    stripped = re.sub(r"(`+)(?!`)(.+?)(?<!`)\1(?!`)", "", stripped)
+    unmatched_ticks = stripped.count("`")
+    if unmatched_ticks > 0:
+        errors.append(f"Unmatched inline backticks (`): found {unmatched_ticks} unmatched backtick(s).")
 
     return errors
 
@@ -141,6 +182,7 @@ def validate_payload(content: str, template: str | None = None, pr: bool = False
     """Run all validation checks and return list of errors."""
     errors = []
     errors.extend(check_escaped_newlines(content))
+    errors.extend(check_shell_and_encoding_corruption(content))
     errors.extend(check_markdown_fences(content))
     errors.extend(check_ai_attribution(content))
     if template:
@@ -150,7 +192,19 @@ def validate_payload(content: str, template: str | None = None, pr: bool = False
     return errors
 
 
+def _configure_utf8_stdio() -> None:
+    """Ensure stdin/stdout/stderr use UTF-8 on Windows cp1252 consoles."""
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+
 def main() -> int:
+    _configure_utf8_stdio()
     parser = argparse.ArgumentParser(
         description="Lint and validate GitHub issue and comment markdown payloads."
     )

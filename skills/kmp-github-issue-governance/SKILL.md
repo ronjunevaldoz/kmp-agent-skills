@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-09'
+  last-updated: '2026-10-24'
   keywords:
     - github issue
     - sub-issue
@@ -182,6 +182,7 @@ Repetitive micro-status comments (`Audit update`, `Still working`, `Fresh build`
 Passing markdown containing backticks, newlines, or special characters through CLI flags (`-b "..."` or `--body "$STR"`) causes severe payload corruption:
 - Double quotes cause bash/zsh to execute backticks `` `command` `` as subshell substitutions, stripping branch names and code identifiers.
 - String interpolation often escapes newlines into literal `\n\n` characters visible as plain text in the GitHub UI.
+- On Windows PowerShell, double-quoted strings (`"..."` and `@"..."@`) use `` ` `` as an escape character, turning `` `a `` (`app/dashboard`), `` `b `` (`build.gradle.kts`), `` `f ``, and `` `v `` into ASCII control characters (`\x07`, `\x08`, `\x0c`, `\x0b`) while stripping closing backticks, and `cp1252` console encoding mangles Unicode dashes (`—`, `–`) into mojibake (`â€”`, `â€“`). Always use plain ASCII punctuation (`-`, `--`, `->`, `x`) and `--body-file`.
 
 ### Mandatory CLI Transport Recipes
 
@@ -353,6 +354,7 @@ Keep it terse and factual.
 
 | Date | Change |
 |---|---|
+| 2026-10-24 | `validate_issue_payload.py` and `gh_sub_issue.py`: detect PowerShell backtick-escape ASCII control characters (`\x07` from `` `a ``, `\x08` from `` `b ``, etc.) and UTF-8/`cp1252` mojibake (`â€”`, `â€“`, `\ufffd`), configure UTF-8 stdio so Windows `cp1252` consoles never fail with `UnicodeEncodeError`, and document PowerShell `@"..."@` + ASCII punctuation rules. |
 | 2026-10-09 | No AI attribution: `validate_issue_payload.py` rejects "Generated with Claude Code"-style footers and AI `Co-authored-by` lines in every payload (human co-authors and code blocks are fine); the `commit-msg` hook rejects the footer in commits as it already did the trailer. |
 | 2026-10-09 | `validate_issue_payload.py --pr`: prose that starts with a trigger word ("Deferred loading is ...") no longer opens a deferred list; any paragraph or `Label:` line ends it; numbered items are checked; code blocks are skipped. |
 | 2026-10-03 | Deferred work must link an issue (`validate_issue_payload.py --pr` checks it), issues close only when "Done when" holds on the default branch, and every open issue carries a type, `priority: P0`–`P3` and `area:` label. |

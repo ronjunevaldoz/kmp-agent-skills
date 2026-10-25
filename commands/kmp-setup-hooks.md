@@ -18,7 +18,7 @@ There are two independent integration points: **git hooks** (for your local repo
 |---|---|---|
 | `hooks/pre-commit-audit.sh` | Runs `audit_project.py` before any commit touching `.kt`/`.kts` files, and `audit_skills_repo.py --docs-hygiene-only` before any commit touching `docs/*.md` or a root-level doc. Blocks the commit if architecture smells or docs hygiene issues (line caps, naming, orphaned reference docs) are found. Auto-detects whether `kmp-audit` is deployed at `skills/`, `.claude/skills/`, `.agents/skills/`, `.codex/skills/`, or `.gemini/skills/`. | `git commit` |
 | `hooks/commit-msg` | Enforces Conventional Commit format and rejects any commit carrying a `Co-Authored-By:` trailer or a "Generated with Claude Code"-style footer (commits — including an AI agent's — aren't attributed to the agent). | `git commit`, wired per Option A |
-| `hooks/validate-architecture.sh` | Runs `audit_project.py` after any file edit. Surfaces findings inline in the agent's output. | After every `Edit`/`Write` |
+| `hooks/validate-architecture.sh` | Runs `audit_project.py --files` on the `.kt`/`.kts`/`.md` file an edit just changed. Surfaces findings inline in the agent's output. Bounded: one file, a 20 s deadline, one run per project at a time. | After every `Edit`/`Write` |
 | `hooks/check-skill-freshness.sh` | Warns when a skill's `last-updated` is >6 months old (same threshold as `scan_skill_issues.py`). Non-blocking. | Manually or scheduled CI |
 | `hooks/session-start-check-updates.sh` | Wraps `scripts/check_updates.py` — warns the agent up front if this repo's skills are behind `origin/main`. Non-blocking, always exits 0. | Every Claude Code session start (kmp-agent-skills clone only) |
 | `scripts/check-installed-skills-version.sh` | Compares a *deployed* `skills/` copy's version marker against the latest GitHub Release. Non-blocking when wrapped per Option E. | Every Claude Code session start (any consumer project with a deployed copy) |
@@ -87,7 +87,8 @@ Add to your Claude Code `settings.json` (open via **Claude Code → Settings →
         "hooks": [
           {
             "type": "command",
-            "command": "<path-to-skills-repo>/hooks/validate-architecture.sh"
+            "command": "<path-to-skills-repo>/hooks/validate-architecture.sh",
+            "timeout": 30
           }
         ]
       }
@@ -101,6 +102,21 @@ Replace `<path-to-skills-repo>` with the absolute path to the skills repo on you
 **Effect:** after the agent edits any `.kt`, `.kts`, or `.md` file, the audit runs
 automatically. If it finds a smell, the result appears in the tool output and the agent
 will address it before continuing.
+
+**Cost:** the hook audits only the edited file, never the whole project, so it finishes in
+about a second even in a large multi-module repository. Project-wide checks (agent setup,
+module graph, cross-file duplication) still need `/kmp-run-audit`. The audit also:
+
+- stops itself after `KMP_ARCH_HOOK_TIMEOUT` seconds (default 20) and exits 0, so no audit
+  outlives the hook, including on Windows where killing the hook's bash leaves its child
+  running;
+- skips the run while an earlier audit of the same project still holds its lock (a file in
+  the temp directory; one older than 120 s counts as abandoned).
+
+**Turning it off:** set `KMP_ARCH_HOOK_DISABLE=1` in the environment Claude Code runs in to
+disable it everywhere, or create an empty `.claude/kmp-arch-hook-disabled` file in a project
+to disable it for that project only. The plugin install wires this hook automatically, so
+these switches are how you opt out without uninstalling.
 
 ---
 

@@ -26,7 +26,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-architecture.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-architecture.sh",
+            "timeout": 30
           }
         ]
       }

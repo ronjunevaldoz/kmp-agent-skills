@@ -11,7 +11,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: kmp-agent-skills
-  last-updated: '2026-10-09'
+  last-updated: '2026-10-26'
   keywords:
     - investigation narration comment
     - state the finding not the investigation
@@ -370,6 +370,12 @@ Full content: [references/governance-ci-enforcement.md](references/governance-ci
   - `--roadmap` — prints a prioritized adoption plan
   - `--harvest` — prints JSON `{ findings, lessons }` where `lessons` are positive patterns
     the consumer does right that could be upstreamed to skills (run `/kmp-harvest-lessons`)
+  - `--files FILE...` — audits only the listed files, without walking the project; findings
+    that don't name one of them are dropped. Used by the `validate-architecture.sh` edit hook.
+    Cross-file checks see only those files, so run the default mode for project-wide findings.
+  - `--timeout SECONDS` stops the audit and exits 124; `--lock` skips (exit 0) while another
+    `--lock` audit of the same project is running. A lock older than `--lock-stale-after`
+    (default 120 s) is treated as abandoned.
 - `../kmp-feature-scaffold/scripts/validate_module_graph.py` (ships with `kmp-feature-scaffold`) — checks an existing project’s feature module layout and
   requires a preview stub for each `*Content.kt` in `:feature:*:ui`.
 - `scripts/audit_skills_repo.py` — checks the skills repo for metadata, freshness, scripts,
@@ -410,6 +416,7 @@ Ask before converting findings to issue drafts. Keep implementation advice minim
 
 | Date | Change |
 |---|---|
+| 2026-10-26 | Added `--files`, `--timeout` and `--lock` to `audit_project.py` for the PostToolUse edit hook, which had run the whole-project audit after every edit: on a large multi-module repository a run took 15+ minutes and 1.5 GB, and on Windows a timed-out hook left the audit running, so edits stacked parallel audits until the desktop app stalled. Per-file mode routes every project walk through `_rglob`, which yields only the listed files. New tests in `test_audit_file_scope.py` and `test_hook_scripts.py`. |
 | 2026-10-09 | The agent-setup check also treats a user-scope `kmp-agent-skills` entry in `~/.claude/plugins/installed_plugins.json` as the plugin providing skills and commands. Slash commands run the audit through the Bash tool, where `CLAUDE_PLUGIN_ROOT` is unset, so plugin users got `.agents/skills/ missing` findings. |
 | 2026-10-01 | Docs-hygiene findings for finished tasks and lessons now say to promote durable guidance and delete the file, instead of moving it to an `archive/` folder (matches `kmp-project-docs-maintainer`'s new delete-when-done policy). Legacy `archive/` folders are still skipped. Updated 2 tests. |
 | 2026-09-11 | Added expect/actual vs platform-exclusive file naming check under Section 4 (Multiplatform code) — distinguish `Name.<platform>.kt` (reserved strictly for `actual` declarations matching an `expect`) from standard `Name.kt` (platform-exclusive files, target entry points, DI modules). Clarify that coexistence of both styles across a codebase is intentional and must not be flagged as a naming divergence. |

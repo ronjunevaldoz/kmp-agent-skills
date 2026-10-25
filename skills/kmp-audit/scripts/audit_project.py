@@ -37,6 +37,20 @@ PATTERNS = [
 ]
 
 
+# Per-file mode (--files): every project walk yields only these resolved paths, so a
+# post-edit hook pays for the edited file instead of a whole-repository scan.
+_FILE_SCOPE: tuple[Path, ...] | None = None
+
+
+def _rglob(base: Path, pattern: str):
+    if _FILE_SCOPE is None:
+        return base.rglob(pattern)
+    return (
+        p for p in _FILE_SCOPE
+        if p != base and p.is_relative_to(base) and p.relative_to(base).match(pattern)
+    )
+
+
 def _at(text: str, pos: int) -> tuple[int, str]:
     """Return (1-based line number, stripped source line) for a match offset.
 
@@ -52,18 +66,18 @@ def _at(text: str, pos: int) -> tuple[int, str]:
 
 def _has(root: Path, *globs: str) -> bool:
     return any(
-        not _is_excluded(p, root) for g in globs for p in root.rglob(g)
+        not _is_excluded(p, root) for g in globs for p in _rglob(root, g)
     )
 
 
 def _count_files(root: Path, *globs: str) -> int:
-    return sum(1 for g in globs for p in root.rglob(g) if not _is_excluded(p, root))
+    return sum(1 for g in globs for p in _rglob(root, g) if not _is_excluded(p, root))
 
 
 def _read_all(root: Path, *globs: str) -> str:
     parts = []
     for g in globs:
-        for p in root.rglob(g):
+        for p in _rglob(root, g):
             if _is_excluded(p, root):
                 continue
             try:
@@ -495,7 +509,7 @@ def _detect_misplaced_github_automation(root: Path) -> list[str]:
 
 def _detect_mvi_placement(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("MviViewModel.kt"):
+    for path in _rglob(root, "MviViewModel.kt"):
         if _is_excluded(path, root):
             continue
         rel = path.relative_to(root).as_posix()
@@ -517,7 +531,7 @@ def _detect_design_system_wiring(root: Path) -> list[str]:
     token_file_pattern = re.compile(r"(ULong|Long)\s*=\s*0x[0-9A-Fa-f]{6,}")
 
     token_files: list[Path] = []
-    for path in root.rglob("*Tokens.kt"):
+    for path in _rglob(root, "*Tokens.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -534,7 +548,7 @@ def _detect_design_system_wiring(root: Path) -> list[str]:
             f"({rel_paths}) — consolidate under a single AppColors data class"
         )
 
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         if not any(part in path.stem for part in ("Theme", "theme")):
@@ -647,7 +661,7 @@ def _detect_viewmodel_size(root: Path) -> dict:
     """
     large: list[tuple[Path, int]] = []
     seen: set[Path] = set()
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or path in seen:
             continue
         try:
@@ -702,7 +716,7 @@ def _detect_multi_viewmodel_screen(root: Path) -> list[str]:
     The fix: split each feature into its own screen, sharing data via a repository.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -745,7 +759,7 @@ def _detect_viewmodel_as_composable_param(root: Path) -> list[str]:
     with their own koinViewModel(), or hoist state (not the VM) into the parent.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -796,7 +810,7 @@ def _detect_viewmodel_in_viewmodel(root: Path) -> list[str]:
     mistaken for a property of the ViewModel class itself.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -892,7 +906,7 @@ def _detect_repository_in_composable(root: Path) -> list[str]:
         some client types are legitimately UI-safe)
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -940,7 +954,7 @@ def _detect_god_composable(root: Path) -> list[str]:
     and persistence into viewModelScope so the screen shrinks to state + onIntent.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -990,7 +1004,7 @@ def _detect_god_class(root: Path) -> list[str]:
     the ViewModel-size and god-composable detectors to avoid double-reporting.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1033,7 +1047,7 @@ _FUN_MAIN_RE = re.compile(r"\bfun\s+main\s*\(")
 def _detect_runblocking_in_shared_code(root: Path) -> list[str]:
     """Flag runBlocking used in commonMain outside a fun main() entry point."""
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if "/commonmain/" not in path.as_posix().lower():
@@ -1078,7 +1092,7 @@ def _detect_koin_circular_dependency(root: Path) -> list[str]:
     """
     graph: dict[str, set[str]] = {}
     origin: dict[str, tuple[Path, int]] = {}
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1148,7 +1162,7 @@ def _detect_compose_unstable_collection_param(root: Path) -> list[str]:
     these as unstable, causing unnecessary recomposition.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1203,7 +1217,7 @@ def _vanniktech_modules(root: Path) -> list[Path]:
     """Return every build.gradle.kts that applies the vanniktech plugin — one
     per published artifact. Length of this list is the single/multi-module signal."""
     modules: list[Path] = []
-    for path in root.rglob("build.gradle.kts"):
+    for path in _rglob(root, "build.gradle.kts"):
         if _is_excluded(path, root):
             continue
         try:
@@ -1222,7 +1236,7 @@ def _detect_library_missing_binary_compat_validator(root: Path) -> list[str]:
     modules = _vanniktech_modules(root)
     if not modules:
         return []
-    for path in root.rglob("*.gradle.kts"):
+    for path in _rglob(root, "*.gradle.kts"):
         if _is_excluded(path, root):
             continue
         try:
@@ -1230,7 +1244,7 @@ def _detect_library_missing_binary_compat_validator(root: Path) -> list[str]:
                 return []
         except OSError:
             continue
-    if any(root.rglob("*.api")):
+    if any(_rglob(root, "*.api")):
         return []
     line_no, snippet = _at(modules[0].read_text(encoding="utf-8", errors="ignore"), 0)
     return [
@@ -1306,7 +1320,7 @@ _PUBLIC_DECL_RE = re.compile(
 
 
 def _project_uses_explicit_api(root: Path) -> bool:
-    for path in root.rglob("*.gradle.kts"):
+    for path in _rglob(root, "*.gradle.kts"):
         if _is_excluded(path, root):
             continue
         try:
@@ -1324,7 +1338,7 @@ def _detect_undocumented_public_api(root: Path) -> list[str]:
     if not _project_uses_explicit_api(root):
         return []
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1412,7 +1426,7 @@ def _iter_consumer_docs(root: Path):
     docs_dir = root / "docs"
     if not docs_dir.is_dir():
         return
-    for path in sorted(docs_dir.rglob("*.md")):
+    for path in sorted(_rglob(docs_dir, "*.md")):
         if "archive" in path.relative_to(docs_dir).parts:
             continue
         yield path
@@ -1495,7 +1509,7 @@ def _detect_robotic_comment_phrase(root: Path) -> list[str]:
     into prose isn't how a developer would actually explain it to a teammate.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1545,7 +1559,7 @@ def _detect_investigation_narration_comment(root: Path) -> list[str]:
     a bug report's own prose — real, cited phrase list, not fabricated.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1595,7 +1609,7 @@ def _find_matching_paren(text: str, open_idx: int) -> int | None:
 
 def _detect_lowercase_unit_composable(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1644,7 +1658,7 @@ _INLINE_BRACKET_REF_RE = re.compile(r"\[(\w+)\]")
 
 def _detect_partial_param_documentation(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1698,7 +1712,7 @@ _KOTLIN_REFLECT_FULL_RE = re.compile(
 
 def _detect_kotlin_reflect_in_common(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if "/commonmain/" not in path.as_posix().lower():
@@ -1755,7 +1769,7 @@ _GOD_UTILS_MIN_RECEIVER_TYPES = 3
 
 def _detect_god_utils_file(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if not _UTILS_FILENAME_RE.search(path.stem):
@@ -1795,7 +1809,7 @@ _MIN_INLINE_REGEX_PATTERN_LEN = 12
 
 def _detect_inline_unnamed_regex(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1849,7 +1863,7 @@ def _find_matching_brace(text: str, open_idx: int) -> int | None:
 
 def _detect_object_creation_in_loop(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1901,7 +1915,7 @@ _PUBLIC_MUTABLE_COLLECTION_RE = re.compile(
 
 def _detect_public_mutable_collection(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1936,7 +1950,7 @@ _CONTEXT_PROPERTY_RE = re.compile(
 
 def _detect_context_leak_in_singleton(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -1979,7 +1993,7 @@ _NON_TRANSLATABLE_STRING_RE = re.compile(r"^[\d\s.,:/%+\-]*$")
 
 def _detect_hardcoded_ui_string(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if "Preview" in path.stem:
@@ -2046,7 +2060,7 @@ def _detect_hardcoded_android_version_code(root: Path) -> list[str]:
     SECOND release, by which point several versions may have shipped unnoticed.
     """
     findings: list[str] = []
-    for path in root.rglob("*.gradle.kts"):
+    for path in _rglob(root, "*.gradle.kts"):
         if _is_excluded(path, root):
             continue
         try:
@@ -2113,7 +2127,7 @@ def _detect_style_default_with_body(root: Path) -> list[str]:
     order and makes the "empty by convention" contract ambiguous for callers.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2143,7 +2157,7 @@ def _detect_style_state_wrong_enabled(root: Path) -> list[str]:
     AppTextField/AppIconButton during the Compose Styles API doc audit.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2171,7 +2185,7 @@ def _detect_style_param_on_screen(root: Path) -> list[str]:
     the layout level).
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2202,7 +2216,7 @@ def _detect_stale_compositionlocal_in_style_function(root: Path) -> list[str]:
     get() = ...`) read INSIDE the `Style { }` lambda, never outside it.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2239,7 +2253,7 @@ def _detect_missing_indication_null_with_style_state(root: Path) -> list[str]:
     This is a file-level heuristic; verify the specific clickable() at the flagged line.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2296,7 +2310,7 @@ def _detect_toggle_icon_swap(root: Path) -> list[str]:
     verify the specific icon swap at the flagged line.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2340,7 +2354,7 @@ def _detect_bare_conditional_collapse(root: Path) -> list[str]:
     renders collapsible content, not just a state/log toggle.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2389,7 +2403,7 @@ def _detect_focused_state_animates_border_width(root: Path) -> list[str]:
     at the flagged line actually changes width, not just color.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2494,7 +2508,7 @@ def _detect_combined_sqldelight_table_file(root: Path) -> list[str]:
     prior enforcement. Migration files and files with a single CREATE TABLE are fine.
     """
     findings: list[str] = []
-    for path in root.rglob("*.sq"):
+    for path in _rglob(root, "*.sq"):
         if _is_excluded(path, root):
             continue
         try:
@@ -2535,7 +2549,7 @@ def _detect_combined_component_file(root: Path) -> list[str]:
     legitimately live together per this collection's own MVI convention.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if not _is_design_system_component_path(path):
@@ -2576,7 +2590,7 @@ _VARIANT_SEALED_TYPE_RE = re.compile(r"\bsealed\s+(?:class|interface)\s+(\w*Vari
 def _detect_combined_style_file(root: Path) -> list[str]:
     """Flag a designsystem/styles file defining 2+ *Variant sealed types."""
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         p = path.as_posix().lower()
@@ -2615,7 +2629,7 @@ _INTENT_COUNT_THRESHOLD = 15
 def _detect_viewmodel_too_many_intents(root: Path) -> list[str]:
     """Flag a ViewModel/Contract file whose sealed Intent type has 15+ variants."""
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2666,7 +2680,7 @@ _PUBLIC_STATEFLOW_PROPERTY_RE = re.compile(r"(?m)^\s*val\s+(\w+)\s*:\s*StateFlow
 def _detect_viewmodel_multiple_stateflows(root: Path) -> list[str]:
     """Flag a ViewModel exposing 2+ public StateFlow properties beyond `state`."""
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2712,7 +2726,7 @@ def _detect_viewmodel_injects_repository(root: Path) -> list[str]:
     never :api/:data (repositories) directly, with no trivial-case exception.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2763,7 +2777,7 @@ def _detect_name_behavior_drift(root: Path) -> list[str]:
     itself. Needs at least 2 intents to fire — too little signal below that.
     """
     findings: list[str] = []
-    for path in root.rglob("*ViewModel.kt"):
+    for path in _rglob(root, "*ViewModel.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         base = path.stem[: -len("ViewModel")]
@@ -2816,7 +2830,7 @@ _VAGUE_CLASS_DECL_RE = re.compile(
 
 def _detect_vague_class_name_suffix(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2860,7 +2874,7 @@ def _detect_ponytail_comment_density(root: Path) -> list[str]:
     with 1-2 each, not one file with many.
     """
     count = 0
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -2898,7 +2912,7 @@ def _detect_builder_without_build_method(root: Path) -> list[str]:
     there, so the name doesn't match what the class actually does.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3009,7 +3023,7 @@ def _detect_duplicate_code_block(root: Path) -> list[str]:
     _DUPLICATE_BLOCK_MIN_LINES+ identical consecutive statement lines.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3066,7 +3080,7 @@ _SUPPRESS_RE = re.compile(r'@Suppress\(\s*"([^"]+)"')
 
 def _detect_empty_catch_block(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3103,7 +3117,7 @@ def _detect_empty_catch_block(root: Path) -> list[str]:
 
 def _detect_unjustified_suppress(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3156,7 +3170,7 @@ def _detect_raw_http_bypass(root: Path) -> list[str]:
     """
     findings: list[str] = []
     has_established_client = False
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3169,7 +3183,7 @@ def _detect_raw_http_bypass(root: Path) -> list[str]:
     if not has_established_client:
         return findings
 
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3250,7 +3264,7 @@ def _detect_what_comment_in_control_flow(root: Path) -> list[str]:
     a nudge for human review (or /clean-comments), not an auto-fix.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3326,7 +3340,7 @@ def _detect_long_stacked_comment_block(root: Path) -> list[str]:
     explanation is often warranted, not lazy.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3394,7 +3408,7 @@ def _detect_stepwise_what_comments(root: Path) -> list[str]:
     the code's own order and naming speak for it.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3438,7 +3452,7 @@ def _detect_comment_only_stub_body(root: Path) -> list[str]:
     is the legitimate shape this rule's own fix recommends, not what this flags.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3480,7 +3494,7 @@ def _detect_justification_comment_above_single_statement(root: Path) -> list[str
     git blame exactly when someone needs it, not sitting in the file for every reader.
     """
     findings: list[str] = []
-    for path in root.rglob("*.gradle.kts"):
+    for path in _rglob(root, "*.gradle.kts"):
         if _is_excluded(path, root):
             continue
         try:
@@ -3537,7 +3551,7 @@ def _detect_destructive_read_accessor(root: Path) -> list[str]:
     second caller reads the same accessor in the same tick/request.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3604,7 +3618,7 @@ def _detect_value_class_opportunity(root: Path) -> list[str]:
     compile. Nudge toward kmp-clean-architecture's value class rule.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3652,7 +3666,7 @@ def _detect_enum_masquerading_as_sealed(root: Path) -> list[str]:
     """
     enum_names: set[str] = set()
     kt_files = [
-        p for p in root.rglob("*.kt")
+        p for p in _rglob(root, "*.kt")
         if not _is_excluded(p, root) and not _is_test_source(p)
     ]
     for path in kt_files:
@@ -3712,7 +3726,7 @@ def _detect_context_parameter_opportunity(root: Path) -> list[str]:
     threading the same explicit parameter through every function.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -3784,7 +3798,7 @@ def _detect_hardcoded_base_url(root: Path) -> list[str]:
     endpoint — silent until that day, unlike a compile error.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if not _is_commonmain_path(path):
@@ -3814,7 +3828,7 @@ def _detect_extensible_abstract_class_in_common(root: Path) -> list[str]:
     interface instead," scoped here to commonMain specifically.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if not _is_commonmain_path(path):
@@ -3884,7 +3898,7 @@ def _module_key_from_gradle_ref(ref: str) -> str:
 
 def _detect_module_layer_violation(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("build.gradle.kts"):
+    for path in _rglob(root, "build.gradle.kts"):
         if _is_excluded(path, root):
             continue
         module_dir = path.parent.relative_to(root).as_posix()
@@ -3978,7 +3992,7 @@ def _detect_unauthorized_app_submodule(root: Path) -> list[str]:
     kmp-wizard's own four entry-point modules (androidApp/desktopApp/webApp/shared).
     """
     findings: list[str] = []
-    for path in root.rglob("build.gradle.kts"):
+    for path in _rglob(root, "build.gradle.kts"):
         if _is_excluded(path, root):
             continue
         module_dir = path.parent.relative_to(root).as_posix()
@@ -4011,7 +4025,7 @@ _WIZARD_DEMO_RE = re.compile(r"\bclass\s+Greeting\b|\bcompose_multiplatform\b")
 
 def _detect_leftover_wizard_demo_code(root: Path) -> list[str]:
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4415,7 +4429,7 @@ def _detect_mixed_design_system_usage(root: Path) -> list[str]:
     """
     shadcn_files: list[Path] = []
     app_theme_files: list[Path] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4473,7 +4487,7 @@ def _detect_design_system_prefix_mismatch(root: Path) -> list[str]:
         return []  # unfilled placeholder, or the project genuinely chose "App"
 
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         if "designsystem" not in path.as_posix().lower():
@@ -4537,7 +4551,7 @@ def _detect_empty_platform_sourceset(root: Path) -> list[str]:
     """
     findings: list[str] = []
     seen_dirs: set[Path] = set()
-    for kotlin_dir in root.rglob("src/*/kotlin"):
+    for kotlin_dir in _rglob(root, "src/*/kotlin"):
         sourceset_dir = kotlin_dir.parent
         if sourceset_dir in seen_dirs:
             continue
@@ -4546,7 +4560,7 @@ def _detect_empty_platform_sourceset(root: Path) -> list[str]:
             continue
         if _is_excluded(kotlin_dir, root):
             continue
-        kt_files = [p for p in kotlin_dir.rglob("*.kt") if not _is_excluded(p, root)]
+        kt_files = [p for p in _rglob(kotlin_dir, "*.kt") if not _is_excluded(p, root)]
         if not kt_files:
             findings.append(
                 f"empty platform source set [LOW]: {kotlin_dir.relative_to(root)} "
@@ -4592,7 +4606,7 @@ def _detect_string_navigation(root: Path) -> list[str]:
     type-safe forms (which use type params or route objects) never match.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -4642,7 +4656,7 @@ def _detect_repository_leaks_data_type(root: Path) -> list[str]:
     DTOs/entities internally, so files declaring a Repository class are skipped.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -4737,7 +4751,7 @@ def _project_design_system_kind(root: Path) -> str | None:
     """
     has_app = False
     has_shadcn = False
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         try:
@@ -4780,7 +4794,7 @@ def _detect_raw_component_bypass(root: Path) -> list[str]:
         )
 
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4835,7 +4849,7 @@ def _detect_handwritten_imagevector(root: Path) -> list[str]:
     identified by the header and skipped.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4875,7 +4889,7 @@ def _detect_raster_in_commonmain(root: Path) -> list[str]:
     screenshot goldens are exempt via their directory names.
     """
     findings: list[str] = []
-    for path in root.rglob("*"):
+    for path in _rglob(root, "*"):
         if not path.is_file() or path.suffix.lower() not in _RASTER_EXTS:
             continue
         if _is_excluded(path, root):
@@ -4907,7 +4921,7 @@ def _detect_raw_weight_literal(root: Path) -> list[str]:
     float like 0.37f is a guessed proportion the layout contract can't express.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4944,7 +4958,7 @@ def _detect_breakpoint_branch_missing(root: Path) -> list[str]:
     heuristic; verify at the flagged when-block.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -4987,7 +5001,7 @@ def _detect_fixed_width_overflow(root: Path) -> list[str]:
     `weight()`, or `widthIn(max = …)` so the layout adapts to the available width.
     """
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root) or _is_test_source(path):
             continue
         try:
@@ -5037,7 +5051,7 @@ def _detect_redundant_title(root: Path) -> list[str]:
     """Flag Screen/Content files that have a scaffold topBar AND a heading-style
     Text in the content body — the title is shown twice visually."""
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         if not any(path.stem.endswith(part) for part in _SCREEN_STEMS):
@@ -5071,7 +5085,7 @@ def _detect_missing_adaptive_coverage(root: Path) -> list[str]:
     a :ui module should accept a windowSizeClass param.  Flag screens that don't."""
     # First pass — is adaptive layout in use at all?
     project_uses_adaptive = False
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
@@ -5084,7 +5098,7 @@ def _detect_missing_adaptive_coverage(root: Path) -> list[str]:
         return []
 
     findings: list[str] = []
-    for path in root.rglob("*.kt"):
+    for path in _rglob(root, "*.kt"):
         if _is_excluded(path, root):
             continue
         # Top-level screens by name (Screen/Page/View), regardless of module path
@@ -5145,7 +5159,7 @@ def _is_test_source(path: Path) -> bool:
 
 
 def iter_files(root: Path):
-    for path in root.rglob("*"):
+    for path in _rglob(root, "*"):
         if not path.is_file():
             continue
         if _is_excluded(path, root):
@@ -5578,11 +5592,122 @@ def audit_project(root: Path) -> list[str]:
     return findings
 
 
-def main() -> int:
-    import json as _json
+def _mentions(finding: str, rel_paths: set[str]) -> bool:
+    return any(
+        re.search(r"(?:^|[\s(`'\"])" + re.escape(rel) + r"(?=$|[\s:)`'\",])", finding)
+        for rel in rel_paths
+    )
 
+
+def audit_files(root: Path, files: list[Path]) -> tuple[list[str], list[str]]:
+    """Findings and hints for `files` only, without walking the rest of `root`.
+
+    Cross-file detectors see just these files, so they can miss project-wide issues
+    (run the whole-project audit for those). Project-level findings that don't name one
+    of the files are dropped, since nothing in this edit can have caused them.
+    """
+    global _FILE_SCOPE
+    scope = tuple((p if p.is_absolute() else root / p).resolve() for p in files)
+    scope = tuple(p for p in scope if p.is_file() and p.is_relative_to(root))
+    if not scope:
+        return [], []
+    rel_paths = {p.relative_to(root).as_posix() for p in scope} | {str(p.relative_to(root)) for p in scope}
+    _FILE_SCOPE = scope
+    try:
+        findings = audit_project(root)
+        hints = _audit_hints(root)
+    finally:
+        _FILE_SCOPE = None
+    return (
+        [f for f in findings if _mentions(f, rel_paths)],
+        [h for h in hints if _mentions(h, rel_paths)],
+    )
+
+
+def _audit_hints(root: Path) -> list[str]:
+    return (
+        _detect_name_behavior_drift(root)
+        + _detect_vague_class_name_suffix(root)
+        + _detect_empty_catch_block(root)
+        + _detect_unjustified_suppress(root)
+    )
+
+
+TIMEOUT_EXIT = 124
+
+
+def _lock_path(root: Path) -> Path:
+    import hashlib
+    import tempfile
+
+    base = Path(os.environ.get("KMP_AUDIT_LOCK_DIR") or Path(tempfile.gettempdir()) / "kmp-audit-locks")
+    return base / (hashlib.sha1(str(root).lower().encode("utf-8")).hexdigest()[:16] + ".lock")
+
+
+def _acquire_lock(path: Path, stale_after: float) -> str | None:
+    """A token when this process now holds the per-project lock, None when a live run does.
+
+    A lock older than `stale_after` is taken over: every holder runs under a deadline
+    shorter than that, so an old lock can only be left by a process that was killed.
+    """
+    import time
+    import uuid
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    token = f"{os.getpid()} {uuid.uuid4().hex}"
+    for _ in range(2):
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            try:
+                if time.time() - path.stat().st_mtime < stale_after:
+                    return None
+                path.unlink()
+            except FileNotFoundError:
+                pass
+            continue
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(token)
+        return token
+    return None
+
+
+def _release_lock(path: Path, token: str) -> None:
+    try:
+        if path.read_text(encoding="utf-8") == token:
+            path.unlink()
+    except OSError:
+        pass
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(description="KMP architecture audit and adoption roadmap.")
     parser.add_argument("project_root", type=Path, help="Path to the KMP project root")
+    parser.add_argument(
+        "--files",
+        nargs="+",
+        type=Path,
+        metavar="FILE",
+        help="Audit only these files (for example the one an edit just changed) instead of the whole project",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        metavar="SECONDS",
+        help=f"Stop and exit {TIMEOUT_EXIT} once the audit has run this long",
+    )
+    parser.add_argument(
+        "--lock",
+        action="store_true",
+        help="Skip (exit 0) while another --lock audit of the same project is still running",
+    )
+    parser.add_argument(
+        "--lock-stale-after",
+        type=float,
+        default=120.0,
+        metavar="SECONDS",
+        help="Age after which a leftover lock is treated as abandoned (default: 120)",
+    )
     parser.add_argument(
         "--roadmap",
         action="store_true",
@@ -5597,6 +5722,39 @@ def main() -> int:
 
     root = args.project_root.resolve()
 
+    lock_path = _lock_path(root) if args.lock else None
+    lock_token = None
+    if lock_path is not None:
+        stale_after = max(args.lock_stale_after, (args.timeout or 0) + 10)
+        lock_token = _acquire_lock(lock_path, stale_after)
+        if lock_token is None:
+            print(f"SKIPPED: another audit of {root} is still running", file=sys.stderr)
+            return 0
+
+    if args.timeout:
+        import threading
+
+        def _expire() -> None:
+            print(f"TIMEOUT: audit stopped after {args.timeout:g}s", file=sys.stderr, flush=True)
+            if lock_token:
+                _release_lock(lock_path, lock_token)
+            # os._exit ends the process at once, even with the main thread mid-scan.
+            os._exit(TIMEOUT_EXIT)
+
+        watchdog = threading.Timer(args.timeout, _expire)
+        watchdog.daemon = True
+        watchdog.start()
+
+    try:
+        return _run(args, root)
+    finally:
+        if lock_token:
+            _release_lock(lock_path, lock_token)
+
+
+def _run(args: argparse.Namespace, root: Path) -> int:
+    import json as _json
+
     if args.roadmap:
         state = assess_project(root)
         plan  = build_roadmap(state)
@@ -5610,13 +5768,11 @@ def main() -> int:
         has_high = any("[HIGH]" in f or "[HIGH]:" in f for f in result["findings"])
         return 1 if has_high else 0
 
-    findings = audit_project(root)
-    hints = (
-        _detect_name_behavior_drift(root)
-        + _detect_vague_class_name_suffix(root)
-        + _detect_empty_catch_block(root)
-        + _detect_unjustified_suppress(root)
-    )
+    if args.files:
+        findings, hints = audit_files(root, args.files)
+    else:
+        findings = audit_project(root)
+        hints = _audit_hints(root)
 
     if findings:
         print("FINDINGS:")

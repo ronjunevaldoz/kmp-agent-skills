@@ -324,6 +324,11 @@ installed, `scripts/sync-local-assistant-skills.sh` skips `~/.claude` so skills 
 listed twice; remove any previously synced `~/.claude/skills/kmp-*` and
 `~/.claude/commands/kmp-*` copies.
 
+The plugin's PostToolUse hook audits each `.kt`, `.kts` or `.md` file an edit changes in a
+Gradle project (one file, 20 s at most). Turn it off with `KMP_ARCH_HOOK_DISABLE=1`, or for
+one project with an empty `.claude/kmp-arch-hook-disabled` file; see
+[`/kmp-setup-hooks`](commands/kmp-setup-hooks.md#option-b--claude-code-posttooluse-hook-agent-auto-check).
+
 ### 🚀 Global Machine-Wide Install (Codex, Gemini CLI, Cursor, and other agents)
 Install once to make all 80 skills available across all your KMP projects:
 

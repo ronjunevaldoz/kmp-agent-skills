@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -12,6 +13,89 @@ from unittest import mock
 from _helpers import BASH, REPO_ROOT, load_module
 
 HOOKS_DIR = REPO_ROOT / "hooks"
+_SRC = Path("feature") / "ui" / "src" / "commonMain" / "kotlin"
+
+# Loaded on the audit's interpreter through PYTHONPATH: reading Slow.kt records the pid and
+# hangs, so only the audit's own deadline can end the process.
+_SLOW_SITECUSTOMIZE = '''
+import os, pathlib, time
+_read_text = pathlib.Path.read_text
+def read_text(self, *args, **kwargs):
+    if self.name == "Slow.kt":
+        pathlib.Path(os.environ["KMP_TEST_PID_FILE"]).write_text(str(os.getpid()))
+        time.sleep(120)
+    return _read_text(self, *args, **kwargs)
+pathlib.Path.read_text = read_text
+'''
+
+
+def _make_hook_project(tmp: str) -> Path:
+    root = Path(tmp) / "proj"
+    (root / _SRC).mkdir(parents=True)
+    (root / "settings.gradle.kts").write_text('rootProject.name = "demo"\n', encoding="utf-8")
+    (root / _SRC / "Bad.kt").write_text(
+        "package a\nimport kotlinx.coroutines.GlobalScope\nfun f() = GlobalScope\n", encoding="utf-8")
+    (root / _SRC / "Good.kt").write_text("package a\nfun g() = 1\n", encoding="utf-8")
+    (root / _SRC / "Slow.kt").write_text("package a\n", encoding="utf-8")
+    return root
+
+
+def _run_hook(root: Path, file: Path, env: dict, timeout: float = 120) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [BASH, str(HOOKS_DIR / "validate-architecture.sh"), str(file), str(root)],
+        stdin=subprocess.DEVNULL, capture_output=True, env=env, timeout=timeout,
+    )
+
+
+def _slow_audit_env(tmp: str, locks: str, timeout: str) -> dict:
+    site_dir = Path(tmp) / "site"
+    site_dir.mkdir()
+    (site_dir / "sitecustomize.py").write_text(_SLOW_SITECUSTOMIZE, encoding="utf-8")
+    return {
+        **os.environ,
+        "PYTHONPATH": str(site_dir),
+        "KMP_AUDIT_LOCK_DIR": locks,
+        "KMP_ARCH_HOOK_TIMEOUT": timeout,
+        "KMP_TEST_PID_FILE": str(Path(tmp) / "audit.pid"),
+    }
+
+
+def _pid_alive(pid: int) -> bool:
+    if os.name == "nt":
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    try:  # an exited orphan can linger as a zombie until its new parent reaps it
+        return Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[0] != "Z"
+    except (OSError, IndexError):
+        return True
+
+
+def _wait_for_exit(pid: int, seconds: float) -> bool:
+    """True if `pid` is still alive after `seconds`."""
+    deadline = time.monotonic() + seconds
+    while _pid_alive(pid) and time.monotonic() < deadline:
+        time.sleep(0.1)
+    return _pid_alive(pid)
+
+
+def _audit_module():
+    return load_module("audit_project_hook_tests", REPO_ROOT / "skills" / "kmp-audit" / "scripts" / "audit_project.py")
 
 class HookScriptTests(unittest.TestCase):
     """KI-006 — hook shell script plumbing tests.
@@ -45,17 +129,95 @@ class HookScriptTests(unittest.TestCase):
             f"stdout: {result.stdout.decode()}  stderr: {result.stderr.decode()}"
         ))
 
-    def test_validate_arch_runs_when_no_arg(self) -> None:
-        # No file arg → audit runs; use a clean temp dir as $2 to avoid SKILL.md false positives.
+    def test_validate_arch_skips_when_no_file(self) -> None:
+        # No edited file → nothing to audit; a whole-project audit per edit is what issue #29 removed.
         with tempfile.TemporaryDirectory() as tmp:
+            root = _make_hook_project(tmp)
             result = subprocess.run(
-                [BASH, str(HOOKS_DIR / "validate-architecture.sh"), "", tmp],
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh"), "", str(root)],
                 capture_output=True,
             )
-        self.assertEqual(result.returncode, 0, (
-            "validate-architecture.sh should exit 0 on a clean project when called with no file arg. "
-            f"stderr: {result.stderr.decode()}"
-        ))
+        self.assertEqual((result.returncode, result.stdout), (0, b""), result.stderr.decode())
+
+    def test_validate_arch_audits_only_the_edited_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as locks:
+            root = _make_hook_project(tmp)
+            env = {**os.environ, "KMP_AUDIT_LOCK_DIR": locks}
+            bad = _run_hook(root, root / _SRC / "Bad.kt", env)
+            self.assertEqual(bad.returncode, 1, bad.stdout.decode() + bad.stderr.decode())
+            self.assertIn(b"globalscope usage", bad.stdout)
+            self.assertNotIn(b"AGENTS.md", bad.stdout, "project-level findings belong to the full audit")
+
+            good = _run_hook(root, root / _SRC / "Good.kt", env)
+            self.assertEqual(good.returncode, 0, good.stdout.decode() + good.stderr.decode())
+
+    def test_validate_arch_disable_switches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as locks:
+            root = _make_hook_project(tmp)
+            env = {**os.environ, "KMP_AUDIT_LOCK_DIR": locks}
+            off = _run_hook(root, root / _SRC / "Bad.kt", {**env, "KMP_ARCH_HOOK_DISABLE": "1"})
+            self.assertEqual((off.returncode, off.stdout), (0, b""), "KMP_ARCH_HOOK_DISABLE=1 turns it off")
+
+            (root / ".claude").mkdir()
+            (root / ".claude" / "kmp-arch-hook-disabled").write_text("", encoding="utf-8")
+            marker = _run_hook(root, root / _SRC / "Bad.kt", env)
+            self.assertEqual((marker.returncode, marker.stdout), (0, b""), "the marker file turns it off")
+
+    def test_validate_arch_skips_while_an_audit_holds_the_project_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as locks:
+            root = _make_hook_project(tmp)
+            env = {**os.environ, "KMP_AUDIT_LOCK_DIR": locks}
+            with mock.patch.dict(os.environ, env):
+                lock = _audit_module()._lock_path(root.resolve())
+            lock.parent.mkdir(parents=True, exist_ok=True)
+            lock.write_text("held", encoding="utf-8")
+
+            skipped = _run_hook(root, root / _SRC / "Bad.kt", env)
+            self.assertEqual((skipped.returncode, skipped.stdout), (0, b""), skipped.stderr.decode())
+            self.assertIn(b"SKIPPED", skipped.stderr)
+
+            old = datetime.datetime.now().timestamp() - 3600
+            os.utime(lock, (old, old))
+            stale = _run_hook(root, root / _SRC / "Bad.kt", env)
+            self.assertEqual(stale.returncode, 1, "a stale lock is taken over")
+            self.assertFalse(lock.exists(), "the audit removes the lock it took over")
+
+    def test_validate_arch_timeout_stops_the_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as locks:
+            root = _make_hook_project(tmp)
+            env = _slow_audit_env(tmp, locks, timeout="1")
+            started = time.monotonic()
+            result = _run_hook(root, root / _SRC / "Slow.kt", env, timeout=60)
+            self.assertLess(time.monotonic() - started, 20)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertIn(b"exceeded 1s", result.stderr)
+            pid = int((Path(tmp) / "audit.pid").read_text(encoding="utf-8"))
+            self.assertFalse(_wait_for_exit(pid, 5), "the timed-out audit process must be gone")
+            self.assertEqual(list(Path(locks).iterdir()), [])
+
+    def test_validate_arch_audit_outlives_a_killed_hook_only_until_its_deadline(self) -> None:
+        # Claude Code kills the hook's bash on timeout; on Windows that leaves the python child
+        # running. The child's own deadline must still end it and free the project lock.
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as locks:
+            root = _make_hook_project(tmp)
+            env = _slow_audit_env(tmp, locks, timeout="4")
+            pid_file = Path(tmp) / "audit.pid"
+            hook = subprocess.Popen(
+                [BASH, str(HOOKS_DIR / "validate-architecture.sh"), str(root / _SRC / "Slow.kt"), str(root)],
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env,
+            )
+            try:
+                deadline = time.monotonic() + 20
+                while not pid_file.exists() and time.monotonic() < deadline:
+                    time.sleep(0.1)
+                self.assertTrue(pid_file.exists(), "the audit never started")
+            finally:
+                hook.kill()
+                hook.wait()
+            pid = int(pid_file.read_text(encoding="utf-8"))
+            self.assertTrue(_pid_alive(pid), "precondition: killing the hook leaves the audit running")
+            self.assertFalse(_wait_for_exit(pid, 15), "the orphaned audit must stop at its deadline")
+            self.assertEqual(list(Path(locks).iterdir()), [], "and release the project lock")
 
     def test_validate_arch_skips_non_md_non_kt(self) -> None:
         for ext in (".json", ".sh", ".py", ".toml", ".xml"):

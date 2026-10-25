@@ -1,5 +1,5 @@
 {
-  "version": "3.5.0",
+  "version": "3.6.0",
   "skills": [
     {
       "name": "kmp-analytics",
@@ -131,7 +131,7 @@
       "path": "skills/kmp-audit",
       "description": "KMP project audit skill for reviewing an existing Kotlin Multiplatform codebase. Use this skill to inspect architecture, module boundaries, state handling, repository and network layering, Compose patterns, expect/actual usage, shared resources, design system usage, test coverage, platform readiness, and the skills repo itself. Produces findings, risk levels, and a fix sequence instead of implementation code. Pair with kmp-expert to route any follow-up work to the right domain skills.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-09",
+      "last_updated": "2026-10-26",
       "keywords": [
         "investigation narration comment",
         "state the finding not the investigation",
@@ -1886,7 +1886,7 @@
       "path": "skills/kmp-github-issue-governance",
       "description": "Govern GitHub issue creation, sub-issue hierarchy, and status updates for KMP repositories. Use when decomposing work into epics and sub-issues, preventing ticket spam or comment flooding, drafting bug reports and technical tasks, tracking work a PR defers, labelling issues so they can be prioritised, or transporting markdown payloads safely through the GitHub CLI without escaping corruption.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-09",
+      "last_updated": "2026-10-24",
       "keywords": [
         "github issue",
         "sub-issue",
@@ -3931,9 +3931,9 @@
     {
       "name": "kmp-token-saver",
       "path": "skills/kmp-token-saver",
-      "description": "Token-saving workflow for KMP agent work across all assistant runtimes (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Codex). Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and universal AGENTS.md guardrails for environments without Claude plugin runtimes. Headroom stays optional until setup exists; do not block the task on it.",
+      "description": "Token-saving workflow for KMP agent work across all assistant runtimes (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Codex). Use when the user asks to reduce token usage, shorten replies, compress noisy tool output, or choose the smallest correct solution. Covers Ponytail for YAGNI and overengineering checks, Caveman for terse replies, RTK for shell output compression, and universal AGENTS.md guardrails for environments without Claude plugin runtimes. Headroom stays optional until setup exists; do not block the task on it. Includes optional Graphify retrieval and Git-backed Obsidian development documentation.",
       "license": "Apache-2.0",
-      "last_updated": "2026-10-12",
+      "last_updated": "2026-10-21",
       "keywords": [
         "token saver",
         "prompt compression",
@@ -3943,7 +3943,8 @@
         "caveman",
         "ponytail",
         "headroom",
-        "rtk"
+        "rtk",
+        "graphify"
       ],
       "triggers": [
         "token saver",
@@ -3956,10 +3957,13 @@
         "ponytail",
         "headroom",
         "rtk",
+        "graphify",
         "smallest correct solution",
         "YAGNI"
       ],
-      "scripts": []
+      "scripts": [
+        "graphify_local.py"
+      ]
     },
     {
       "name": "kmp-unit-testing",

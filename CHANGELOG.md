@@ -2,6 +2,21 @@
 
 All notable changes to kmp-agent-skills are documented here.
 
+## [v3.6.0] — 2026-10-26
+
+### Added
+
+- feat(github-issue-governance): validate PR template sections and UI visual evidence (#28)
+- feat(token-saver): add portable Graphify and Obsidian workflow
+- feat(docs): add searchable skills reference site
+
+### Fixed
+
+- fix(hooks): bound the validate-architecture edit hook to the edited file (#31)
+- fix(github-issue-governance): detect PowerShell backtick-escape and cp1252 corruption
+
+---
+
 ## [v3.5.0] — 2026-10-19
 
 ### Added

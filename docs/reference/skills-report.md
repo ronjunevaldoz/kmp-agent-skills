@@ -1,6 +1,6 @@
 # Skills Report
 
-Generated 2026-10-19 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
+Generated 2026-10-26 by `scripts/generate_skills_report.py` — run it after any skill edit to refresh; not auto-run on every commit.
 
 **80 skills** — 80 clean, 0 over the 500-line agentskills.io guideline (tracked as [KI-008](../../KNOWN_ISSUES.md#ki-008--22-of-64-skillmd-files-exceed-agentskillsios-recommended-500-line-body)).
 
@@ -9,13 +9,13 @@ Generated 2026-10-19 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-library-publishing`](../../skills/kmp-library-publishing/) | 492 | 2026-07-31 | ✅ |
 | [`kmp-in-app-purchases`](../../skills/kmp-in-app-purchases/) | 490 | 2026-06-29 | ✅ |
 | [`kmp-mvi`](../../skills/kmp-mvi/) | 486 | 2026-08-24 | ✅ |
+| [`kmp-audit`](../../skills/kmp-audit/) | 484 | 2026-10-26 | ✅ |
 | [`kmp-compose-slot-api`](../../skills/kmp-compose-slot-api/) | 483 | 2026-06-26 | ✅ |
 | [`kmp-clean-architecture`](../../skills/kmp-clean-architecture/) | 482 | 2026-08-11 | ✅ |
 | [`kmp-compose-design-system`](../../skills/kmp-compose-design-system/) | 481 | 2026-09-27 | ✅ |
 | [`kmp-project-docs-maintainer`](../../skills/kmp-project-docs-maintainer/) | 480 | 2026-10-09 | ✅ |
 | [`kmp-ci-github-actions`](../../skills/kmp-ci-github-actions/) | 479 | 2026-09-27 | ✅ |
 | [`kmp-jni-pro`](../../skills/kmp-jni-pro/) | 478 | 2026-08-24 | ✅ |
-| [`kmp-audit`](../../skills/kmp-audit/) | 477 | 2026-10-09 | ✅ |
 | [`kmp-ktor-realtime`](../../skills/kmp-ktor-realtime/) | 475 | 2026-10-19 | ✅ |
 | [`kmp-network-layer`](../../skills/kmp-network-layer/) | 474 | 2026-07-31 | ✅ |
 | [`kmp-roborazzi`](../../skills/kmp-roborazzi/) | 470 | 2026-09-27 | ✅ |
@@ -52,7 +52,7 @@ Generated 2026-10-19 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-resilience`](../../skills/kmp-resilience/) | 370 | 2026-08-24 | ✅ |
 | [`kmp-coroutines-flow-patterns`](../../skills/kmp-coroutines-flow-patterns/) | 367 | 2026-08-19 | ✅ |
 | [`kmp-xcframework-spm`](../../skills/kmp-xcframework-spm/) | 364 | 2026-06-06 | ✅ |
-| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 361 | 2026-10-09 | ✅ |
+| [`kmp-github-issue-governance`](../../skills/kmp-github-issue-governance/) | 363 | 2026-10-24 | ✅ |
 | [`kmp-form-validation`](../../skills/kmp-form-validation/) | 358 | 2026-06-21 | ✅ |
 | [`kmp-security`](../../skills/kmp-security/) | 357 | 2026-08-24 | ✅ |
 | [`kmp-lessons`](../../skills/kmp-lessons/) | 356 | 2026-07-12 | ✅ |
@@ -83,8 +83,8 @@ Generated 2026-10-19 by `scripts/generate_skills_report.py` — run it after any
 | [`kmp-compose-web-performance`](../../skills/kmp-compose-web-performance/) | 249 | 2026-08-31 | ✅ |
 | [`kmp-ktor-auth-service`](../../skills/kmp-ktor-auth-service/) | 244 | 2026-10-19 | ✅ |
 | [`kmp-openrewrite`](../../skills/kmp-openrewrite/) | 224 | 2026-09-15 | ✅ |
+| [`kmp-token-saver`](../../skills/kmp-token-saver/) | 220 | 2026-10-21 | ✅ |
 | [`kmp-android-cli`](../../skills/kmp-android-cli/) | 210 | 2026-07-19 | ✅ |
-| [`kmp-token-saver`](../../skills/kmp-token-saver/) | 209 | 2026-10-12 | ✅ |
 | [`kmp-update`](../../skills/kmp-update/) | 196 | 2026-10-09 | ✅ |
 
 **Status legend:** ✅ no issues · 🟡 known, tracked debt (doesn't block a release — see KI-008) · 🔴 blocking (would fail `scan_skill_issues.py`, a new regression, not tracked debt)
